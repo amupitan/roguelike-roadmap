@@ -70,7 +70,7 @@ int* create_room(char map[][nCols], int x, int y, int *room_ends){
 	max = nRows - 2;
 	min = y + 4;
 	int end_y = rand_gen(min,max);
-	if (end_x - x > 35 || end_y - y > 25 ) return room_ends;//should be 0
+	if (end_x - x > 25 || end_y - y > 15 ) return room_ends;//should be 0
 	if (end_x == -1 || end_y == -1) return room_ends; //should be 0
 
 	//check if this part of dungeon already contains a room
