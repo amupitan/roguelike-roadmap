@@ -13,7 +13,7 @@ typedef struct Point{
 
 int* create_room(char map[][nCols], int x, int y, int *room_ends);
 int rand_gen(int min, int max);
-int connect_cell(char map[][nCols], Point p, Point q);
+int connect_rooms(char map[][nCols], Point p, Point q);
 
 int main(int argc, char *argv[]){
 	int seed, area = 0, tries = 0, count = 0;
@@ -36,23 +36,22 @@ int main(int argc, char *argv[]){
 		int y = rand()%(nRows-2) + 1;
 		int x = rand()%(nCols-2) + 1;
 		int room_coords[] = {0,0};
-	       	create_room(map, x, y, room_coords);
+		create_room(map, x, y, room_coords);
 		if (room_coords[0] == 0 && room_coords[1] == 0) continue;
 		area += room_coords[0] * room_coords[1];
-
-		//printf("%d < %d\n", x, room_coords[0] + x -1);
+		
+    //get random point in each room
 		room_points[count].x = rand_gen(x, room_coords[0] + x -1);
 		room_points[count].y = rand_gen(y, room_coords[1] + y -1);
-		//printf("x %d y %d \n",room_points[count].x, room_points[count].y);
-
-		count +=  (room_coords[0] > 0 && room_coords[1] > 0) ? 1 : 0;//TODO might be able to change this to count++
+		count++;
 		tries++;
 	}
-	//room_points[count].immutable = 1;
-	for (i =0; i < count; i++){
-	//printf("o.x %d o.y %d 1.x %d 1.y %d\n", room_points[0].x, room_points[0].y, room_points[1].x, room_points[1].y);
-		connect_cell(map, room_points[i], room_points[i+1]);
+
+  //connect random points
+	for (i =0; i < count-1; i++){
+		connect_rooms(map, room_points[i], room_points[i+1]);
 	}
+	//render world
 	for (i = 0; i < nRows; i++){
 		for (j =0; j < nCols; j++){
 			printf("%c", map[i][j]);
@@ -103,7 +102,7 @@ int rand_gen(int min, int max){
 	return (max >= min) ? (rand() % (max-min+1)) + min : -1;
 }
 
-int connect_cell(char map[][nCols], Point p, Point q){
+int connect_rooms(char map[][nCols], Point p, Point q){
 	while (p.x != q.x){
 		if (map[p.y][p.x] != 46){
 			map[p.y][p.x] = 35;
