@@ -1,5 +1,5 @@
 # Roguelike Roadmap
-** This game is based on the rogue-like map and is implemented in C**
+##This game is based on the rogue-like map and is implemented in C
 The game is in file game.c and has the following specifications: 
 * The dungeon is 160 units wide and 105 units long
 * There is a minimum of 10 rooms and maximum of 20 rooms per dungeon
@@ -9,3 +9,4 @@ The game is in file game.c and has the following specifications:
 * The dungeon is fully connected i.e you can get to any room from everyroom
 * Corridors do not overlay rooms
 * C strucutres are sometimes used to identify cells in the game
+
