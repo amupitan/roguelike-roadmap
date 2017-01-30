@@ -1,6 +1,7 @@
 # Roguelike Roadmap
 ##This game is based on the rogue-like map and is implemented in C
-The game is in file game.c and has the following specifications: 
+The game is in file game.c and has the following specifications:
+* The game generates a random dungeon which can be seeded using an integer command line argument
 * The dungeon is 160 units wide and 105 units long
 * There is a minimum of 10 rooms and maximum of 20 rooms per dungeon
 * Each room is at least 7 units wide and 5 units long

@@ -7,27 +7,31 @@
 typedef struct Point{
 	int x;
 	int y;
+	char value;
 	int immutable;
 }Point;
 
 
-int* create_room(char map[][nCols], int x, int y, int *room_ends);
+int* create_room(Point map[][nCols], int x, int y, int *room_ends);
 int rand_gen(int min, int max);
-int connect_rooms(char map[][nCols], Point p, Point q);
+int connect_rooms(Point map[][nCols], Point p, Point q);
+int updatePoint(Point* p, char value);
 
 int main(int argc, char *argv[]){
 	int seed, area = 0, tries = 0, count = 0;
-	char map[nRows][nCols];
+	Point map[nRows][nCols];
 	int i = 0, j = 0;
 	Point room_points[35];
 	if (argc > 1)
 		seed = atoi(argv[1]);
 	else seed = (unsigned) time(NULL);
 	srand(seed);
-	//initialise all room points to whitespace
+	
+	//initialise all room points to whitespace and set immutability
 	for (i = 0; i < nRows; i++){
 		for (j =0; j < nCols; j++){
-			map[i][j] = 32;
+			map[i][j].value = 32;
+			map[i][j].immutable = (i == 0 || j == 0 || i == 104 || j == 159) ? 1 : 0;
 		}
 	}
 
@@ -46,7 +50,7 @@ int main(int argc, char *argv[]){
 		count++;
 		tries++;
 	}
-
+  
   //connect random points
 	for (i =0; i < count-1; i++){
 		connect_rooms(map, room_points[i], room_points[i+1]);
@@ -54,14 +58,14 @@ int main(int argc, char *argv[]){
 	//render world
 	for (i = 0; i < nRows; i++){
 		for (j =0; j < nCols; j++){
-			printf("%c", map[i][j]);
+			printf("%c", map[i][j].value);
 		}
 		printf("\n");
 	}
 	return 0;
 }
 
-int* create_room(char map[][nCols], int x, int y, int *room_ends){
+int* create_room(Point map[][nCols], int x, int y, int *room_ends){
 	int i = 0, j= 0;
 	//generate random length and width of room by genrating a random co-ord
 	int max = nCols-2;
@@ -76,19 +80,20 @@ int* create_room(char map[][nCols], int x, int y, int *room_ends){
 	//check if this part of dungeon already contains a room
 	for (i = y-1; i <= end_y + 2; i += end_y - y + 2){ //TODO check logic for this block and the next one
 		for (j = x; j <= end_x; j++){
-			if (map[i][j] == 46) return room_ends;//should be 0
+			if (map[i][j].value == 46) return room_ends;//should be 0
 		}
 	}
 	for (i = x-1; i <= end_x + 2; i += end_x - x + 2){
 		for (j = y; j <= end_y; j++){
-			if (map[j][i] == 46) return room_ends;//should be 0
+			if (map[j][i].value == 46) return room_ends;//should be 0
 		}
 	}
 
 	//fill room with dots
 	for (j = y; j <= end_y; j++){
 		for (i = x; i <= end_x; i++){
-			map[j][i] = 46;
+		  updatePoint(&map[j][i], 46);
+		// 	map[j][i].value = 46;
 		}
 	}
 
@@ -102,18 +107,26 @@ int rand_gen(int min, int max){
 	return (max >= min) ? (rand() % (max-min+1)) + min : -1;
 }
 
-int connect_rooms(char map[][nCols], Point p, Point q){
+int connect_rooms(Point map[][nCols], Point p, Point q){
 	while (p.x != q.x){
-		if (map[p.y][p.x] != 46){
-			map[p.y][p.x] = 35;
+		if (map[p.y][p.x].value != 46){
+		  updatePoint(&map[p.y][p.x], 35);
+		// 	map[p.y][p.x].value = 35;
 		}
 		p.x = (p.x > q.x) ? p.x-1 : p.x+1;
 	}
 	while (p.y != q.y){
-		if (map[p.y][p.x] != 46){
-			map[p.y][p.x] = 35;
+		if (map[p.y][p.x].value != 46){
+		  updatePoint(&map[p.y][p.x], 35);
+		// 	map[p.y][p.x].value = 35;
 		}
 		p.y = (p.y > q.y) ? p.y-1 : p.y+1;
 	}
 	return 1;
+}
+
+int updatePoint(Point* p, char value){
+  if (p->immutable == 1) return 0;
+  p->value = value;
+  return 1;
 }
