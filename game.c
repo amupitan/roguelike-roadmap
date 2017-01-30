@@ -1,6 +1,8 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <time.h>
+#include <getopt.h>
+
 #define nRows 105
 #define nCols 160
 
@@ -16,27 +18,62 @@ int* create_room(Point map[][nCols], int x, int y, int *room_ends);
 int rand_gen(int min, int max);
 int connect_rooms(Point map[][nCols], Point p, Point q);
 int updatePoint(Point* p, char value);
+void render(Point map[][nCols], Point start, Point end);
 
 int main(int argc, char *argv[]){
-	int seed, area = 0, tries = 0, count = 0;
+  //handle options
+  int longindex; //TODO remove this and set the args part to NULL
+  int option, load = 0, save = 0, seed = (unsigned) time(NULL);
+  struct option longopts[] = {
+    {"load", no_argument, &load, 1},
+    {"save", no_argument, &save, 1},
+    {"seed", optional_argument, NULL, 'e'},
+    {0,0,0,0}
+  };
+  
+  while ((option = getopt_long(argc, argv, ":e:", longopts, &longindex)) != -1){
+    switch(option){
+      case 'e':
+        if (optarg) seed = atoi(optarg);
+        else fprintf(stderr, "%s: option seed requires an argument\n", argv[0]);;
+        break;
+      case 0:
+        break;
+      // case 1:
+      //   fprintf(stderr, "%s: unexpected argument %s", argv[0], optarg);
+      //   break;
+      case '?':
+        fprintf(stderr, "%s: %c is an invalid argument: ignored\n", argv[0], optopt);
+        break;
+      case ':':
+        fprintf(stderr, "%s: option %c requires an argument\n", argv[0], optopt);
+        break;
+      default:
+        fprintf(stderr, "%s: option %c is ignored because it is invalid\n", argv[0], optopt);
+        
+    }
+  }
+  
+  //TODO remove
+  if (save) printf("save\n");
+  if (load) printf("load\n");
+  
+	int area = 0, tries = 0, count = 0;
 	Point map[nRows][nCols];
 	int i = 0, j = 0;
 	Point room_points[35];
-	if (argc > 1)
-		seed = atoi(argv[1]);
-	else seed = (unsigned) time(NULL);
 	srand(seed);
 	
 	//initialise all room points to whitespace and set immutability
 	for (i = 0; i < nRows; i++){
 		for (j =0; j < nCols; j++){
 			map[i][j].value = 32;
-			map[i][j].immutable = (i == 0 || j == 0 || i == 104 || j == 159) ? 1 : 0;
+			map[i][j].immutable = (i == 0 || j == 0 || i == nRows-1 || j == nCols-1) ? 1 : 0;
 		}
 	}
 
 	//add rooms to dungeon
-	while ((area < .2*(nRows*nCols) || tries < 500 || count < 10) && (count < 20)){
+	while ((area < .2*(nRows*nCols) || count < 10)&& (++tries < 2000)){
 		int y = rand()%(nRows-2) + 1;
 		int x = rand()%(nCols-2) + 1;
 		int room_coords[] = {0,0};
@@ -48,20 +85,16 @@ int main(int argc, char *argv[]){
 		room_points[count].x = rand_gen(x, room_coords[0] + x -1);
 		room_points[count].y = rand_gen(y, room_coords[1] + y -1);
 		count++;
-		tries++;
 	}
-  
   //connect random points
 	for (i =0; i < count-1; i++){
 		connect_rooms(map, room_points[i], room_points[i+1]);
 	}
+	
 	//render world
-	for (i = 0; i < nRows; i++){
-		for (j =0; j < nCols; j++){
-			printf("%c", map[i][j].value);
-		}
-		printf("\n");
-	}
+	Point ij = {1,2,0,0}; //TODO remove
+	render(map, ij, ij);
+	printf("%d tries %d\n", count, tries);
 	return 0;
 }
 
@@ -129,4 +162,14 @@ int updatePoint(Point* p, char value){
   if (p->immutable == 1) return 0;
   p->value = value;
   return 1;
+}
+
+void render(Point map[][nCols], Point start, Point end){
+  int i = 0, j = 0;
+  for (i = 0; i < nRows; i++){
+		for (j =0; j < nCols; j++){
+			printf("%c", map[i][j].value);
+		}
+		printf("\n");
+	}
 }
