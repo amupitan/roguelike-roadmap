@@ -157,14 +157,14 @@ int main(int argc, char *argv[]){
       	}
       
       //read rooms
-      int put = 0;
-      Room room;
+      // int put = 0;
+      Room room = {0,0,0,0};
       while((fread(&room.x, sizeof(uint8_t), 1, dungeon_file)) == 1){
         fread(&room.y, sizeof(uint8_t), 1, dungeon_file);
         fread(&room.width, sizeof(uint8_t), 1, dungeon_file);
         fread(&room.height, sizeof(uint8_t), 1, dungeon_file);
         write_room(map, room);
-        printf("%d\n", ++put);
+        // printf("%d\n", ++put);
         // if ((dungeon.num_rooms%20 == 0) && (dungeon.num_rooms != 0)){
         //   int ratio = dungeon.num_rooms/20 + 1;
         //   if (!realloc(dungeon.rooms, ratio*20)) return -1;
@@ -222,20 +222,20 @@ int main(int argc, char *argv[]){
       char* dungoen_title_l = "RLG327-S2017";
       fwrite(dungoen_title_l, 12, 1, dungeon_file_l); //cs: 12
       // strcpy(dungoen_title, temp_name); //TODO figure out dungeon title toendian
-      printf("dungeon title: %s\n", dungoen_title);
+      printf("dungeon title: %s\n", dungoen_title_l);
       // free(temp_name);
       
       //write verison
       temp = 0;
       version = htobe32(temp);
       fwrite(&version, 4, 1, dungeon_file_l); //cs: 4
-      printf("version: %d\n", version);
+      printf("version: %d\n", be32toh(version));
       
       //write size of file
-      temp = 0; //change this to the math
+      temp = 16000; //change this to the math
       size_dungeon_file = htobe32(temp);
       fwrite(&size_dungeon_file, 4, 1, dungeon_file_l); //cs:4
-      printf("size_dungeon_file: %d\n", size_dungeon_file);
+      printf("size_dungeon_file: %d\n", be32toh(size_dungeon_file));
       
       //write hardness
       // int temper = 20;
