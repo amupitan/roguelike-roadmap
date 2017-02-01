@@ -43,7 +43,7 @@ int main(int argc, char *argv[]){
   
   //regular
   Dungeon dungeon;
-  dungeon.rooms = malloc(sizeof(Room)*30);
+  dungeon.rooms = malloc(sizeof(Room)*2500); //debug this issue
   dungeon.num_rooms = 0;
   int area = 0, tries = 0, count = 0;
 	Point map[nRows][nCols];
@@ -59,14 +59,23 @@ int main(int argc, char *argv[]){
   //handle options an set seed
   int longindex; //TODO remove this and set the args part to NULL
   int option, load = 0, save = 0, seed = (unsigned) time(NULL);
+  char* load_file;
   struct option longopts[] = {
-    {"load", no_argument, &load, 1},
+    {"load", optional_argument, NULL, 'l'},
     {"save", no_argument, &save, 1},
     {"seed", optional_argument, NULL, 'e'},
     {0,0,0,0}
   };
   while ((option = getopt_long(argc, argv, ":e:", longopts, &longindex)) != -1){
     switch(option){
+      case 'l':
+        load = 1;
+        if (optarg) load_file = optarg;
+        else {
+          load_file = getenv("HOME");
+          strcat(load_file, "/.rlg327/dungeon");
+        }
+        break;
       case 'e':
         if (optarg) seed = atoi(optarg);
         else fprintf(stderr, "%s: option seed requires an argument\n", argv[0]);;
@@ -101,7 +110,7 @@ int main(int argc, char *argv[]){
   
   // printf("HOME : %s\n", getenv("HOME")); TODO remove
   if (load){
-    if (!(dungeon_file = fopen("test", "r"))){ //TODO change test to path to file in {HOME}/.rlg327
+    if (!(dungeon_file = fopen(load_file, "r"))){ //TODO change test to path to file in {HOME}/.rlg327
       fprintf(stderr, "The file couldn't be opened\n"); //TODO add name of file(path maybe)
       return 1;
     }else{
@@ -148,14 +157,14 @@ int main(int argc, char *argv[]){
       	}
       
       //read rooms
-      Room room;
       int put = 0;
+      Room room;
       while((fread(&room.x, sizeof(uint8_t), 1, dungeon_file)) == 1){
         fread(&room.y, sizeof(uint8_t), 1, dungeon_file);
         fread(&room.width, sizeof(uint8_t), 1, dungeon_file);
         fread(&room.height, sizeof(uint8_t), 1, dungeon_file);
         write_room(map, room);
-        printf("%d\n",++put);
+        printf("%d\n", ++put);
         // if ((dungeon.num_rooms%20 == 0) && (dungeon.num_rooms != 0)){
         //   int ratio = dungeon.num_rooms/20 + 1;
         //   if (!realloc(dungeon.rooms, ratio*20)) return -1;
@@ -169,7 +178,7 @@ int main(int argc, char *argv[]){
     }
   }else{
     //add rooms to dungeon
-    while ((area < .3*(nRows*nCols) || count < 10) && (++tries < 2000)){
+    while ((area < .2*(nRows*nCols) || count < 10) && (++tries < 2000)){
       Room room; // = {0, 0, 0, 0};
   		room.y = rand()%(nRows-2) + 1;
   		room.x = rand()%(nCols-2) + 1;
@@ -197,72 +206,59 @@ int main(int argc, char *argv[]){
 	
 	//save
 	//create directory if save is passed move to end of code
-  // if (save) {
-  //   char* path = getenv("HOME");
-  //   printf("path: %s\n", path);
-  //   mkdir(strcat(path, "/.rlg327"),0766);
-  //   strcat(path, "dungeon");
-  //   FILE* dungeon_file_l;
-  //   if (!(dungeon_file_l = fopen(path, "w"))){
-  //     fprintf(stderr, "Could not write map to file\n");
-  //     return -1;
-  //   }else{
-  //     uint32_t temp = 0;//TODO remove all printfs
-  //     printf("Started saving\n");
-  //     //write dungeon title
-  //     char* dungoen_title_l = "RLG327-S2017";
-  //     fwrite(dungoen_title_l, 12, 1, dungeon_file_l); //cs: 12
-  //     // strcpy(dungoen_title, temp_name); //TODO figure out dungeon title toendian
-  //     printf("dungeon title: %s\n", dungoen_title);
-  //     // free(temp_name);
+  if (save) {
+    char* path = getenv("HOME");
+    printf("path: %s\n", path);
+    mkdir(strcat(path, "/.rlg327"),0766);
+    strcat(path, "/dungeon");
+    FILE* dungeon_file_l;
+    if (!(dungeon_file_l = fopen(path, "w"))){
+      fprintf(stderr, "Could not write map to file\n");
+      return -1;
+    }else{
+      uint32_t temp = 0;//TODO remove all printfs
+      printf("Started saving\n");
+      //write dungeon title
+      char* dungoen_title_l = "RLG327-S2017";
+      fwrite(dungoen_title_l, 12, 1, dungeon_file_l); //cs: 12
+      // strcpy(dungoen_title, temp_name); //TODO figure out dungeon title toendian
+      printf("dungeon title: %s\n", dungoen_title);
+      // free(temp_name);
       
-  //     //write verison
-  //     temp = 0;
-  //     version = htobe32(temp);
-  //     fwrite(&version, 4, 1, dungeon_file); //cs: 4
-  //     printf("version: %d\n", version);
+      //write verison
+      temp = 0;
+      version = htobe32(temp);
+      fwrite(&version, 4, 1, dungeon_file_l); //cs: 4
+      printf("version: %d\n", version);
       
-  //     //write size of file
-  //     temp = 0; //change this to the math
-  //     size_dungeon_file = htobe32(temp);
-  //     fwrite(&size_dungeon_file, 4, 1, dungeon_file); //cs:4
-  //     printf("size_dungeon_file: %d\n", size_dungeon_file);
+      //write size of file
+      temp = 0; //change this to the math
+      size_dungeon_file = htobe32(temp);
+      fwrite(&size_dungeon_file, 4, 1, dungeon_file_l); //cs:4
+      printf("size_dungeon_file: %d\n", size_dungeon_file);
       
-  //     //write hardness
-  //     // int temper = 20;
-  //     for (i = 0; i < nRows; i++){
-  //   		for (j =0; j < nCols; j++){
-  //   		  fwrite(&(map[i][j].hardness), sizeof(unsigned char), 1, dungeon_file); //cs:8 TODO: might want to use the real variable instead of unsigned char
-  //   		}
-  //     }
+      //write hardness
+      // int temper = 20;
+      for (i = 0; i < nRows; i++){
+    		for (j =0; j < nCols; j++){
+    		  fwrite(&(map[i][j].hardness), sizeof(unsigned char), 1, dungeon_file_l); //cs:8 TODO: might want to use the real variable instead of unsigned char
+    		}
+      }
       
-  //     //quickly write corridors
-  //     for (i = 0; i < nRows; i++){
-  //     		for (j =0; j < nCols; j++){
-  //     			map[i][j].value = 32;
-  //     			if (map[i][j].hardness == 0) map[i][j].value = '#';
-  //     		}
-  //     	}
+      //read rooms
+      for (i = 0; i < dungeon.num_rooms; i++){
+        Room room_l = dungeon.rooms[i];//TODO might want to staright up use dun.rooms[i] instead of temp variable
+        fwrite(&room_l.x, sizeof(uint8_t), 1, dungeon_file_l);
+        fwrite(&room_l.y, sizeof(uint8_t), 1, dungeon_file_l);
+        fwrite(&room_l.width, sizeof(uint8_t), 1, dungeon_file_l);
+        fwrite(&room_l.height, sizeof(uint8_t), 1, dungeon_file_l);
+      }
       
-  //     //read rooms
-  //     uint8_t tempx;
-  //     while((fread(&tempx, sizeof(tempx), 1, dungeon_file)) == 1){
-  //       Point p = {0,0,0,0};
-  //       p.x = tempx;
-  //       fread(&p.y, sizeof(tempx), 1, dungeon_file);
-  //       uint8_t w = 0;
-  //       fread(&w, sizeof(w), 1, dungeon_file);
-        
-  //       uint8_t h = 0;
-  //       fread(&h, sizeof(w), 1, dungeon_file);
-  //       write_room(map, p, w, h);
-  //     }
-      
-  //     //display corridor
-  //     fclose(dungeon_file);
+      //display corridor
+      fclose(dungeon_file_l);
 
-  //   }
-  // }
+    }
+  }
   free(dungeon.rooms);
 	return 0;
 }
@@ -355,10 +351,10 @@ int write_room(Point map[][nCols], Room room){
 }
 
 int addRoom(Dungeon* rlg, Room room){ //TODO debug with 20
-  if ((rlg->num_rooms%30 == 0) && (rlg->num_rooms != 0)){
-    int ratio = rlg->num_rooms/30 + 1;
-    if (!realloc(rlg->rooms, ratio*30)) return -1;
-  }
+  // if ((rlg->num_rooms%30 == 0) && (rlg->num_rooms != 0)){
+  //   int ratio = rlg->num_rooms/30 + 1;
+  //   if (!realloc(rlg->rooms, ratio*30)) return -1;
+  // }
   rlg->rooms[rlg->num_rooms].x = room.x;
   rlg->rooms[rlg->num_rooms].y = room.y;
   rlg->rooms[rlg->num_rooms].width = room.width;
