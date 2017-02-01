@@ -18,21 +18,37 @@ typedef struct Point{
 	unsigned char hardness;
 }Point;
 
+typedef struct Room{
+  int x;
+  int y;
+  uint8_t width;
+  uint8_t height;
+}Room;
 
-int* create_room(Point map[][nCols], int x, int y, int *room_ends);
+typedef struct Dungeon{
+  Room* rooms;
+  int num_rooms;
+}Dungeon;
+
+
+int create_room(Point map[][nCols], int x, int y, uint8_t* width, uint8_t* height);
 int rand_gen(int min, int max);
 int connect_rooms(Point map[][nCols], Point p, Point q);
 int updatePoint(Point* p, char value);
 void render(Point map[][nCols]);
-int write_room(Point map[][nCols], Point start, int width, int height);
+int write_room(Point map[][nCols], Room room);
+int addRoom(Dungeon* rlg, Room room);
 
 int main(int argc, char *argv[]){
   
   //regular
+  Dungeon dungeon;
+  dungeon.rooms = malloc(sizeof(Room)*30);
+  dungeon.num_rooms = 0;
   int area = 0, tries = 0, count = 0;
 	Point map[nRows][nCols];
 	int i = 0, j = 0;
-	Point room_points[35];
+	Point room_points[50];
   
   //dungeon
   FILE *dungeon_file;
@@ -132,17 +148,19 @@ int main(int argc, char *argv[]){
       	}
       
       //read rooms
-      uint8_t tempx;
-      while((fread(&tempx, sizeof(tempx), 1, dungeon_file)) == 1){
-        Point p = {0,0,0,0};
-        p.x = tempx;
-        fread(&p.y, sizeof(tempx), 1, dungeon_file);
-        uint8_t w = 0;
-        fread(&w, sizeof(w), 1, dungeon_file);
-        
-        uint8_t h = 0;
-        fread(&h, sizeof(w), 1, dungeon_file);
-        write_room(map, p, w, h);
+      Room room;
+      int put = 0;
+      while((fread(&room.x, sizeof(uint8_t), 1, dungeon_file)) == 1){
+        fread(&room.y, sizeof(uint8_t), 1, dungeon_file);
+        fread(&room.width, sizeof(uint8_t), 1, dungeon_file);
+        fread(&room.height, sizeof(uint8_t), 1, dungeon_file);
+        write_room(map, room);
+        printf("%d\n",++put);
+        // if ((dungeon.num_rooms%20 == 0) && (dungeon.num_rooms != 0)){
+        //   int ratio = dungeon.num_rooms/20 + 1;
+        //   if (!realloc(dungeon.rooms, ratio*20)) return -1;
+        // }
+        addRoom(&dungeon, room);
       }
       
       //display corridor
@@ -151,18 +169,21 @@ int main(int argc, char *argv[]){
     }
   }else{
     //add rooms to dungeon
-    while ((area < .2*(nRows*nCols) || count < 10) && (++tries < 2000)){
-  		int y = rand()%(nRows-2) + 1;
-  		int x = rand()%(nCols-2) + 1;
-  		int room_coords[] = {0,0};
-  		create_room(map, x, y, room_coords);
-  		if (room_coords[0] == 0 && room_coords[1] == 0) continue;
-  		area += room_coords[0] * room_coords[1];
+    while ((area < .3*(nRows*nCols) || count < 10) && (++tries < 2000)){
+      Room room; // = {0, 0, 0, 0};
+  		room.y = rand()%(nRows-2) + 1;
+  		room.x = rand()%(nCols-2) + 1;
+  		
+  		if (!create_room(map, room.x, room.y, &room.width, &room.height)) continue; //continue loop if roo couldn't be created
+  		area += room.width * room.height;
   		
       //get random point in each room
-  		room_points[count].x = rand_gen(x, room_coords[0] + x -1);
-  		room_points[count].y = rand_gen(y, room_coords[1] + y -1);
+  		room_points[count].x = rand_gen(room.x, room.width + room.x -1);
+  		room_points[count].y = rand_gen(room.y, room.height + room.y -1);
   		count++;
+  		
+  		//add room to rooms array TODO merge this with code above
+  		addRoom(&dungeon, room);
 	  }
     //connect random points
   	for (i =0; i < count-1; i++){
@@ -176,82 +197,77 @@ int main(int argc, char *argv[]){
 	
 	//save
 	//create directory if save is passed move to end of code
-  if (save) {
-    char* path = getenv("HOME");
-    printf("path: %s\n", path);
-    mkdir(strcat(path, "/.rlg327"),0766);
-    strcat(path, "dungeon");
-    FILE* dungeon_file_l;
-    if (!(dungeon_file_l = fopen(path, "w"))){
-      fprintf(stderr, "Could not write map to file\n");
-      return -1;
-    }else{/*
-      uint32_t temp = 0;//TODO remove all printfs
-      printf("Started saveing\n");
-      //write dungeon title
-      char* dungoen_title_l = "RLG327-S2017";
-      fwrite(dungoen_title_l, 12, 1, dungeon_file_l); //cs: 12
-      // strcpy(dungoen_title, temp_name); //TODO figure out dungeon title toendian
-      printf("dungeon title: %s\n", dungoen_title);
-      // free(temp_name);
+  // if (save) {
+  //   char* path = getenv("HOME");
+  //   printf("path: %s\n", path);
+  //   mkdir(strcat(path, "/.rlg327"),0766);
+  //   strcat(path, "dungeon");
+  //   FILE* dungeon_file_l;
+  //   if (!(dungeon_file_l = fopen(path, "w"))){
+  //     fprintf(stderr, "Could not write map to file\n");
+  //     return -1;
+  //   }else{
+  //     uint32_t temp = 0;//TODO remove all printfs
+  //     printf("Started saving\n");
+  //     //write dungeon title
+  //     char* dungoen_title_l = "RLG327-S2017";
+  //     fwrite(dungoen_title_l, 12, 1, dungeon_file_l); //cs: 12
+  //     // strcpy(dungoen_title, temp_name); //TODO figure out dungeon title toendian
+  //     printf("dungeon title: %s\n", dungoen_title);
+  //     // free(temp_name);
       
-      //read verison
-      temp = 16000; //change this to the math
-      version = "hi"
-      fwrite(&temp, 4, 1, dungeon_file); //cs: 4
-      version = htobe32(temp);
-      printf("version: %d\n", version);
+  //     //write verison
+  //     temp = 0;
+  //     version = htobe32(temp);
+  //     fwrite(&version, 4, 1, dungeon_file); //cs: 4
+  //     printf("version: %d\n", version);
       
-      //read size of file
-      fread(&temp, 4, 1, dungeon_file); //cs:4
-      size_dungeon_file = htobe32(temp);
-      printf("size_dungeon_file: %d\n", size_dungeon_file);
+  //     //write size of file
+  //     temp = 0; //change this to the math
+  //     size_dungeon_file = htobe32(temp);
+  //     fwrite(&size_dungeon_file, 4, 1, dungeon_file); //cs:4
+  //     printf("size_dungeon_file: %d\n", size_dungeon_file);
       
-      //read hardness
-      // int temper = 20;
-      for (i = 0; i < nRows; i++){
-    		for (j =0; j < nCols; j++){
-    		  fread(&(map[i][j].hardness), sizeof(unsigned char), 1, dungeon_file); //cs:8 TODO: might want to use the real variable instead of unsigned char
-    		  // if (map[i][j].hardness == 255) printf("%c", 'X');
-    		  // else if (map[i][j].hardness > 255) printf("%c", 'O');
-    		  // else printf("%c",' ');
-    		  // temper++;
-    		  // printf("%d ", map[i][j].hardness);
-    		}
-    		// printf("\n");
-      }
+  //     //write hardness
+  //     // int temper = 20;
+  //     for (i = 0; i < nRows; i++){
+  //   		for (j =0; j < nCols; j++){
+  //   		  fwrite(&(map[i][j].hardness), sizeof(unsigned char), 1, dungeon_file); //cs:8 TODO: might want to use the real variable instead of unsigned char
+  //   		}
+  //     }
       
-      //quicly write corridors
-      for (i = 0; i < nRows; i++){
-      		for (j =0; j < nCols; j++){
-      			map[i][j].value = 32;
-      			if (map[i][j].hardness == 0) map[i][j].value = '#';
-      		}
-      	}
+  //     //quickly write corridors
+  //     for (i = 0; i < nRows; i++){
+  //     		for (j =0; j < nCols; j++){
+  //     			map[i][j].value = 32;
+  //     			if (map[i][j].hardness == 0) map[i][j].value = '#';
+  //     		}
+  //     	}
       
-      //read rooms
-      uint8_t tempx;
-      while((fread(&tempx, sizeof(tempx), 1, dungeon_file)) == 1){
-        Point p = {0,0,0,0};
-        p.x = tempx;
-        fread(&p.y, sizeof(tempx), 1, dungeon_file);
-        uint8_t w = 0;
-        fread(&w, sizeof(w), 1, dungeon_file);
+  //     //read rooms
+  //     uint8_t tempx;
+  //     while((fread(&tempx, sizeof(tempx), 1, dungeon_file)) == 1){
+  //       Point p = {0,0,0,0};
+  //       p.x = tempx;
+  //       fread(&p.y, sizeof(tempx), 1, dungeon_file);
+  //       uint8_t w = 0;
+  //       fread(&w, sizeof(w), 1, dungeon_file);
         
-        uint8_t h = 0;
-        fread(&h, sizeof(w), 1, dungeon_file);
-        write_room(map, p, w, h);
-      }
+  //       uint8_t h = 0;
+  //       fread(&h, sizeof(w), 1, dungeon_file);
+  //       write_room(map, p, w, h);
+  //     }
       
-      //display corridor
-      fclose(dungeon_file);
-*/
-    }
-  }
+  //     //display corridor
+  //     fclose(dungeon_file);
+
+  //   }
+  // }
+  free(dungeon.rooms);
 	return 0;
 }
 
-int* create_room(Point map[][nCols], int x, int y, int *room_ends){
+int create_room(Point map[][nCols], int x, int y, uint8_t* width, uint8_t* height){
 	int i = 0, j= 0;
 	//generate random length and width of room by genrating a random co-ord
 	int max = nCols-2;
@@ -260,18 +276,18 @@ int* create_room(Point map[][nCols], int x, int y, int *room_ends){
 	max = nRows - 2;
 	min = y + 4;
 	int end_y = rand_gen(min,max);
-	if (end_x - x > 25 || end_y - y > 15 ) return room_ends;//should be 0
-	if (end_x == -1 || end_y == -1) return room_ends; //should be 0
+	if (end_x - x > 25 || end_y - y > 15 ) return 0;//should be 0
+	if (end_x == -1 || end_y == -1) return 0; //should be 0
 
 	//check if this part of dungeon already contains a room
 	for (i = y-1; i <= end_y + 2; i += end_y - y + 2){ //TODO check logic for this block and the next one
 		for (j = x; j <= end_x; j++){
-			if (map[i][j].value == 46) return room_ends;//should be 0
+			if (map[i][j].value == 46) return 0;//should be 0
 		}
 	}
 	for (i = x-1; i <= end_x + 2; i += end_x - x + 2){
 		for (j = y; j <= end_y; j++){
-			if (map[j][i].value == 46) return room_ends;//should be 0
+			if (map[j][i].value == 46) return 0;//should be 0
 		}
 	}
 
@@ -279,14 +295,13 @@ int* create_room(Point map[][nCols], int x, int y, int *room_ends){
 	for (j = y; j <= end_y; j++){
 		for (i = x; i <= end_x; i++){
 		  updatePoint(&map[j][i], 46);
-		// 	map[j][i].value = 46;
 		}
 	}
 
 	//return width and length of room respectively
-	room_ends[0] = end_x - x + 1;
-       	room_ends[1] = end_y - y + 1;
-	return room_ends;
+	*width = end_x - x + 1;
+  *height = end_y - y + 1;
+	return 1;
 }
 
 int rand_gen(int min, int max){
@@ -327,22 +342,27 @@ void render(Point map[][nCols]){
 	}
 }
 
-int write_room(Point map[][nCols], Point start, int width, int height){
+int write_room(Point map[][nCols], Room room){
   int i=0,j=0,m=0,n=0;
-  n = start.x + width - 1;
-  m = start.y + height - 1;
-  for (i = start.y; i <= m; i++){
-    for (j = start.x; j <= n; j++){
-      if (i <0 || i >= nRows){
-        printf("Bad input i: %d\n", i);
-        continue;
-      }
-      if (j <0 || j >= nCols){
-        printf("Bad input j: %d\n", j);
-        continue;
-      }
+  n = room.x + room.width - 1;
+  m = room.y + room.height - 1;
+  for (i = room.y; i <= m; i++){
+    for (j = room.x; j <= n; j++){
       updatePoint(&map[i][j], '.');
     }
   }
+  return 0;
+}
+
+int addRoom(Dungeon* rlg, Room room){ //TODO debug with 20
+  if ((rlg->num_rooms%30 == 0) && (rlg->num_rooms != 0)){
+    int ratio = rlg->num_rooms/30 + 1;
+    if (!realloc(rlg->rooms, ratio*30)) return -1;
+  }
+  rlg->rooms[rlg->num_rooms].x = room.x;
+  rlg->rooms[rlg->num_rooms].y = room.y;
+  rlg->rooms[rlg->num_rooms].width = room.width;
+  rlg->rooms[rlg->num_rooms].height = room.height;
+  rlg->num_rooms++;
   return 0;
 }
