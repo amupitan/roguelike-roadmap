@@ -59,7 +59,7 @@ int main(int argc, char *argv[]){
   //handle options an set seed
   int longindex; //TODO remove this and set the args part to NULL
   int option, load = 0, save = 0, seed = (unsigned) time(NULL);
-  char* load_file;
+  char load_file[100];
   struct option longopts[] = {
     {"load", optional_argument, NULL, 'l'},
     {"save", no_argument, &save, 1},
@@ -70,11 +70,9 @@ int main(int argc, char *argv[]){
     switch(option){
       case 'l':
         load = 1;
-        if (optarg) load_file = optarg;
-        else {
-          load_file = getenv("HOME");
-          strcat(load_file, "/.rlg327/dungeon");
-        }
+        if (optarg) strcpy(load_file, optarg);
+        else
+          strcat(strcpy(load_file, getenv("HOME")), "/.rlg327/dungeon");
         break;
       case 'e':
         if (optarg) seed = atoi(optarg);
@@ -97,7 +95,6 @@ int main(int argc, char *argv[]){
     }
   }
   
-  //seed
   srand(seed);
   
   //initialize dungoen
@@ -113,40 +110,30 @@ int main(int argc, char *argv[]){
       fprintf(stderr, "The file couldn't be opened\n"); //TODO add name of file(path maybe)
       return 1;
     }else{
-      uint32_t temp = 0;//TODO remove all printfs
-      printf("Started loading\n");
+      uint32_t temp = 0;
       //read dungeon title
-      char* temp_name = malloc(sizeof(char)*13);
-      temp_name[12] = 0;//TODO might not be necessary
+      char temp_name[13];
+      temp_name[12] = 0;
       fread(temp_name, 12, 1, dungeon_file); //cs: 12
-      strcpy(dungeon_title, temp_name); //TODO figure out dungeon title toendian
-      printf("dungeon title: %s\n", dungeon_title);
-      free(temp_name);
+      strcpy(dungeon_title, temp_name);
       
       //read verison
       fread(&temp, 4, 1, dungeon_file); //cs: 4
       version = be32toh(temp);
-      printf("version: %d\n", version);
       
       //read size of file
       fread(&temp, 4, 1, dungeon_file); //cs:4
       size_dungeon_file = be32toh(temp);
-      printf("size_dungeon_file: %d\n", size_dungeon_file);
       
       //read hardness
-      for (i = 0; i < nRows; i++){
-    		for (j =0; j < nCols; j++){
-    		  fread(&(map[i][j].hardness), sizeof(unsigned char), 1, dungeon_file); //cs:8 TODO: might want to use the real variable instead of unsigned char
-    		}
-      }
+      for (i = 0; i < nRows; i++)
+    		for (j =0; j < nCols; j++)
+    		  fread(&(map[i][j].hardness), sizeof(unsigned char), 1, dungeon_file); //cs:8
       
       //quickly write corridors
-      for (i = 0; i < nRows; i++){
-      		for (j =0; j < nCols; j++){
-      			map[i][j].value = 32;
-      			if (map[i][j].hardness == 0) map[i][j].value = '#';
-      		}
-      	}
+      for (i = 0; i < nRows; i++)
+      		for (j =0; j < nCols; j++)
+      			if (map[i][j].hardness == 0) update_cell(&map[i][j], 35, 0);
       
       //read rooms
       // int put = 0;
@@ -192,15 +179,11 @@ int main(int argc, char *argv[]){
   	}
   }
 
-	//render world
 	render(map);
-	printf("%d tries %d\n", count, tries);
-	
-	//save
-	//create directory if save is passed move to end of code
+
   if (save) {
-    char* path = getenv("HOME");
-    mkdir(strcat(path, "/.rlg327"),0766);
+    char path[100];
+    mkdir(strcat(strcpy(path, getenv("HOME")), "/.rlg327"),0766);
     strcat(path, "/dungeon");
     FILE* dungeon_file_l;
     if (!(dungeon_file_l = fopen(path, "w"))){
@@ -208,31 +191,24 @@ int main(int argc, char *argv[]){
       return -1;
     }else{
       uint32_t temp = 0;//TODO remove all printfs
-      printf("Started saving\n");
       //write dungeon title
       strcpy(dungeon_title, "RLG327-S2017");
-      // char* dungeon_title_l = "RLG327-S2017";
       fwrite(dungeon_title, 12, 1, dungeon_file_l); //cs: 12
-      // strcpy(dungeon_title, temp_name); //TODO figure out dungeon title toendian
-      printf("dungeon title: %s\n", dungeon_title);
       
       //write verison
       temp = 0;
       version = htobe32(temp);
-      fwrite(&version, 4, 1, dungeon_file_l); //cs: 4
-      printf("version: %d\n", be32toh(version));
+      fwrite(&version, sizeof(version), 1, dungeon_file_l); //cs: 4
       
       //write size of file
       temp = strlen(dungeon_title) + sizeof(version) + sizeof(uint32_t) + nRows * nCols + sizeof(uint32_t) * dungeon.num_rooms;
       size_dungeon_file = htobe32(temp);
       fwrite(&size_dungeon_file, 4, 1, dungeon_file_l); //cs:4
-      printf("size_dungeon_file: %d\n", be32toh(size_dungeon_file));
       
       //write hardness
-      // int temper = 20;
       for (i = 0; i < nRows; i++){
     		for (j =0; j < nCols; j++){
-    		  fwrite(&(map[i][j].hardness), sizeof(unsigned char), 1, dungeon_file_l); //cs:8 TODO: might want to use the real variable instead of unsigned char
+    		  fwrite(&(map[i][j].hardness), sizeof(unsigned char), 1, dungeon_file_l); //cs:8
     		}
       }
       
@@ -244,10 +220,7 @@ int main(int argc, char *argv[]){
         fwrite(&room_l.width, sizeof(uint8_t), 1, dungeon_file_l);
         fwrite(&room_l.height, sizeof(uint8_t), 1, dungeon_file_l);
       }
-      
-      //display corridor
       fclose(dungeon_file_l);
-
     }
   }
   free(dungeon.rooms);
