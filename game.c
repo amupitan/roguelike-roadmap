@@ -9,6 +9,7 @@
 #include <limits.h> //TODO might not need
 
 #include "game.h"
+#include "queue.h"
 
 int main(int argc, char *argv[]){
   
@@ -65,7 +66,7 @@ int main(int argc, char *argv[]){
   
   srand(seed);
   
-  //initialize dungoen
+  //initialize dungoen with white space and hardness
   for (i = 0; i < nRows; i++){
 		for (j =0; j < nCols; j++){
 			map[i][j].value = 32;
@@ -146,8 +147,63 @@ int main(int argc, char *argv[]){
   		connect_rooms(map, room_cells[i], room_cells[i+1]);
   	}
   }
+  //create PC TODO: move to top
+  Cell PC = {96, 22, '@', 0};
+  // render(map, PC.x, PC.y);
+  //djkistra
+  int dist[nRows][nCols];
+  char marked[nRows][nCols];
 
-	render(map, 10, 10);
+  for (i = 0; i < nRows; i++){
+		for (j =0; j < nCols; j++){
+		  dist[i][j] = INT_MAX;
+			marked[i][j] = 0;//(map[i][j].hardness != 255) ? 0 : -1;
+		}
+	}
+
+  Queue q;
+  queue_init(&q);
+  Cell y = {PC.x, PC.y, map[PC.y][PC.x].value, map[PC.y][PC.x].hardness};
+  enqueue(&q, y);
+  
+   
+  dist[PC.y][PC.x] = 0;
+  while (q.size > 0){
+    Cell curr = peek(&q);
+    int x= curr.x, y = curr.y;
+    // printf("Current x: %d, y: %d\n",x,y);
+    // print_queue(&q);
+    // printf("%d\n", q.size);
+    dequeue(&q);
+    
+    marked[y][x] = 1;
+    
+    
+    for (i=y-1; i <= y+1; i++){
+      for (j=x-1; j <= x+1; j++){
+        // if (marked[i][j] == 1) continue;
+        if (!(i== y && j == x) && map[i][j].hardness != 255){
+          if (marked[i][j] && (dist[y][x] + 1 < dist[i][j])) dist[i][j] = dist[y][x] + 1;
+          else if (marked[i][j] == 0){
+            Cell new_cell = {j, i, map[i][j].value, map[i][j].hardness};
+            enqueue(&q, new_cell);
+            dist[i][j] = dist[y][x] + 1;
+            marked[i][j] = 1;
+          }
+        }
+      }
+    }
+  }
+  for (i = 0; i < nRows; i++){
+		for (j =0; j < nCols; j++){
+		  if (map[i][j].value == '#' || map[i][j].value == '.'){
+		  if (i == PC.y && j == PC.x) printf("%c", '@'); else
+		  printf("%d", dist[i][j]%10);
+		  }else putchar(' ');
+		}
+		putchar('\n');
+  }
+	render(map, PC.x, PC.y);
 
   if (save) {
     char path[100];
@@ -294,3 +350,4 @@ int add_room(Dungeon* rlg, Room room){ //TODO debug with 20
   rlg->num_rooms++;
   return 0;
 }
+
