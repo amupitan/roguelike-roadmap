@@ -35,7 +35,7 @@ int create_room(Cell map[][nCols], int x, int y, uint8_t* width, uint8_t* height
 int rand_gen(int min, int max);
 int connect_rooms(Cell map[][nCols], Cell p, Cell q);
 int update_cell(Cell* p, char value, unsigned char hardness);
-void render(Cell map[][nCols]);
+void render(Cell map[][nCols], int x, int y);
 int write_room(Cell map[][nCols], Room room);
 int add_room(Dungeon* rlg, Room room);
 
@@ -80,9 +80,6 @@ int main(int argc, char *argv[]){
         break;
       case 0:
         break;
-      // case 1:
-      //   fprintf(stderr, "%s: unexpected argument %s", argv[0], optarg);
-      //   break;
       case '?':
           fprintf(stderr, "%s: Invalid option: %c ignored\n", argv[0], optopt);
         break;
@@ -179,7 +176,7 @@ int main(int argc, char *argv[]){
   	}
   }
 
-	render(map);
+	render(map, 10, 10);
 
   if (save) {
     char path[100];
@@ -291,13 +288,15 @@ int update_cell(Cell* p, char value, unsigned char hardness){//TODO make functio
   return 0;
 }
 
-void render(Cell map[][nCols]){
+void render(Cell map[][nCols], int x, int y){
   int i = 0, j = 0;
   for (i = 0; i < nRows; i++){
 		for (j =0; j < nCols; j++){
-			printf("%c", map[i][j].value);
+		  if (i == y && j == x) putchar('@');
+		  else
+			putchar(map[i][j].value);
 		}
-		printf("\n");
+		putchar('\n');
 	}
 }
 
