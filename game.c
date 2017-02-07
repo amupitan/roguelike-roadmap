@@ -8,36 +8,7 @@
 #include <endian.h>
 #include <limits.h> //TODO might not need
 
-#define nRows 105
-#define nCols 160
-
-typedef struct Cell{
-	int x;
-	int y;
-	char value;
-	unsigned char hardness;
-}Cell;
-
-typedef struct Room{
-  int x;
-  int y;
-  uint8_t width;
-  uint8_t height;
-}Room;
-
-typedef struct Dungeon{
-  Room* rooms;
-  int num_rooms;
-}Dungeon;
-
-
-int create_room(Cell map[][nCols], int x, int y, uint8_t* width, uint8_t* height);
-int rand_gen(int min, int max);
-int connect_rooms(Cell map[][nCols], Cell p, Cell q);
-int update_cell(Cell* p, char value, unsigned char hardness);
-void render(Cell map[][nCols], int x, int y);
-int write_room(Cell map[][nCols], Room room);
-int add_room(Dungeon* rlg, Room room);
+#include "game.h"
 
 int main(int argc, char *argv[]){
   
@@ -293,8 +264,7 @@ void render(Cell map[][nCols], int x, int y){
   for (i = 0; i < nRows; i++){
 		for (j =0; j < nCols; j++){
 		  if (i == y && j == x) putchar('@');
-		  else
-			putchar(map[i][j].value);
+		  else putchar(map[i][j].value);
 		}
 		putchar('\n');
 	}
