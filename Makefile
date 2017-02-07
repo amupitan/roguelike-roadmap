@@ -1,10 +1,14 @@
 default: game
 
-game:	game.c
-	gcc -o game game.c -Wall -Werror -ggdb
+game:	game.c queue.c
+	gcc -o game game.c queue.c -Wall -Werror -ggdb
 
 clean:
 	rm -f a.out game
 
-fast:	game.c
-	gcc -o game game.c -Wall -ggdb
+fast:	game.c queue.c
+	gcc -o game game.c queue.c -Wall -ggdb
+
+ogame:	game.c
+	gcc -o game game.c -Wall -Werror -ggdb
+
