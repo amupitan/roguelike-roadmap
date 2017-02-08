@@ -22,7 +22,7 @@ typedef struct Queue {
 void queue_init(Queue* q);
 void print_queue(Queue* q);
 void peek(Queue* q, Cell* c);
-int dequeue(Queue* q);
+void dequeue(Queue* q);
 void enqueue(Queue* q, Cell x);
 void empty_queue(Queue* q);
 void add_with_priority(Queue* q, Cell c, int priority);
