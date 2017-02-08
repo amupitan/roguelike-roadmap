@@ -6,7 +6,7 @@
 #include <sys/stat.h>
 #include <stdint.h>
 #include <endian.h>
-#include <limits.h> //TODO might not need
+#include <limits.h>
 
 #include "game.h"
 #include "queue.h"
@@ -76,7 +76,7 @@ int main(int argc, char *argv[]){
   
   if (load){
     if (!(dungeon_file = fopen(load_file, "r"))){
-      fprintf(stderr, "The file couldn't be opened\n"); //TODO add name of file(path maybe)
+      fprintf(stderr, "The file: %s couldn't be opened\n", load_file); //TODO add name of file(path maybe)
       return 1;
     }else{
       uint32_t temp = 0;
@@ -147,42 +147,42 @@ int main(int argc, char *argv[]){
   		connect_rooms(map, room_cells[i], room_cells[i+1]);
   	}
   }
+  
   //create PC TODO: move to top
   Cell PC = {70, 72, '@', 0};// 96, 22,
-  // render(map, PC.x, PC.y);
   
-  //djkistra implementation for non-tuneling
+  /*Breadth first search implementation for non-tuneling monsters */
   int dist[nRows][nCols];
   uint8_t marked[nRows][nCols];
 
+  //initialize distance of all cells to infinity & initialized all cells as unmarked
   for (i = 0; i < nRows; i++){
 		for (j =0; j < nCols; j++){
 		  dist[i][j] = INT_MAX;
-			marked[i][j] = 0;//(map[i][j].hardness != 255) ? 0 : -1;
+			marked[i][j] = 0;
 		}
 	}
 
   Queue q;
   queue_init(&q);
-  Cell y = {PC.x, PC.y, map[PC.y][PC.x].value, map[PC.y][PC.x].hardness};
-  enqueue(&q, y);
+  Cell pc_cell = {PC.x, PC.y, map[PC.y][PC.x].value, map[PC.y][PC.x].hardness};
+  enqueue(&q, pc_cell);
   marked[PC.y][PC.x] = 1;
-   
   dist[PC.y][PC.x] = 0;
+  
   while (q.size > 0){
     Cell curr = {0,0,0,0};
     peek(&q, &curr);
     int x= curr.x, y = curr.y;
     dequeue(&q);
-    // marked[y][x] = 1;
+
     for (i=y-1; i <= y+1; i++){
       for (j=x-1; j <= x+1; j++){
-        // if (marked[i][j] == 1) continue;
-        if (!(i== y && j == x) && (map[i][j].hardness == 0)){ //TODO adjust to not check boundaries
+        if (!(i== y && j == x) && (i > 0 && j > 0 && i < nRows && j < nCols) && (map[i][j].hardness == 0)){
           if (marked[i][j] && (dist[y][x] + 1 < dist[i][j])) dist[i][j] = dist[y][x] + 1;
           else if (marked[i][j] == 0){
-            Cell new_cell = {j, i, map[i][j].value, map[i][j].hardness};
-            enqueue(&q, new_cell);
+            Cell cell_clone = {j, i, map[i][j].value, map[i][j].hardness};
+            enqueue(&q, cell_clone);
             dist[i][j] = dist[y][x] + 1;
             marked[i][j] = 1;
           }
@@ -190,128 +190,70 @@ int main(int argc, char *argv[]){
       }
     }
   }
-  for (i = 0; i < nRows; i++){
-		for (j =0; j < nCols; j++){
-		  if (map[i][j].value == '#' || map[i][j].value == '.'){
-		  if (i == PC.y && j == PC.x) printf("%c", '@'); else
-		  printf("%d", dist[i][j]%10);
-		  }else putchar(' ');
-		}
-		putchar('\n');
-  }
   
-  //djikstra for tunelling
-  uint8_t weight[nRows][nCols]; //change this to uint8_t, the reason it's this is because INT_MAX is too big for uint8_t o figure something out like usinf 255 instead of 255
+  /* Djikstra for tunelling monsters */
+  uint8_t weight[nRows][nCols];
   int t_dist[nRows][nCols];
+  
+  //Assign weights, set all cells to not marked, initialize all cell distances to infinity
   for (i = 0; i < nRows; i++){
 		for (j =0; j < nCols; j++){
 		  if (map[i][j].hardness == 0) weight[i][j] = 1;
 		  else if (map[i][j].hardness >= 1 && map[i][j].hardness <= 84) weight[i][j] = 1;
 		  else if (map[i][j].hardness >= 85 && map[i][j].hardness <= 170) weight[i][j] = 2;
 		  else if (map[i][j].hardness >= 171 && map[i][j].hardness <= 254) weight[i][j] = 3;
-		  else weight[i][j] = 255;//use char_max
-			marked[i][j] = 0;//(map[i][j].hardness != 255) ? 0 : -1;
+		  else weight[i][j] = UINT8_MAX;
+			marked[i][j] = 0;
 			t_dist[i][j] = INT_MAX;
 		}
 	}
 	
-	//Remove block
-// 	for (i = 0; i < nRows; i++){
-// 		for (j =0; j < nCols; j++){
-// 		  if (map[i][j].value == '#' || map[i][j].value == '.')
-// 		  printf("%d", weight[i][j]);else putchar(' ');
-// 		}
-// 		putchar('\n');
-// 	}
-	
-	
   empty_queue(&q);
-
-	enqueue(&q, y);
-  // marked[PC.y][PC.x] = 1;
+	enqueue(&q, pc_cell);
 	t_dist[PC.y][PC.x] = 0;
 	
-// 	while (q.size > 0){
-//     Cell curr = {0,0,0,0};
-//     peek(&q, &curr);
-//     int x= curr.x, y = curr.y;
-//     // printf("Current x: %d, y: %d\n",x,y);
-//     dequeue(&q);
-//     for (i=y-1; i <= y+1; i++){
-//       for (j=x-1; j <= x+1; j++){
-//         if (!(i== y && j == x) && (i > 0 && j > 0 && i < nRows && j < nCols)){
-//           int dis = t_dist[y][x] + weight[y][x];
-//           if (marked[i][j] && (dis < t_dist[i][j])){
-//             if (j == 73)
-//             printf("Change to x: %d, y %d \nFrom x: %d, %d\nPrev dist: %d, Dist %d Weight %d\n", j, i, x, y, t_dist[i][j], dis, weight[i][j]);
-//             t_dist[i][j] = dis;
-            
-//           }
-//           else if (marked[i][j] == 0){
-//             Cell new_cell = {j, i, map[i][j].value, map[i][j].hardness};
-//             enqueue(&q, new_cell);
-//             t_dist[i][j] = t_dist[y][x] + weight[y][x];
-//             marked[i][j] = 1;
-//           }
-//         }
-//       }
-//     }
-//     // if ()
-//   }
-    while (q.size > 0){
+  while (q.size > 0){
     Cell curr = {0,0,0,0};
     peek(&q, &curr);
     int x= curr.x, y = curr.y;
-    // printf("Current x: %d, y: %d\n",x,y);
     dequeue(&q);
     marked[y][x] = 1;
     for (i=y-1; i <= y+1; i++){
       for (j=x-1; j <= x+1; j++){
         if (!(i== y && j == x) && (i > 0 && j > 0 && i < nRows && j < nCols)){
-          int dis = t_dist[y][x] + weight[y][x];
-          if (marked[i][j] == 0 && (dis < t_dist[i][j])){
-            t_dist[i][j] = dis;
+          int alt_dist = t_dist[y][x] + weight[y][x];
+          if (marked[i][j] == 0 && (alt_dist < t_dist[i][j])){
+            t_dist[i][j] = alt_dist;
             Cell new_cell = {j, i, map[i][j].value, map[i][j].hardness};
-            add_with_priority(&q, new_cell, dis);
+            add_with_priority(&q, new_cell, alt_dist);
           }
-          // if (marked[i][j] && (dis < t_dist[i][j])){
-          //   if (j == 73)
-          //   printf("Change to x: %d, y %d \nFrom x: %d, %d\nPrev dist: %d, Dist %d Weight %d\n", j, i, x, y, t_dist[i][j], dis, weight[i][j]);
-          //   t_dist[i][j] = dis;
-            
-          // }
-          // else if (marked[i][j] == 0){
-          //   Cell new_cell = {j, i, map[i][j].value, map[i][j].hardness};
-          //   enqueue(&q, new_cell);
-          //   t_dist[i][j] = t_dist[y][x] + weight[y][x];
-          //   marked[i][j] = 1;
-          // }
         }
       }
     }
-    // if ()
   }
   
+  //render regular dungeon
+  render(map, PC.x, PC.y);
   
-  
-  
-  
-  
+  //render non-tunneling monster gradients
   for (i = 0; i < nRows; i++){
 		for (j =0; j < nCols; j++){
-		  // if (map[i][j].value == '#' || map[i][j].value == '.'){
 		  if (i == PC.y && j == PC.x) printf("%c", '@');
-		  else if (map[i][j].hardness == 255) putchar(' ');else
-		  printf("%d", t_dist[i][j]%10);
-		  // }else putchar(' ');
+		  else if (map[i][j].value == '#' || map[i][j].value == '.') printf("%d", dist[i][j]%10);
+		  else putchar(' ');
 		}
 		putchar('\n');
   }
-	
-	
-	
-	//render
-	render(map, PC.x, PC.y);
+  
+  //render tunneling monster gradients
+  for (i = 0; i < nRows; i++){
+		for (j =0; j < nCols; j++){
+		  if (i == PC.y && j == PC.x) putchar('@');
+		  else if (map[i][j].hardness == 255) putchar(' ');
+		  else printf("%d", t_dist[i][j]%10);
+		}
+		putchar('\n');
+  }
 
   if (save) {
     char path[100];
