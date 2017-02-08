@@ -21,6 +21,7 @@ int main(int argc, char *argv[]){
 	Cell map[nRows][nCols];
 	int i = 0, j = 0;
 	Cell room_cells[50];
+	Cell PC = {-1, -1, '@', UINT8_MAX};
   
   //dungeon
   FILE *dungeon_file;
@@ -36,6 +37,7 @@ int main(int argc, char *argv[]){
     {"load", optional_argument, NULL, 'l'},
     {"save", no_argument, &save, 1},
     {"seed", optional_argument, NULL, 'e'},
+    {"pc", optional_argument, NULL, 'p'},
     {0,0,0,0}
   };
   while ((option = getopt_long(argc, argv, ":e:", longopts, &longindex)) != -1){
@@ -49,6 +51,17 @@ int main(int argc, char *argv[]){
       case 'e':
         if (optarg) seed = atoi(optarg);
         else fprintf(stderr, "%s: option seed requires an argument\n", argv[0]);;
+        break;
+      case 'p':
+        if (optarg){
+          char* co_ord = strtok(optarg, ",");
+          PC.x = atoi(co_ord);
+          co_ord = strtok(NULL, ",");
+          PC.y = atoi(co_ord);
+          if (PC.x == 0 || PC.y == 0 || PC.x >= nCols || PC.y >= nRows)
+            fprintf(stderr, "%s: Invalid PC co-ordinates: (x: %d, y: %d) \n", argv[0], PC.x, PC.y);
+          else PC.hardness = 0;
+        }
         break;
       case 0:
         break;
@@ -148,8 +161,12 @@ int main(int argc, char *argv[]){
   	}
   }
   
-  //create PC TODO: move to top
-  Cell PC = {70, 72, '@', 0};// 96, 22,
+  //initialize random PC if no valid command line argument was entered
+  if (PC.hardness == UINT8_MAX){
+    int rand_room = rand_gen(0, dungeon.num_rooms - 1);
+    PC.x = rand_gen(dungeon.rooms[rand_room].x, dungeon.rooms[rand_room].x + dungeon.rooms[rand_room].width - 1);
+    PC.y = rand_gen(dungeon.rooms[rand_room].y, dungeon.rooms[rand_room].y + dungeon.rooms[rand_room].height - 1);
+  }
   
   /*Breadth first search implementation for non-tuneling monsters */
   int dist[nRows][nCols];
@@ -301,7 +318,7 @@ int main(int argc, char *argv[]){
 	return 0;
 }
 
-int create_room(Cell map[][nCols], int x, int y, uint8_t* width, uint8_t* height){
+int create_room(Cell map[][nCols], int x, int y, uint8_t* width, uint8_t* height){//TODO change args up by just passing in a room pointer
 	int i = 0, j= 0;
 	//generate random length and width of room by genrating a random co-ord
 	int max = nCols-2;
