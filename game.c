@@ -31,13 +31,14 @@ int main(int argc, char *argv[]){
   
   //handle options an set seed
   int longindex; //TODO remove this and set the args part to NULL
-  int option, load = 0, save = 0, seed = (unsigned) time(NULL);
+  int option, load = 0, save = 0, seed = (unsigned) time(NULL), nummon = 0;
   char load_file[100];
   struct option longopts[] = {
     {"load", optional_argument, NULL, 'l'},
     {"save", no_argument, &save, 1},
     {"seed", optional_argument, NULL, 'e'},
     {"pc", optional_argument, NULL, 'p'},
+    {"nummon", optional_argument, NULL, 'm'},
     {0,0,0,0}
   };
   while ((option = getopt_long(argc, argv, ":e:", longopts, &longindex)) != -1){
@@ -63,6 +64,9 @@ int main(int argc, char *argv[]){
           else PC.hardness = 0;
         }
         break;
+      case 'm':
+        if (optarg) nummon = atoi(optarg);
+        break;
       case 0:
         break;
       case '?':
@@ -78,7 +82,7 @@ int main(int argc, char *argv[]){
   }
   
   srand(seed);
-  
+  printf("Num of monsters: %d\n", nummon);
   //initialize dungoen with white space and hardness
   for (i = 0; i < nRows; i++){
 		for (j =0; j < nCols; j++){
@@ -419,9 +423,9 @@ void render(Cell map[][nCols], int x, int y){
 }
 
 int write_room(Cell map[][nCols], Room room){
-  int i=0,j=0,m=0,n=0;
-  n = room.x + room.width - 1;
-  m = room.y + room.height - 1;
+  int i=0,j=0;
+  int n = room.x + room.width - 1;
+  int m = room.y + room.height - 1;
   for (i = room.y; i <= m; i++){
     for (j = room.x; j <= n; j++){
       update_cell(&map[i][j], 46, 0);
