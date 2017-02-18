@@ -100,7 +100,7 @@ void* peek(Queue* q, void* data) {
 void print_queue(Queue* q) {
 	struct Node* temp = q->front;
 	while(temp != NULL) {
-	  q->printer(temp);
+	  q->printer(temp->data);
 		temp = temp->next;
 	}
 	printf("\nSize: %d\n", q->size);
