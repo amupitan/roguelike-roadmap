@@ -10,6 +10,7 @@ extern "C" {
 #define nRows 105
 #define nCols 160
 #define PC "\x1B[32m@\x1B[0m"
+#define RESET "\x1B[0m"
 
 typedef struct Cell{
 	int x;
@@ -34,8 +35,8 @@ typedef struct Dungeon{
 typedef struct Player{
   int x;
   int y;
-  char const *value;
-  char type:4;
+  char* value;
+  uint8_t type:4;
   int: 4;
   uint8_t speed; //can use :5?
 } Player;
@@ -61,6 +62,8 @@ int write_room(Cell map[][nCols], Room room);
 int add_room(Dungeon* rlg, Room room);
 
 int cell_equals(void* c1, void* c2);
+void BFS_impl(int dist[][nCols], Cell map[][nCols], Queue* q, Player pc);
+void Djikstra_impl(int t_dist[][nCols], Cell map[][nCols], Queue* q, Player pc);
 
 # ifdef __cplusplus
 }

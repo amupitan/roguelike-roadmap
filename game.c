@@ -18,11 +18,15 @@ int main(int argc, char *argv[]){
   dungeon.rooms = (Room *)malloc(sizeof(Room)*2500); //debug this issue
   dungeon.num_rooms = 0;
   
+  //monster
+  // char chars[nRows][nCols];
+  char const *values[8] = {"\x1B[31m", "\x1B[33m", "\x1B[34m", "\x1B[35m", "\x1B[36m", "\x1B[37m", "\x1B[32m", "\x1B[31m"};
+  
   int area = 0, tries = 0, count = 0;
 	Cell map[nRows][nCols];
 	int i = 0, j = 0;
 	Cell room_cells[50];
-	Player pc = {-1, -1, PC, 0, 10}; //TODO see if it's better to have in struct or as a variable
+	Player pc = {-1, -1, (char *)PC, 0, 10}; //TODO see if it's better to have in struct or as a variable 2. You just straight up copy characters[0] = pc, does that work well with PC being a macro and string?
 // 	dungeon.pc = pc;
 
   //dungeon
@@ -84,7 +88,13 @@ int main(int argc, char *argv[]){
   }
   
   srand(seed);
-  printf("Num of monsters: %d\n", nummon);
+  
+  //Monster stuff
+  Player characters[nummon+1];
+  // memcpy(&characters[0], &pc, sizeof(pc));
+  // characters[0].x = pc.x;characters[0].y = pc.y;;characters[0].type = pc.type;
+  characters[0] = pc;
+  printf("Num of characters: %d\n", nummon);
   //initialize dungoen with white space and hardness
   for (i = 0; i < nRows; i++){
 		for (j =0; j < nCols; j++){
@@ -168,140 +178,63 @@ int main(int argc, char *argv[]){
   }
   
   //initialize random pc if no valid command line argument was entered
-  if (pc.type == 0){
-    int rand_room = rand_gen(0, dungeon.num_rooms - 1);
-    pc.x = rand_gen(dungeon.rooms[rand_room].x, dungeon.rooms[rand_room].x + dungeon.rooms[rand_room].width - 1);
-    pc.y = rand_gen(dungeon.rooms[rand_room].y, dungeon.rooms[rand_room].y + dungeon.rooms[rand_room].height - 1);
+  // if (pc.type == 0){
+  //   int rand_room = rand_gen(0, dungeon.num_rooms - 1);
+  //   characters[0].x = rand_gen(dungeon.rooms[rand_room].x, dungeon.rooms[rand_room].x + dungeon.rooms[rand_room].width - 1);
+  //   pc.y = rand_gen(dungeon.rooms[rand_room].y, dungeon.rooms[rand_room].y + dungeon.rooms[rand_room].height - 1);
+  // }
+  
+  // printf("PC:\nPC.x: %d\nPC.y %d\nPC.value %s\nPC.type: %x\n", pc.x, pc.y, pc.value, pc.type);
+  // printf("PC:\nPC.x: %d\nPC.y %d\nPC.value %s\nPC.type: %x\n", characters[0].x, characters[0].y, characters[0].value, characters[0].type);
+  /*Monster magic and initialize random pc if no valid command line argument was entered*/
+  for(i = 0; i < nummon+1; i++){
+    int rand_room = i ? rand_gen(1, dungeon.num_rooms - 1) : 0;
+    if ( (i != 0) || (i == 0 && characters[i].type == 0)){
+      characters[i].x = rand_gen(dungeon.rooms[rand_room].x, dungeon.rooms[rand_room].x + dungeon.rooms[rand_room].width - 1);
+      characters[i].y = rand_gen(dungeon.rooms[rand_room].y, dungeon.rooms[rand_room].y + dungeon.rooms[rand_room].height - 1);
+      if (i != 0 ) {
+        characters[i].type = rand() & 0xF;//rand_gen(0x0,0xF);
+        characters[i].value = (char *)malloc(sizeof(RESET)*2 + sizeof(char));
+        sprintf(characters[i].value, "%s%x%s", values[characters[i].type/2], characters[i].type, RESET);
+      }
+    }
+    // printf("monster %d: x = %s\n", i, characters[i].value);
   }
-  
-  /*Breadth first search implementation for non-tuneling monsters */
-  int dist[nRows][nCols];
-  uint8_t marked[nRows][nCols];
-
-  //initialize distance of all cells to infinity & initialized all cells as unmarked
-  for (i = 0; i < nRows; i++){
-		for (j =0; j < nCols; j++){
-		  dist[i][j] = INT_MAX;
-			marked[i][j] = 0;
-		}
-	}
-  
-  //Mask cells to be used with the queue
-  Cell* temps[nRows][nCols];
-  for (i = 0; i < nRows; i++)
-    for (j = 0; j< nCols; j++)
-      temps[i][j] = NULL;
   
   /*Create and initialize queue for calculating monster distances*/
   Queue q;
   queue_init(&q, cell_equals, NULL);
-  // Cell pc_d = {pc.x, pc.y, map[pc.y][pc.x].value, map[pc.y][pc.x].hardness};
   
-  /*Breadth First Search for non-tunelling monsters*/
-  enqueue(&q, &pc); //NOTE: In case of any warnings, pc is not type cell but is expected to evaluate type cell
-  marked[pc.y][pc.x] = 1;
-  dist[pc.y][pc.x] = 0;
-  while (q.size > 0){
-    Cell curr = *(Cell *)peek(&q, &curr);
-    int x = curr.x, y = curr.y;
-    dequeue(&q);
-
-    for (i=y-1; i <= y+1; i++){
-      for (j=x-1; j <= x+1; j++){
-        if (!(i== y && j == x) && (i > 0 && j > 0 && i < nRows && j < nCols) && (map[i][j].hardness == 0)){
-          if (marked[i][j] && (dist[y][x] + 1 < dist[i][j])) dist[i][j] = dist[y][x] + 1;
-          else if (marked[i][j] == 0){
-            temps[i][j] = (Cell *)malloc(sizeof(Cell));
-            Cell temp_cell = {j, i, map[i][j].value, map[i][j].hardness};
-            *temps[i][j] = temp_cell;
-            enqueue(&q, temps[i][j]);
-            dist[i][j] = dist[y][x] + 1;
-            marked[i][j] = 1;
-          }
-          
-        }
-      }
-    }
-  }
+  /*Breadth First Search for non-tunelling characters*/
+  int dist[nRows][nCols];
+  BFS_impl(dist, map, &q, characters[0]);
   
-  for (i = 0; i < nRows; i++){
-    for (j = 0; j< nCols; j++){
-      if (temps[i][j]){
-        free(temps[i][j]);
-        temps[i][j] = NULL;
-      }
-    }
-  }
-  
-  /* Djikstra for tunelling monsters */
-  uint8_t weight[nRows][nCols];
+  /* Djikstra for tunelling characters */
   int t_dist[nRows][nCols];
+  Djikstra_impl(t_dist, map, &q, characters[0]);
   
-  //Assign weights, set all cells to not marked, initialize all cell distances to infinity
-  for (i = 0; i < nRows; i++){
-		for (j =0; j < nCols; j++){
-		  if (map[i][j].hardness == 0) weight[i][j] = 1;
-		  else if (map[i][j].hardness >= 1 && map[i][j].hardness <= 84) weight[i][j] = 1;
-		  else if (map[i][j].hardness >= 85 && map[i][j].hardness <= 170) weight[i][j] = 2;
-		  else if (map[i][j].hardness >= 171 && map[i][j].hardness <= 254) weight[i][j] = 3;
-		  else weight[i][j] = UINT8_MAX;
-			marked[i][j] = 0;
-			t_dist[i][j] = INT_MAX;
-		}
-	}
-	
-  empty_queue(&q);
-	enqueue(&q, &pc);
-	t_dist[pc.y][pc.x] = 0;
-	
-  while (q.size > 0){
-    Cell* curr = (Cell *)peek(&q, &curr);
-    int x = curr->x, y = curr->y;
-    dequeue(&q);
-    marked[y][x] = 1;
-    for (i = y-1; i <= y+1; i++){
-      for (j = x-1; j <= x+1; j++){
-        if (!(i== y && j == x) && (i > 0 && j > 0 && i < nRows && j < nCols)){
-          int alt_dist = t_dist[y][x] + weight[y][x];
-          if (marked[i][j] == 0 && (alt_dist < t_dist[i][j])){
-            t_dist[i][j] = alt_dist;
-            if (temps[i][j]==NULL)
-              temps[i][j] = (Cell *)malloc(sizeof(Cell));
-            Cell temp_cell = {j, i, map[i][j].value, map[i][j].hardness};
-            *temps[i][j] = temp_cell;
-            add_with_priority(&q, temps[i][j], alt_dist);
-          }
-        }
-      }
-    }
-  }
+  /*render regular dungeon*/
+  // render(map, pc.x, pc.y);
   
-  for (i = 0; i < nRows; i++)
-    for (j = 0; j< nCols; j++)
-        free(temps[i][j]);
+  //render non-tunneling monster gradients  TODO: remove
+  // for (i = 0; i < nRows; i++){
+		// for (j =0; j < nCols; j++){
+		//   if (i == pc.y && j == pc.x) putchar('@');
+		//   else if (map[i][j].value == '#' || map[i][j].value == '.') printf("%d", dist[i][j]%10);
+		//   else putchar(' ');
+		// }
+		// putchar('\n');
+  // }
   
-  //render regular dungeon
-  render(map, pc.x, pc.y);
-  
-  //render non-tunneling monster gradients
-  for (i = 0; i < nRows; i++){
-		for (j =0; j < nCols; j++){
-		  if (i == pc.y && j == pc.x) putchar('@');
-		  else if (map[i][j].value == '#' || map[i][j].value == '.') printf("%d", dist[i][j]%10);
-		  else putchar(' ');
-		}
-		putchar('\n');
-  }
-  
-  //render tunneling monster gradients
-  for (i = 0; i < nRows; i++){
-		for (j =0; j < nCols; j++){
-		  if (i == pc.y && j == pc.x) putchar('@');
-		  else if (map[i][j].hardness == 255) putchar(' ');
-		  else printf("%d", t_dist[i][j]%10);
-		}
-		putchar('\n');
-  }
+  //render tunneling monster gradients TODO: remove
+  // for (i = 0; i < nRows; i++){
+		// for (j =0; j < nCols; j++){
+		//   if (i == pc.y && j == pc.x) putchar('@');
+		//   else if (map[i][j].hardness == 255) putchar(' ');
+		//   else printf("%d", t_dist[i][j]%10);
+		// }
+		// putchar('\n');
+  // }
 
   if (save) {
     char path[100];
@@ -345,7 +278,13 @@ int main(int argc, char *argv[]){
       fclose(dungeon_file_l);
     }
   }
+  
+  /*Free all mallocs before exiting*/
   free(dungeon.rooms);
+  for(i = 1; i < nummon+1; i++){
+    free((char *)characters[i].value);
+  }
+  
 	return 0;
 }
 
@@ -424,6 +363,17 @@ void render(Cell map[][nCols], int x, int y){
 	}
 }
 
+// void render_den(Cell map[][nCols], int x, int y){
+//   int i = 0, j = 0;
+//   for (i = 0; i < nRows; i++){
+// 		for (j =0; j < nCols; j++){
+// 		  if (i == y && j == x) printf(PC);
+// 		  else putchar(map[i][j].value);
+// 		}
+// 		putchar('\n');
+// 	}
+// }
+
 int write_room(Cell map[][nCols], Room room){
   int i=0,j=0;
   int n = room.x + room.width - 1;
@@ -453,4 +403,117 @@ int cell_equals(void* c1, void* c2){
   Cell oldCell = *(Cell *)c1;
   Cell newCell = *(Cell *)c2;
   return (oldCell.x == newCell.x && oldCell.y == newCell.y);
+}
+
+void BFS_impl(int dist[][nCols], Cell map[][nCols], Queue* q, Player pc){
+    int i = 0,j = 0;
+    uint8_t marked[nRows][nCols];
+    
+    //initialize distance of all cells to infinity & initialized all cells as unmarked
+    for (i = 0; i < nRows; i++){
+  		for (j =0; j < nCols; j++){
+  		  dist[i][j] = INT_MAX;
+  			marked[i][j] = 0;
+  		}
+  	}
+  	
+    //Mask cells to be used with the queue
+    Cell* temps[nRows][nCols];
+    for (i = 0; i < nRows; i++)
+      for (j = 0; j< nCols; j++)
+        temps[i][j] = NULL;
+  
+  	/*BFS implementation with linear queue*/
+    enqueue(q, &pc); //NOTE: In case of any warnings, pc is not type cell but is expected to evaluate type cell
+    marked[pc.y][pc.x] = 1;
+    dist[pc.y][pc.x] = 0;
+    while (q->size > 0){
+      Cell curr = *(Cell *)peek(q, &curr);
+      int x = curr.x, y = curr.y;
+      dequeue(q);
+  
+      for (i=y-1; i <= y+1; i++){
+        for (j=x-1; j <= x+1; j++){
+          if (!(i== y && j == x) && (i > 0 && j > 0 && i < nRows && j < nCols) && (map[i][j].hardness == 0)){
+            if (marked[i][j] && (dist[y][x] + 1 < dist[i][j])) dist[i][j] = dist[y][x] + 1;
+            else if (marked[i][j] == 0){
+              temps[i][j] = (Cell *)malloc(sizeof(Cell));
+              Cell temp_cell = {j, i, map[i][j].value, map[i][j].hardness};
+              *temps[i][j] = temp_cell;
+              enqueue(q, temps[i][j]);
+              dist[i][j] = dist[y][x] + 1;
+              marked[i][j] = 1;
+            }
+            
+          }
+        }
+      }
+    }
+    
+    for (i = 0; i < nRows; i++){
+      for (j = 0; j< nCols; j++){
+        if (temps[i][j]){
+          free(temps[i][j]);
+          temps[i][j] = NULL;
+        }
+      }
+    }
+  	empty_queue(q);//TODO do this here or outside the function?
+  }
+  
+void Djikstra_impl(int t_dist[][nCols], Cell map[][nCols], Queue* q, Player pc){
+  /*Make sure queue is empty TODO: Or just use a new queue in here*/
+  empty_queue(q);
+  int i = 0, j = 0;
+  uint8_t weight[nRows][nCols];
+  uint8_t marked[nRows][nCols];
+  
+  /*Mask cells to be used with the queue*/
+  Cell* temps[nRows][nCols];
+  for (i = 0; i < nRows; i++)
+    for (j = 0; j< nCols; j++)
+      temps[i][j] = NULL;
+  
+  /*Initialize distance of every cell to infinte distances and unmarked*/
+  for (i = 0; i < nRows; i++){
+		for (j =0; j < nCols; j++){
+		  if (map[i][j].hardness == 0) weight[i][j] = 1;
+		  else if (map[i][j].hardness >= 1 && map[i][j].hardness <= 84) weight[i][j] = 1;
+		  else if (map[i][j].hardness >= 85 && map[i][j].hardness <= 170) weight[i][j] = 2;
+		  else if (map[i][j].hardness >= 171 && map[i][j].hardness <= 254) weight[i][j] = 3;
+		  else weight[i][j] = UINT8_MAX;
+			marked[i][j] = 0;
+			t_dist[i][j] = INT_MAX;
+		}
+	}
+
+	enqueue(q, &pc);//NOTE: In case of any warnings, pc is not type cell but is expected to evaluate type cell
+	t_dist[pc.y][pc.x] = 0;
+	
+	/*shortest path finding using Djistra's algorithm*/
+  while (q->size > 0){
+    Cell* curr = (Cell *)peek(q, &curr);
+    int x = curr->x, y = curr->y;
+    dequeue(q);
+    marked[y][x] = 1;
+    for (i = y-1; i <= y+1; i++){
+      for (j = x-1; j <= x+1; j++){
+        if (!(i== y && j == x) && (i > 0 && j > 0 && i < nRows && j < nCols)){
+          int alt_dist = t_dist[y][x] + weight[y][x];
+          if (marked[i][j] == 0 && (alt_dist < t_dist[i][j])){
+            t_dist[i][j] = alt_dist;
+            if (temps[i][j]==NULL)
+              temps[i][j] = (Cell *)malloc(sizeof(Cell));
+            Cell temp_cell = {j, i, map[i][j].value, map[i][j].hardness};
+            *temps[i][j] = temp_cell;
+            add_with_priority(q, temps[i][j], alt_dist);
+          }
+        }
+      }
+    }
+  }
+
+  for (i = 0; i < nRows; i++)
+      for (j = 0; j< nCols; j++)
+          free(temps[i][j]);
 }
