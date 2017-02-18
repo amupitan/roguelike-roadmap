@@ -5,12 +5,12 @@
 
 #include "queue.h"
 
-void queue_init(Queue* q, int (*node_sorter)(void* data1, void* data2), void(*node_printer)(void* node)){
+void queue_init(Queue* q, int (*node_equals)(void* data1, void* data2), void(*node_printer)(void* node)){
   q->front = NULL;
   q->rear = NULL;
   q->size = 0;
   q->printer = node_printer;
-  q->sorter = node_sorter;
+  q->equals = node_equals;
 }
 
 /* Add to queue without priority (linear queue)*/
@@ -34,7 +34,7 @@ void add_with_priority(Queue* q, void* data, int priority){
   struct Node* current = q->front;
   while (current != NULL){
     void* curr_data = current->data;
-    if (q->sorter(curr_data, data)) return;
+    if (q->equals(curr_data, data)) return;
     current = current->next;
   }
   add_with_priority_duplicates(q, data, priority);
@@ -123,7 +123,7 @@ void empty_queue(Queue* q){
 	//test 1 starts
 	int i = 5;
 	Queue q;
-  queue_init(&q, sorter, printer_n);
+  queue_init(&q, equals, printer_n);
 	while (i-->0){
 	  printf("%d\n", i);
   Cell c = {1, 2, 0, 0};
@@ -136,7 +136,7 @@ void empty_queue(Queue* q){
   
   //test 2 starts
   // Queue q;
-  // queue_init(&q, sorter, printer_n);
+  // queue_init(&q, equals, printer_n);
   // Cell c = {1, 2, 0, 0};
   // enqueue(&q, &c);print_queue(&q);
   // dequeue(&q);  print_queue(&q);

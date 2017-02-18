@@ -9,6 +9,7 @@ extern "C" {
 
 #define nRows 105
 #define nCols 160
+#define PC "\x1B[32m@\x1B[0m"
 
 typedef struct Cell{
 	int x;
@@ -27,8 +28,29 @@ typedef struct Room{
 typedef struct Dungeon{
   Room* rooms;
   int num_rooms;
+  
 }Dungeon;
 
+typedef struct Player{
+  int x;
+  int y;
+  char const *value;
+  char type:4;
+  int: 4;
+  uint8_t speed; //can use :5?
+} Player;
+
+struct event {
+  unsigned int time;
+  Player being;
+  // enum event_type type;
+  // union {
+  //   pc_t *pc;
+  //   npc_t *npc;
+  //   trap_t *trap;
+  //   effect_t *effect;
+  // } p;
+};
 
 int create_room(Cell map[][nCols], int x, int y, uint8_t* width, uint8_t* height);
 int rand_gen(int min, int max);

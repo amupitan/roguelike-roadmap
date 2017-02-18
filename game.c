@@ -8,8 +8,8 @@
 #include <endian.h>
 #include <limits.h>
 
-#include "game.h"
 #include "queue.h"
+#include "game.h"
 
 int main(int argc, char *argv[]){
   
@@ -17,12 +17,14 @@ int main(int argc, char *argv[]){
   Dungeon dungeon;
   dungeon.rooms = (Room *)malloc(sizeof(Room)*2500); //debug this issue
   dungeon.num_rooms = 0;
+  
   int area = 0, tries = 0, count = 0;
 	Cell map[nRows][nCols];
 	int i = 0, j = 0;
 	Cell room_cells[50];
-	Cell PC = {-1, -1, '@', UINT8_MAX};
-  
+	Player pc = {-1, -1, PC, 0, 10}; //TODO see if it's better to have in struct or as a variable
+// 	dungeon.pc = pc;
+
   //dungeon
   FILE *dungeon_file;
   char dungeon_title[20];
@@ -56,12 +58,12 @@ int main(int argc, char *argv[]){
       case 'p':
         if (optarg){
           char* co_ord = strtok(optarg, ",");
-          PC.x = atoi(co_ord);
+          pc.x = atoi(co_ord);
           co_ord = strtok(NULL, ",");
-          PC.y = atoi(co_ord);
-          if (PC.x == 0 || PC.y == 0 || PC.x >= nCols || PC.y >= nRows)
-            fprintf(stderr, "%s: Invalid PC co-ordinates: (x: %d, y: %d) \n", argv[0], PC.x, PC.y);
-          else PC.hardness = 0;
+          pc.y = atoi(co_ord);
+          if (pc.x == 0 || pc.y == 0 || pc.x >= nCols || pc.y >= nRows)
+            fprintf(stderr, "%s: Invalid pc co-ordinates: (x: %d, y: %d) \n", argv[0], pc.x, pc.y);
+          else pc.type = 0xF;
         }
         break;
       case 'm':
@@ -165,11 +167,11 @@ int main(int argc, char *argv[]){
   	}
   }
   
-  //initialize random PC if no valid command line argument was entered
-  if (PC.hardness == UINT8_MAX){
+  //initialize random pc if no valid command line argument was entered
+  if (pc.type == 0){
     int rand_room = rand_gen(0, dungeon.num_rooms - 1);
-    PC.x = rand_gen(dungeon.rooms[rand_room].x, dungeon.rooms[rand_room].x + dungeon.rooms[rand_room].width - 1);
-    PC.y = rand_gen(dungeon.rooms[rand_room].y, dungeon.rooms[rand_room].y + dungeon.rooms[rand_room].height - 1);
+    pc.x = rand_gen(dungeon.rooms[rand_room].x, dungeon.rooms[rand_room].x + dungeon.rooms[rand_room].width - 1);
+    pc.y = rand_gen(dungeon.rooms[rand_room].y, dungeon.rooms[rand_room].y + dungeon.rooms[rand_room].height - 1);
   }
   
   /*Breadth first search implementation for non-tuneling monsters */
@@ -193,12 +195,12 @@ int main(int argc, char *argv[]){
   /*Create and initialize queue for calculating monster distances*/
   Queue q;
   queue_init(&q, cell_equals, NULL);
-  Cell pc_cell = {PC.x, PC.y, map[PC.y][PC.x].value, map[PC.y][PC.x].hardness};
+  // Cell pc_d = {pc.x, pc.y, map[pc.y][pc.x].value, map[pc.y][pc.x].hardness};
   
   /*Breadth First Search for non-tunelling monsters*/
-  enqueue(&q, &pc_cell);
-  marked[PC.y][PC.x] = 1;
-  dist[PC.y][PC.x] = 0;
+  enqueue(&q, &pc); //NOTE: In case of any warnings, pc is not type cell but is expected to evaluate type cell
+  marked[pc.y][pc.x] = 1;
+  dist[pc.y][pc.x] = 0;
   while (q.size > 0){
     Cell curr = *(Cell *)peek(&q, &curr);
     int x = curr.x, y = curr.y;
@@ -249,8 +251,8 @@ int main(int argc, char *argv[]){
 	}
 	
   empty_queue(&q);
-	enqueue(&q, &pc_cell);
-	t_dist[PC.y][PC.x] = 0;
+	enqueue(&q, &pc);
+	t_dist[pc.y][pc.x] = 0;
 	
   while (q.size > 0){
     Cell* curr = (Cell *)peek(&q, &curr);
@@ -279,12 +281,12 @@ int main(int argc, char *argv[]){
         free(temps[i][j]);
   
   //render regular dungeon
-  render(map, PC.x, PC.y);
+  render(map, pc.x, pc.y);
   
   //render non-tunneling monster gradients
   for (i = 0; i < nRows; i++){
 		for (j =0; j < nCols; j++){
-		  if (i == PC.y && j == PC.x) putchar('@');
+		  if (i == pc.y && j == pc.x) putchar('@');
 		  else if (map[i][j].value == '#' || map[i][j].value == '.') printf("%d", dist[i][j]%10);
 		  else putchar(' ');
 		}
@@ -294,7 +296,7 @@ int main(int argc, char *argv[]){
   //render tunneling monster gradients
   for (i = 0; i < nRows; i++){
 		for (j =0; j < nCols; j++){
-		  if (i == PC.y && j == PC.x) putchar('@');
+		  if (i == pc.y && j == pc.x) putchar('@');
 		  else if (map[i][j].hardness == 255) putchar(' ');
 		  else printf("%d", t_dist[i][j]%10);
 		}
@@ -415,7 +417,7 @@ void render(Cell map[][nCols], int x, int y){
   int i = 0, j = 0;
   for (i = 0; i < nRows; i++){
 		for (j =0; j < nCols; j++){
-		  if (i == y && j == x) printf("%s%c%s", "\x1B[32m",'@',"\x1B[0m");
+		  if (i == y && j == x) printf(PC);
 		  else putchar(map[i][j].value);
 		}
 		putchar('\n');

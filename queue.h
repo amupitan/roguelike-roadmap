@@ -17,12 +17,12 @@ typedef struct Queue {
   struct Node* front;
   struct Node* rear;
   int size;
-  int (*sorter)(void* data1, void* data2); //TODO have it use const (const void* data1, const void* data2);
+  int (*equals)(void* data1, void* data2); //TODO have it use const (const void* data1, const void* data2);
   void (*printer)(void* node);
   void (*copier)(void* dest, void* src);
 } Queue;
 
-void queue_init(Queue* q, int (*node_sorter)(void* data1, void* data2), void(*node_printer)(void* node)); //TODO const
+void queue_init(Queue* q, int (*node_equals)(void* data1, void* data2), void(*node_printer)(void* node)); //TODO const
 void print_queue(Queue* q);
 void* peek(Queue* q, void* data);
 void dequeue(Queue* q);
