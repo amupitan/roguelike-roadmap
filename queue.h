@@ -5,28 +5,31 @@
 extern "C" {
 # endif
 
-#include "game.h"
-
-struct Node {
-	Cell data;
+typedef struct Node {
+	void* data;
 	struct Node* next;
 	int priority;
-};
+	
+	
+} Node;
 
 typedef struct Queue {
   struct Node* front;
   struct Node* rear;
   int size;
+  int (*sorter)(void* data1, void* data2); //TODO have it use const (const void* data1, const void* data2);
+  void (*printer)(void* node);
+  void (*copier)(void* dest, void* src);
 } Queue;
 
-void queue_init(Queue* q);
+void queue_init(Queue* q, int (*node_sorter)(void* data1, void* data2), void(*node_printer)(void* node)); //TODO const
 void print_queue(Queue* q);
-void peek(Queue* q, Cell* c);
+void* peek(Queue* q, void* data);
 void dequeue(Queue* q);
-void enqueue(Queue* q, Cell x);
+void enqueue(Queue* q, void* data);
 void empty_queue(Queue* q);
-void add_with_priority(Queue* q, Cell c, int priority);
-void add_with_priority_duplicates(Queue* q, Cell c, int priority);
+void add_with_priority(Queue* q, void* data, int priority);
+void add_with_priority_duplicates(Queue* q, void* c, int priority);
 
 # ifdef __cplusplus
 }

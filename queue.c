@@ -1,19 +1,22 @@
 /*Priority Queue - Linked List implementation*/
 #include<stdio.h>
 #include<stdlib.h>
+#include<string.h>
 
 #include "queue.h"
 
-void queue_init(Queue* q){
+void queue_init(Queue* q, int (*node_sorter)(void* data1, void* data2), void(*node_printer)(void* node)){
   q->front = NULL;
   q->rear = NULL;
   q->size = 0;
+  q->printer = node_printer;
+  q->sorter = node_sorter;
 }
 
 /* Add to queue without priority (linear queue)*/
-void enqueue(Queue* q, Cell x) {
+void enqueue(Queue* q, void* data) {
 	struct Node* temp = (struct Node*)malloc(sizeof(struct Node));
-	temp->data = x;
+	temp->data = data;
 	temp->next = NULL;
 	temp->priority = 0;
 	q->size++;
@@ -27,20 +30,20 @@ void enqueue(Queue* q, Cell x) {
 }
 
 /* Add to queue with priorty, duplicates are ignored*/
-void add_with_priority(Queue* q, Cell c, int priority){
+void add_with_priority(Queue* q, void* data, int priority){
   struct Node* current = q->front;
   while (current != NULL){
-    Cell cell = current->data;
-    if (c.x == cell.x && c.y == cell.y) return;
+    void* curr_data = current->data;
+    if (q->sorter(curr_data, data)) return;
     current = current->next;
   }
-  add_with_priority_duplicates(q, c, priority);
+  add_with_priority_duplicates(q, data, priority);
 }
 
 /* Add to queue with priority, duplicates are allowed*/
-void add_with_priority_duplicates(Queue* q, Cell c, int priority){
+void add_with_priority_duplicates(Queue* q, void* data, int priority){
   struct Node* temp = (struct Node*)calloc(1, sizeof(struct Node));
-	temp->data = c;
+	temp->data = data;
 	temp->priority = priority;
 	q->size++;
 	if(q->front == NULL && q->rear == NULL){
@@ -74,9 +77,8 @@ void add_with_priority_duplicates(Queue* q, Cell c, int priority){
 /* Removes node with highest priority*/
 void dequeue(Queue* q) {
 	struct Node* temp = q->front;
-	if(q->front == NULL) {
+	if(q->front == NULL)
 		return;
-	}
 	if(q->front == q->rear) {
 		q->front = q->rear = NULL;
 	}
@@ -88,18 +90,17 @@ void dequeue(Queue* q) {
 }
 
 /* Modifies Node data pointer to data of the node with the highest priority*/
-void peek(Queue* q, Cell* c) {
-	if(q->front == NULL) {
-		return;
-	}
-	*c = q->front->data;
+void* peek(Queue* q, void* data) {
+	if(q->front == NULL) return NULL;
+	data = q->front->data;
+	return data;
 }
 
 /* Prints all the node data values and the size of the queue*/
 void print_queue(Queue* q) {
 	struct Node* temp = q->front;
 	while(temp != NULL) {
-		printf("x: %d, y: %d ",(temp->data).x, (temp->data).y);
+	  q->printer(temp);
 		temp = temp->next;
 	}
 	printf("\nSize: %d\n", q->size);
@@ -117,29 +118,54 @@ void empty_queue(Queue* q){
 }
 
 /*int main(){
-	// Drive code to test the implementation.
-  Queue q;
-  queue_init(&q);
-  Cell c = {1, 2, 0, 0}, d = {3, 4, 0, 0};
-  enqueue(&q, c);print_queue(&q);
-  enqueue(&q, d);print_queue(&q);
-  c.x = 5; c.y = 6;
-  dequeue(&q);  print_queue(&q);
-  enqueue(&q, c);print_queue(&q);
-  c.x = 10; c.y = 11;
-  add_with_priority(&q, c, -1);
-  c.x = 50; c.y = 50;
-  add_with_priority(&q, c, 1);
-  add_with_priority(&q, c, 1);
-  add_with_priority(&q, c, 1);
+	// Drive code to test the implementation. The comments in the code don't actually apply. Passing the sae variable but changing it's values doesn't change anything
+	
+	//test 1 starts
+	int i = 5;
+	Queue q;
+  queue_init(&q, sorter, printer_n);
+	while (i-->0){
+	  printf("%d\n", i);
+  Cell c = {1, 2, 0, 0};
+  add_with_priority(&q, &c, 5); //test with add_with*
   print_queue(&q);
-  c.x = 100; c.y =100;
-  add_with_priority_duplicates(&q, c, 10);
-  add_with_priority_duplicates(&q, c, 10);
-  add_with_priority_duplicates(&q, c, 10);
+	}
+	empty_queue(&q);
   print_queue(&q);
-  printf("empty queue");
-  empty_queue(&q);print_queue(&q);
+  //test 1 ends
+  
+  //test 2 starts
+  // Queue q;
+  // queue_init(&q, sorter, printer_n);
+  // Cell c = {1, 2, 0, 0};
+  // enqueue(&q, &c);print_queue(&q);
+  // dequeue(&q);  print_queue(&q);
+  
+  // Cell d = {3, 4, 0, 0};
+  // enqueue(&q, &c);print_queue(&q);//1,2 : 1
+  // enqueue(&q, &d);print_queue(&q);//1,2 3,4 :2
+  // c = {5,6};
+  // dequeue(&q);  print_queue(&q);//3,4 :1
+  // enqueue(&q, &c);print_queue(&q);//3,4 5,6 :2
+  // c= {10,11};
+  
+  // add_with_priority(&q, &c, -1);
+  // print_queue(&q);//3,4 5,6 10,11 :3
+  // c = {50,50};
+  // add_with_priority(&q, &c, 1);//!50, 50 :4
+  // add_with_priority(&q, &c, 1);
+  // add_with_priority(&q, &c, 1);//! :4
+  // print_queue(&q);//3,4 5,6 10,11 50,50 :4
+  // c = {100,100};
+  // add_with_priority_duplicates(&q, &c, 10);
+  // add_with_priority_duplicates(&q, &c, 10);
+  // add_with_priority_duplicates(&q, &c, 10);
+  // print_queue(&q);
+  // printf("empty queue");
+  // empty_queue(&q);
+  // print_queue(&q);
+  // printf("c: %d %d d: %d %d\n", c.x, c.y, d.x, d.y);
+  //test 2 ends
 }*/
 
 
