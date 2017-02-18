@@ -60,6 +60,7 @@ int update_cell(Cell* p, char value, unsigned char hardness);
 void render(Cell map[][nCols], int x, int y);
 int write_room(Cell map[][nCols], Room room);
 int add_room(Dungeon* rlg, Room room);
+void render_dungeon(Cell map[][nCols], char chars[][nCols], Player monsts[]);
 
 int cell_equals(void* c1, void* c2);
 void BFS_impl(int dist[][nCols], Cell map[][nCols], Queue* q, Player pc);

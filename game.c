@@ -7,6 +7,7 @@
 #include <stdint.h>
 #include <endian.h>
 #include <limits.h>
+#include <unistd.h>
 
 #include "queue.h"
 #include "game.h"
@@ -19,7 +20,7 @@ int main(int argc, char *argv[]){
   dungeon.num_rooms = 0;
   
   //monster
-  // char chars[nRows][nCols];
+  char chars[nRows][nCols];
   char const *values[8] = {"\x1B[31m", "\x1B[33m", "\x1B[34m", "\x1B[35m", "\x1B[36m", "\x1B[37m", "\x1B[32m", "\x1B[31m"};
   
   int area = 0, tries = 0, count = 0;
@@ -91,8 +92,6 @@ int main(int argc, char *argv[]){
   
   //Monster stuff
   Player characters[nummon+1];
-  // memcpy(&characters[0], &pc, sizeof(pc));
-  // characters[0].x = pc.x;characters[0].y = pc.y;;characters[0].type = pc.type;
   characters[0] = pc;
   printf("Num of characters: %d\n", nummon);
   //initialize dungoen with white space and hardness
@@ -186,6 +185,7 @@ int main(int argc, char *argv[]){
   
   // printf("PC:\nPC.x: %d\nPC.y %d\nPC.value %s\nPC.type: %x\n", pc.x, pc.y, pc.value, pc.type);
   // printf("PC:\nPC.x: %d\nPC.y %d\nPC.value %s\nPC.type: %x\n", characters[0].x, characters[0].y, characters[0].value, characters[0].type);
+  memset(chars, -1, sizeof(char)*nRows*nCols);
   /*Monster magic and initialize random pc if no valid command line argument was entered*/
   for(i = 0; i < nummon+1; i++){
     int rand_room = i ? rand_gen(1, dungeon.num_rooms - 1) : 0;
@@ -198,6 +198,7 @@ int main(int argc, char *argv[]){
         sprintf(characters[i].value, "%s%x%s", values[characters[i].type/2], characters[i].type, RESET);
       }
     }
+    chars[characters[i].y][characters[i].x] = i;
     // printf("monster %d: x = %s\n", i, characters[i].value);
   }
   
@@ -214,7 +215,9 @@ int main(int argc, char *argv[]){
   Djikstra_impl(t_dist, map, &q, characters[0]);
   
   /*render regular dungeon*/
-  // render(map, pc.x, pc.y);
+  render(map, pc.x, pc.y);
+  usleep(1000000);
+  render_dungeon(map, chars, characters);
   
   //render non-tunneling monster gradients  TODO: remove
   // for (i = 0; i < nRows; i++){
@@ -352,6 +355,18 @@ int update_cell(Cell* p, char value, unsigned char hardness){//TODO make functio
   return 0;
 }
 
+void render_dungeon(Cell map[][nCols], char chars[][nCols], Player monsts[]){
+  int i = 0, j = 0;
+  for (i = 0; i < nRows; i++){
+		for (j =0; j < nCols; j++){
+		  int temp = (int)chars[i][j];
+		  if (temp != -1) printf(monsts[temp].value);
+		  else putchar(map[i][j].value);
+		}
+		putchar('\n');
+	}
+}
+
 void render(Cell map[][nCols], int x, int y){
   int i = 0, j = 0;
   for (i = 0; i < nRows; i++){
@@ -362,17 +377,6 @@ void render(Cell map[][nCols], int x, int y){
 		putchar('\n');
 	}
 }
-
-// void render_den(Cell map[][nCols], int x, int y){
-//   int i = 0, j = 0;
-//   for (i = 0; i < nRows; i++){
-// 		for (j =0; j < nCols; j++){
-// 		  if (i == y && j == x) printf(PC);
-// 		  else putchar(map[i][j].value);
-// 		}
-// 		putchar('\n');
-// 	}
-// }
 
 int write_room(Cell map[][nCols], Room room){
   int i=0,j=0;
