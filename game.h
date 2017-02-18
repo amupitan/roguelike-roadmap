@@ -38,6 +38,8 @@ void render(Cell map[][nCols], int x, int y);
 int write_room(Cell map[][nCols], Room room);
 int add_room(Dungeon* rlg, Room room);
 
+int cell_equals(void* c1, void* c2);
+
 # ifdef __cplusplus
 }
 # endif

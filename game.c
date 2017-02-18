@@ -15,7 +15,7 @@ int main(int argc, char *argv[]){
   
   //regular
   Dungeon dungeon;
-  dungeon.rooms = malloc(sizeof(Room)*2500); //debug this issue
+  dungeon.rooms = (Room *)malloc(sizeof(Room)*2500); //debug this issue
   dungeon.num_rooms = 0;
   int area = 0, tries = 0, count = 0;
 	Cell map[nRows][nCols];
@@ -89,7 +89,7 @@ int main(int argc, char *argv[]){
   
   if (load){
     if (!(dungeon_file = fopen(load_file, "r"))){
-      fprintf(stderr, "The file: %s couldn't be opened\n", load_file); //TODO add name of file(path maybe)
+      fprintf(stderr, "The file: %s couldn't be opened\n", load_file);
       return 1;
     }else{
       uint32_t temp = 0;
@@ -179,18 +179,25 @@ int main(int argc, char *argv[]){
 			marked[i][j] = 0;
 		}
 	}
-
+  
+  //Mask cells to be used with the queue
+  Cell* temps[nRows][nCols];
+  for (i = 0; i < nRows; i++)
+    for (j = 0; j< nCols; j++)
+      temps[i][j] = NULL;
+  
+  /*Create and initialize queue for calculating monster distances*/
   Queue q;
-  queue_init(&q);
+  queue_init(&q, cell_equals, NULL);
   Cell pc_cell = {PC.x, PC.y, map[PC.y][PC.x].value, map[PC.y][PC.x].hardness};
-  enqueue(&q, pc_cell);
+  
+  /*Breadth First Search for non-tunelling monsters*/
+  enqueue(&q, &pc_cell);
   marked[PC.y][PC.x] = 1;
   dist[PC.y][PC.x] = 0;
-  
   while (q.size > 0){
-    Cell curr = {0,0,0,0};
-    peek(&q, &curr);
-    int x= curr.x, y = curr.y;
+    Cell curr = *(Cell *)peek(&q, &curr);
+    int x = curr.x, y = curr.y;
     dequeue(&q);
 
     for (i=y-1; i <= y+1; i++){
@@ -198,12 +205,24 @@ int main(int argc, char *argv[]){
         if (!(i== y && j == x) && (i > 0 && j > 0 && i < nRows && j < nCols) && (map[i][j].hardness == 0)){
           if (marked[i][j] && (dist[y][x] + 1 < dist[i][j])) dist[i][j] = dist[y][x] + 1;
           else if (marked[i][j] == 0){
-            Cell cell_clone = {j, i, map[i][j].value, map[i][j].hardness};
-            enqueue(&q, cell_clone);
+            temps[i][j] = (Cell *)malloc(sizeof(Cell));
+            Cell temp_cell = {j, i, map[i][j].value, map[i][j].hardness};
+            *temps[i][j] = temp_cell;
+            enqueue(&q, temps[i][j]);
             dist[i][j] = dist[y][x] + 1;
             marked[i][j] = 1;
           }
+          
         }
+      }
+    }
+  }
+  
+  for (i = 0; i < nRows; i++){
+    for (j = 0; j< nCols; j++){
+      if (temps[i][j]){
+        free(temps[i][j]);
+        temps[i][j] = NULL;
       }
     }
   }
@@ -226,28 +245,34 @@ int main(int argc, char *argv[]){
 	}
 	
   empty_queue(&q);
-	enqueue(&q, pc_cell);
+	enqueue(&q, &pc_cell);
 	t_dist[PC.y][PC.x] = 0;
 	
   while (q.size > 0){
-    Cell curr = {0,0,0,0};
-    peek(&q, &curr);
-    int x= curr.x, y = curr.y;
+    Cell* curr = (Cell *)peek(&q, &curr);
+    int x = curr->x, y = curr->y;
     dequeue(&q);
     marked[y][x] = 1;
-    for (i=y-1; i <= y+1; i++){
-      for (j=x-1; j <= x+1; j++){
+    for (i = y-1; i <= y+1; i++){
+      for (j = x-1; j <= x+1; j++){
         if (!(i== y && j == x) && (i > 0 && j > 0 && i < nRows && j < nCols)){
           int alt_dist = t_dist[y][x] + weight[y][x];
           if (marked[i][j] == 0 && (alt_dist < t_dist[i][j])){
             t_dist[i][j] = alt_dist;
-            Cell new_cell = {j, i, map[i][j].value, map[i][j].hardness};
-            add_with_priority(&q, new_cell, alt_dist);
+            if (temps[i][j]==NULL)
+              temps[i][j] = (Cell *)malloc(sizeof(Cell));
+            Cell temp_cell = {j, i, map[i][j].value, map[i][j].hardness};
+            *temps[i][j] = temp_cell;
+            add_with_priority(&q, temps[i][j], alt_dist);
           }
         }
       }
     }
   }
+  
+  for (i = 0; i < nRows; i++)
+    for (j = 0; j< nCols; j++)
+        free(temps[i][j]);
   
   //render regular dungeon
   render(map, PC.x, PC.y);
@@ -255,7 +280,7 @@ int main(int argc, char *argv[]){
   //render non-tunneling monster gradients
   for (i = 0; i < nRows; i++){
 		for (j =0; j < nCols; j++){
-		  if (i == PC.y && j == PC.x) printf("%c", '@');
+		  if (i == PC.y && j == PC.x) putchar('@');
 		  else if (map[i][j].value == '#' || map[i][j].value == '.') printf("%d", dist[i][j]%10);
 		  else putchar(' ');
 		}
@@ -281,7 +306,7 @@ int main(int argc, char *argv[]){
       fprintf(stderr, "Could not write map to file\n");
       return -1;
     }else{
-      uint32_t temp = 0;//TODO remove all printfs
+      uint32_t temp = 0;
       //write dungeon title
       strcpy(dungeon_title, "RLG327-S2017");
       fwrite(dungeon_title, 12, 1, dungeon_file_l); //cs: 12
@@ -386,7 +411,7 @@ void render(Cell map[][nCols], int x, int y){
   int i = 0, j = 0;
   for (i = 0; i < nRows; i++){
 		for (j =0; j < nCols; j++){
-		  if (i == y && j == x) putchar('@');
+		  if (i == y && j == x) printf("%s%c%s", "\x1B[32m",'@',"\x1B[0m");
 		  else putchar(map[i][j].value);
 		}
 		putchar('\n');
@@ -418,3 +443,8 @@ int add_room(Dungeon* rlg, Room room){ //TODO debug with 20
   return 0;
 }
 
+int cell_equals(void* c1, void* c2){
+  Cell oldCell = *(Cell *)c1;
+  Cell newCell = *(Cell *)c2;
+  return (oldCell.x == newCell.x && oldCell.y == newCell.y);
+}
