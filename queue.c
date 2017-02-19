@@ -74,6 +74,82 @@ void add_with_priority_duplicates(Queue* q, void* data, int priority){
   }
 }
 
+void change_priority(Queue* q, void* data, int new_priority){
+  int changed = 0;
+  struct Node* current = q->front;
+  struct Node* previous = NULL;
+  while (current != NULL){
+    void* curr_data = current->data;
+    if (q->equals(curr_data, data)) {
+      if (previous)
+        previous->next = current->next;
+      else{//q->front
+          q->front = current->next;
+          // current->priority = new_priority;
+          // return;
+      }
+      if (q->rear == current) q->rear = previous;
+      /*move to upper part*/
+      if (current->priority > new_priority) {
+        current->priority = new_priority;
+        struct Node* curr = q->front;
+        struct Node* prev = NULL;
+        while (curr != (previous->next)){
+          if (new_priority < curr->priority){
+            if (prev == NULL){
+              current->next = curr;
+              q->front = current;
+            }else{
+              current->next = curr;
+              prev->next = current;
+              
+            }
+            changed = 1;
+            break;
+          }
+          
+          prev = curr;
+          curr = curr->next;
+        }
+        if (q->rear == NULL) q->rear = current;
+        
+      }
+      else if (current->priority == new_priority) return;
+      else if (current->priority < new_priority){/*move to lower part*/
+        current->priority = new_priority;
+        struct Node* curr = current->next;
+        struct Node* prev = NULL;
+        while (curr != NULL){
+          if (new_priority < curr->priority){
+            if (prev == NULL){
+              current->next = curr;
+              q->front = current;
+            }else{
+              prev->next = current;
+              current->next = curr;
+            }
+            changed = 1;
+            break;
+          }
+          prev = curr;
+          curr = curr->next;
+        }
+      }
+      break;
+    }
+    previous = current;
+    current = current->next;
+  }
+  
+  if (current == NULL) return;
+  if (changed == 0){
+    (q->rear)->next = current;
+    q->rear = current;
+    (q->rear)->next = NULL;
+  }
+  // while (current)
+}
+
 /* Removes node with highest priority*/
 void dequeue(Queue* q) {
 	struct Node* temp = q->front;

@@ -30,6 +30,7 @@ void enqueue(Queue* q, void* data);
 void empty_queue(Queue* q);
 void add_with_priority(Queue* q, void* data, int priority);
 void add_with_priority_duplicates(Queue* q, void* data, int priority);
+void change_priority(Queue* q, void* data, int new_priority);
 
 # ifdef __cplusplus
 }
