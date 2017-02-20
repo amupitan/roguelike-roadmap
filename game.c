@@ -21,7 +21,10 @@ int main(int argc, char *argv[]){
   
   //monster
   char chars[nRows][nCols];
+  memset(chars, -1, sizeof(char)*nRows*nCols);
   char const *values[8] = {"\x1B[31m", "\x1B[33m", "\x1B[34m", "\x1B[35m", "\x1B[36m", "\x1B[37m", "\x1B[32m", "\x1B[31m"};
+  int t_dist[nRows][nCols];
+  int dist[nRows][nCols];
   
   int area = 0, tries = 0, count = 0;
 	Cell map[nRows][nCols];
@@ -89,10 +92,15 @@ int main(int argc, char *argv[]){
   }
   
   srand(seed);
-  
+  printf("%d\n",seed);
   //Monster stuff
   Player characters[nummon+1];
+  Pair last_seen[nummon];
+  memset(last_seen, -1, sizeof(Pair)*nummon);
+  
+  unsigned int pace[nummon+1];
   characters[0] = pc;
+  int l_monsters = nummon;
   printf("Num of characters: %d\n", nummon);
   //initialize dungoen with white space and hardness
   for (i = 0; i < nRows; i++){
@@ -176,21 +184,16 @@ int main(int argc, char *argv[]){
   	}
   }
   
-  //initialize random pc if no valid command line argument was entered
-  // if (pc.type == 0){
-  //   int rand_room = rand_gen(0, dungeon.num_rooms - 1);
-  //   characters[0].x = rand_gen(dungeon.rooms[rand_room].x, dungeon.rooms[rand_room].x + dungeon.rooms[rand_room].width - 1);
-  //   pc.y = rand_gen(dungeon.rooms[rand_room].y, dungeon.rooms[rand_room].y + dungeon.rooms[rand_room].height - 1);
-  // }
-  
-  // printf("PC:\nPC.x: %d\nPC.y %d\nPC.value %s\nPC.type: %x\n", pc.x, pc.y, pc.value, pc.type);
-  // printf("PC:\nPC.x: %d\nPC.y %d\nPC.value %s\nPC.type: %x\n", characters[0].x, characters[0].y, characters[0].value, characters[0].type);
-  memset(chars, -1, sizeof(char)*nRows*nCols);
   /*Monster magic and initialize random pc if no valid command line argument was entered*/
+  Queue evt;
+  queue_init(&evt, char_equals, print_player);
+  
+
+  
   for(i = 0; i < nummon+1; i++){
     int rand_room = i ? rand_gen(1, dungeon.num_rooms - 1) : 0;
     if ( (i != 0) || (i == 0 && characters[i].type == 0)){
-      characters[i].x = rand_gen(dungeon.rooms[rand_room].x, dungeon.rooms[rand_room].x + dungeon.rooms[rand_room].width - 1);
+      characters[i].x = rand_gen(dungeon.rooms[rand_room].x, dungeon.rooms[rand_room].x + dungeon.rooms[rand_room].width - 1); //use determine_position
       characters[i].y = rand_gen(dungeon.rooms[rand_room].y, dungeon.rooms[rand_room].y + dungeon.rooms[rand_room].height - 1);
       if (i != 0 ) {
         characters[i].type = rand() & 0xF;//rand_gen(0x0,0xF);
@@ -198,26 +201,173 @@ int main(int argc, char *argv[]){
         sprintf(characters[i].value, "%s%x%s", values[characters[i].type/2], characters[i].type, RESET);
       }
     }
+    characters[i].speed = rand_gen(5, 20);
+    characters[i].id = i;
     chars[characters[i].y][characters[i].x] = i;
+    pace[i] = 1000/characters[i].speed;//TODO: warning: does not enqueue PC
+    add_with_priority(&evt, &characters[i], pace[i]);
     // printf("monster %d: x = %s\n", i, characters[i].value);
   }
+  characters[0].speed = 10; //Make sure this actually happens
+  puts("Initial queue");
+  print_queue(&evt);
   
-  /*Create and initialize queue for calculating monster distances*/
-  Queue q;
-  queue_init(&q, cell_equals, NULL);
+  Player* pcp = &characters[0]; //TODO make sure this works
+  int papi = 400;
+  do{
+    Pair target = {0,0}; //initilised to 0 because of PC
+    Player* p_curr;
+    p_curr = (Player *)peek(&evt, &p_curr);
+    Player curr = *p_curr;
+    if (curr.value == NULL){ //it was killed
+      printf("Dead cell: \n");
+      print_player(&curr);
+      dequeue(&evt);
+      continue;
+    }
+
+    //check each characteristic and make sure it's not pc
+    if (strcmp(curr.value, characters[0].value) == 0){ //might be able to use ==
+      /* PC stuff */
+      while (target.x < 1 || (target.x > nCols - 1) || target.y < 1 || target.y > nRows - 1){ //Reverse psych lol :)
+        target.x = rand_gen(curr.x - 1, curr.x + 1);
+        target.y = rand_gen(curr.y - 1, curr.y + 1);
+      }
+      // printf("PC is the fastest\n");
+      // pace[curr.id] = ((pace[curr.id]*2) >= 1000) ? 1000/curr.speed : pace[curr.id]*2;
+      // continue;
+    }else{
+      
+      /*Telephathy*/ //TODO check next 6 lines for lame code if there is
+      int curr_room_no = getRoom(dungeon, curr.x, curr.y); //TODO split line
+      if ((curr.type & 0x2) || (curr_room_no == getRoom(dungeon, pcp->x, pcp->y))){ //smart or line of sight //TODO might want to check corridor
+        target.x = pcp->x;
+        target.y = pcp->y;
+        last_seen[curr.id - 1] = target;
+        // printf("New last seen x: %d, y: %d\n", target.x, target.y);
+      }else{ //change to its own if
+        // target = (last_seen[i].x == -1 && (curr.type & 0x1)) ? determine_position(dungeon.rooms[curr_room_no]) : last_seen[curr.id]; //add a condition that before you can use last seen, you have to intelligent
+        if((curr.type & 0x1) && last_seen[curr.id - 1].x != -1){
+          target = last_seen[curr.id - 1];
+          // printf("Last seen x: %d, y: %d\n", target.x, target.y);
+        }else{
+          // printf("Current room number: %d\n", curr_room_no);
+          curr_room_no = (curr_room_no == -1) ? 0 : curr_room_no; //if the player is not in a room TODO: generate random room instead of sebding it to room 0
+          target = determine_position(dungeon.rooms[curr_room_no]);
+          // printf("Determined x: %d y: %d\n", target.x, target.y);
+        }
+        // if(last_seen[i].x == -1 && !(curr.type & 0x1)){
+        //   target = determine_position(dungeon.rooms[curr_room_no]);
+        //   printf("Determined x: %d y: %d\n", target.x, target.y);
+        // }else{
+        //   target = last_seen[curr.id];
+        //   printf("LAst seen x: %d, y: %d\n", target.x, target.y);
+        // }
+      }
+      
+      /*Calculate distance to PC*/
+      
+      /*Create and initialize queue for calculating monster distances*/
+      Queue q;
+      queue_init(&q, cell_equals, NULL);
+      
+      /*Breadth First Search for non-tunelling characters*/
+      Cell temp_pc = {target.x, target.y, 0, 0};
+      BFS_impl(dist, map, &q, temp_pc);
+      
+      /* Djikstra for tunelling characters */
+      Djikstra_impl(t_dist, map, &q, temp_pc);
+      
+      /*Intelligent*/
+      if (curr.type & 0x1){
+          int curr_dist = INT_MAX;
+          for (i = curr.y-1; i <= curr.y+1; i++){
+            for (j = curr.x-1; j <= curr.x+1; j++){
+              if (!(i== curr.y && j == curr.x) && (i > 0 && j > 0 && i < nRows-1 && j < nCols-1)){ //TODO nRows-1 vs nRows check the whole code
+                int es_dist = (curr.type & 0x4) ? t_dist[i][j] : dist[i][j]; //if tunnelling
+                if (es_dist < curr_dist){
+                  curr_dist = es_dist;
+                  target.x = j;
+                  target.y = i;
+                }
+              }
+            }
+          }
+      }else{/*Determine monster's next position*/
+          if (curr.x < target.x){
+            target.x = (((curr.x + 1) < nCols-1) && ((curr.type & 0x4) || map[curr.y][curr.x + 1].hardness == 0)) ? curr.x + 1 : curr.x; //can move and/or tunnel
+          }else if (curr.x > target.x){
+            target.x = (((curr.x - 1) > 0) && ((curr.type & 0x4) || map[curr.y][curr.x - 1].hardness == 0)) ? curr.x - 1 : curr.x;
+          }
+          if (curr.y < target.y){
+            target.y = (((curr.y + 1) < nRows-1) && ((curr.type & 0x4) || map[curr.y + 1][curr.x].hardness == 0)) ? curr.y + 1 : curr.y;
+          }else if (curr.y > target.y){
+            target.y = (((curr.y - 1) > 0) && ((curr.type & 0x4) || map[curr.y - 1][curr.x].hardness == 0)) ? curr.y - 1 : curr.y;
+          }
+      }
+      
+      /*Erratic*/
+      if ((curr.type & 0x8) && rand_gen(0,1)){
+        char found = 0;
+        while(!found){
+          target.x = rand_gen(curr.x - 1,curr.x + 1);
+          target.y = rand_gen(curr.y - 1, curr.y + 1);
+          found = ((!(target.y == curr.y && target.x == curr.x) && (target.x > 0 && target.y > 0 && target.y < nRows-1 && target.x < nCols-1)) && (curr.type & 0x4 || map[target.y][target.x].hardness == 0));
+          // for (i = curr.y-1; i <= curr.y+1; i++){
+          //     for (j = curr.x-1; j <= curr.x+1; j++){
+          //       if (!(i== y && j == x) && (i > 0 && j > 0 && i < nRows-1 && j < nCols-1)){
+                  
+          //       }
+          //     }
+          // }
+        }
+      }
+      
+    }
+    
+    //move
+    if (map[target.y][target.x].hardness != 0){
+      map[target.y][target.x].hardness = ((map[target.y][target.x].hardness - 85) < 0) ? 0 : map[target.y][target.x].hardness - 85;
+    }
+    if (map[target.y][target.x].hardness == 0){
+      chars[curr.y][curr.x] = -1;
+      if ((curr.id != 0)&&(pcp->x == target.x && pcp->y == target.y)){
+        puts("The PC is dead :(");
+        break;
+      }
+      if ((chars[target.y][target.x] != -1) && (chars[target.y][target.x] != curr.id)){ //weird stuff.
+        printf("Chars: %d", chars[target.y][target.x]);
+        characters[(int)chars[target.y][target.x]].value = NULL;
+        if(!(--l_monsters)) break;
+      }
+      chars[target.y][target.x] = (char)curr.id; /*TODO WARNING Max monsters have to be 255*/
+      if (map[target.y][target.x].value != '.') map[target.y][target.x].value = '#';
+      //MOVE Monster
+      if (curr.x != target.x || curr.y != target.y){
+        
+        render_dungeon(map, chars, characters);
+        fflush(stdout);
+        usleep(80000);
+        p_curr->x = target.x;
+        p_curr->y = target.y;
+      }
+      //is this necessary?
+      p_curr->x = target.x;
+      p_curr->y = target.y;
+    }
+    
+    //dequeue
+    // pace[curr.id] = 2 * pace[curr.id];
+    pace[curr.id] = ((pace[curr.id]*2) >= 1000) ? 1000/curr.speed : pace[curr.id]*2;
+    // puts("before:");
+    // print_queue(&evt);
+    change_priority(&evt, &curr, pace[curr.id]);
+    // puts("Added: ");
+    // add_with_priority(&evt, &curr, pace[curr.id]);
+  }while(1);
+  if (papi == 0 || papi == -1) puts("I killed it myself");
   
-  /*Breadth First Search for non-tunelling characters*/
-  int dist[nRows][nCols];
-  BFS_impl(dist, map, &q, characters[0]);
-  
-  /* Djikstra for tunelling characters */
-  int t_dist[nRows][nCols];
-  Djikstra_impl(t_dist, map, &q, characters[0]);
-  
-  /*render regular dungeon*/
-  render(map, pc.x, pc.y);
-  usleep(1000000);
-  render_dungeon(map, chars, characters);
+  empty_queue(&evt);
   
   //render non-tunneling monster gradients  TODO: remove
   // for (i = 0; i < nRows; i++){
@@ -359,9 +509,12 @@ void render_dungeon(Cell map[][nCols], char chars[][nCols], Player monsts[]){
   int i = 0, j = 0;
   for (i = 0; i < nRows; i++){
 		for (j =0; j < nCols; j++){
-		  int temp = (int)chars[i][j];
-		  if (temp != -1) printf(monsts[temp].value);
-		  else putchar(map[i][j].value);
+		  if (i == 0 || j == 0 || i == (nRows - 1) || j == (nCols - 1)) putchar('X');//TODO remove
+		  else{
+  		  int temp = (int)chars[i][j];
+  		  if (temp != -1) printf(monsts[temp].value);
+  		  else putchar(map[i][j].value);
+		  }
 		}
 		putchar('\n');
 	}
@@ -409,10 +562,16 @@ int cell_equals(void* c1, void* c2){
   return (oldCell.x == newCell.x && oldCell.y == newCell.y);
 }
 
-void BFS_impl(int dist[][nCols], Cell map[][nCols], Queue* q, Player pc){
+int char_equals(void* c1, void* c2){
+  Player oldCell = *(Player *)c1;
+  Player newCell = *(Player *)c2;
+  return (oldCell.id == newCell.id);
+}
+
+void BFS_impl(int dist[][nCols], Cell map[][nCols], Queue* q, Cell pc){
     int i = 0,j = 0;
     uint8_t marked[nRows][nCols];
-    
+    // printf("Pc is x: %d, y:%d\n", pc.x,pc.y);
     //initialize distance of all cells to infinity & initialized all cells as unmarked
     for (i = 0; i < nRows; i++){
   		for (j =0; j < nCols; j++){
@@ -421,11 +580,13 @@ void BFS_impl(int dist[][nCols], Cell map[][nCols], Queue* q, Player pc){
   		}
   	}
   	
-    //Mask cells to be used with the queue
+    /*Create mask cells to be used with the queue*/
     Cell* temps[nRows][nCols];
-    for (i = 0; i < nRows; i++)
-      for (j = 0; j< nCols; j++)
+    for (i = 0; i < nRows; i++){
+      for (j = 0; j< nCols; j++){
         temps[i][j] = NULL;
+      }
+    }
   
   	/*BFS implementation with linear queue*/
     enqueue(q, &pc); //NOTE: In case of any warnings, pc is not type cell but is expected to evaluate type cell
@@ -438,10 +599,11 @@ void BFS_impl(int dist[][nCols], Cell map[][nCols], Queue* q, Player pc){
   
       for (i=y-1; i <= y+1; i++){
         for (j=x-1; j <= x+1; j++){
-          if (!(i== y && j == x) && (i > 0 && j > 0 && i < nRows && j < nCols) && (map[i][j].hardness == 0)){
+          if (!(i== y && j == x) && (i > 0 && j > 0 && i < nRows-1 && j < nCols-1) && (map[i][j].hardness == 0)){
             if (marked[i][j] && (dist[y][x] + 1 < dist[i][j])) dist[i][j] = dist[y][x] + 1;
             else if (marked[i][j] == 0){
               temps[i][j] = (Cell *)malloc(sizeof(Cell));
+              // printf("Malloc'd temp[%d][%d]\n", i, j);
               Cell temp_cell = {j, i, map[i][j].value, map[i][j].hardness};
               *temps[i][j] = temp_cell;
               enqueue(q, temps[i][j]);
@@ -454,9 +616,11 @@ void BFS_impl(int dist[][nCols], Cell map[][nCols], Queue* q, Player pc){
       }
     }
     
+    /* Freeing mask cells that were used*/
     for (i = 0; i < nRows; i++){
       for (j = 0; j< nCols; j++){
         if (temps[i][j]){
+          // printf("Free'd temp[%d][%d]\n", i, j);
           free(temps[i][j]);
           temps[i][j] = NULL;
         }
@@ -465,7 +629,7 @@ void BFS_impl(int dist[][nCols], Cell map[][nCols], Queue* q, Player pc){
   	empty_queue(q);//TODO do this here or outside the function?
   }
   
-void Djikstra_impl(int t_dist[][nCols], Cell map[][nCols], Queue* q, Player pc){
+void Djikstra_impl(int t_dist[][nCols], Cell map[][nCols], Queue* q, Cell pc){
   /*Make sure queue is empty TODO: Or just use a new queue in here*/
   empty_queue(q);
   int i = 0, j = 0;
@@ -521,3 +685,48 @@ void Djikstra_impl(int t_dist[][nCols], Cell map[][nCols], Queue* q, Player pc){
       for (j = 0; j< nCols; j++)
           free(temps[i][j]);
 }
+
+void print_player(void* player){ //REname tp print player
+  Player player_c = *(Player *)player;
+  printf("id: %d => %s speed is %d\n",player_c.id, player_c.value, player_c.speed);
+}
+
+int getRoom(Dungeon d, int x, int y){
+  int i = 0;
+  for (i = 0; i < d.num_rooms; i++){
+    Room room = d.rooms[i];
+    if (x >= room.x && x < (room.x + room.width) && y >= room.y && y < (room.y + room.height))
+      return i;
+  }
+  return -1;
+}
+
+Pair determine_position(Room room){
+  Pair result = {
+    rand_gen(room.x, room.x + room.width - 1),
+    rand_gen(room.y, room.y + room.height - 1)
+  };
+  return result;
+}
+
+
+//test crap
+// puts("Initial queue");
+  // print_queue(&evt);
+  // do{
+  //   Player curr = *(Player *)peek(&evt, &curr);
+  //   printf("Curr: ");
+  //   print_player(&curr);
+  // }while(0);
+  // print_queue(&evt);
+  // dequeue(&evt);
+  // puts("Dequeueing");
+  // print_queue(&evt);
+  // puts("Emptying");
+  // empty_queue(&evt);
+  // print_queue(&evt);
+  
+  //weird 4: --nummon=1 --seed=1487510267
+  //weird PC, a couple of 7s and a b: --nummon=3 -e 1487512423
+  //game --nummon=20 1487542614
+  //--nummon=1 1487549385 gets stuck but shouldn't

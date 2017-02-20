@@ -12,6 +12,11 @@ extern "C" {
 #define PC "\x1B[32m@\x1B[0m"
 #define RESET "\x1B[0m"
 
+typedef struct Pair{
+  int x;
+  int y;
+} Pair;
+
 typedef struct Cell{
 	int x;
 	int y;
@@ -39,6 +44,7 @@ typedef struct Player{
   uint8_t type:4;
   int: 4;
   uint8_t speed; //can use :5?
+  uint8_t id; //int?
 } Player;
 
 struct event {
@@ -61,10 +67,15 @@ void render(Cell map[][nCols], int x, int y);
 int write_room(Cell map[][nCols], Room room);
 int add_room(Dungeon* rlg, Room room);
 void render_dungeon(Cell map[][nCols], char chars[][nCols], Player monsts[]);
+int getRoom(Dungeon d, int x, int y);
+Pair determine_position(Room room);
 
 int cell_equals(void* c1, void* c2);
-void BFS_impl(int dist[][nCols], Cell map[][nCols], Queue* q, Player pc);
-void Djikstra_impl(int t_dist[][nCols], Cell map[][nCols], Queue* q, Player pc);
+void BFS_impl(int dist[][nCols], Cell map[][nCols], Queue* q, Cell pc);
+void Djikstra_impl(int t_dist[][nCols], Cell map[][nCols], Queue* q, Cell pc);
+
+void print_player(void* player);
+int char_equals(void* c1, void* c2);
 
 # ifdef __cplusplus
 }
