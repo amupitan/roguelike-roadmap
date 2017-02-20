@@ -5,6 +5,7 @@
 
 #include "queue.h"
 
+/*Initializes queue with function pointers, and other front and rear pointers*/
 void queue_init(Queue* q, int (*node_equals)(void* data1, void* data2), void(*node_printer)(void* node)){
   q->front = NULL;
   q->rear = NULL;
@@ -74,6 +75,7 @@ void add_with_priority_duplicates(Queue* q, void* data, int priority){
   }
 }
 
+/*Change the priority of a node, works best on non-duplicates, selects all on duplicates(exact memory), select first on duplicates(different memeory)*/
 void change_priority(Queue* q, void* data, int new_priority){
   int changed = 0;
   struct Node* current = q->front;
@@ -83,10 +85,8 @@ void change_priority(Queue* q, void* data, int new_priority){
     if (q->equals(curr_data, data)) {
       if (previous)
         previous->next = current->next;
-      else{//q->front
+      else{
           q->front = current->next;
-          // current->priority = new_priority;
-          // return;
       }
       if (q->rear == current) q->rear = previous;
       /*move to upper part*/
@@ -94,7 +94,7 @@ void change_priority(Queue* q, void* data, int new_priority){
         current->priority = new_priority;
         struct Node* curr = q->front;
         struct Node* prev = NULL;
-        while (curr != (previous->next)){
+        while ((previous != NULL) && curr != (previous->next)){
           if (new_priority < curr->priority){
             if (prev == NULL){
               current->next = curr;
@@ -107,12 +107,10 @@ void change_priority(Queue* q, void* data, int new_priority){
             changed = 1;
             break;
           }
-          
           prev = curr;
           curr = curr->next;
         }
         if (q->rear == NULL) q->rear = current;
-        
       }
       else if (current->priority == new_priority) return;
       else if (current->priority < new_priority){/*move to lower part*/
@@ -140,14 +138,14 @@ void change_priority(Queue* q, void* data, int new_priority){
     previous = current;
     current = current->next;
   }
-  
   if (current == NULL) return;
   if (changed == 0){
-    (q->rear)->next = current;
+    current->priority = new_priority;
+    if (q->rear) (q->rear)->next = current;
     q->rear = current;
     (q->rear)->next = NULL;
+    if(q->front == NULL) q->front = current; //should only apply when there's only one element
   }
-  // while (current)
 }
 
 /* Removes node with highest priority*/
@@ -176,12 +174,14 @@ void* peek(Queue* q, void* data) {
 void print_queue(Queue* q) {
 	struct Node* temp = q->front;
 	while(temp != NULL) {
+	  printf("Priority: %d ",temp->priority);
 	  q->printer(temp->data);
 		temp = temp->next;
 	}
 	printf("\nSize: %d\n", q->size);
 }
 
+/*Removes all elements from the queue*/
 void empty_queue(Queue* q){
   struct Node* temp = q->front;
   while (temp){
