@@ -31,7 +31,6 @@ int main(int argc, char *argv[]){
 	int i = 0, j = 0;
 	Cell room_cells[50];
 	Player pc = {-1, -1, (char *)PC, 0, 10}; //TODO see if it's better to have in struct or as a variable 2. You just straight up copy characters[0] = pc, does that work well with PC being a macro and string?
-// 	dungeon.pc = pc;
 
   //dungeon
   FILE *dungeon_file;
@@ -41,7 +40,7 @@ int main(int argc, char *argv[]){
   
   //handle options an set seed
   int longindex; //TODO remove this and set the args part to NULL
-  int option, load = 0, save = 0, seed = (unsigned) time(NULL), nummon = 0;
+  int option, load = 0, save = 0, seed = (unsigned) time(NULL), nummon = 0, solo = 0;
   char load_file[100];
   struct option longopts[] = {
     {"load", optional_argument, NULL, 'l'},
@@ -49,6 +48,7 @@ int main(int argc, char *argv[]){
     {"seed", optional_argument, NULL, 'e'},
     {"pc", optional_argument, NULL, 'p'},
     {"nummon", optional_argument, NULL, 'm'},
+    {"solo", no_argument, &solo, 1},
     {0,0,0,0}
   };
   while ((option = getopt_long(argc, argv, ":e:", longopts, &longindex)) != -1){
@@ -92,17 +92,17 @@ int main(int argc, char *argv[]){
   }
   
   srand(seed);
-  printf("%d\n",seed);
+  printf("%d\n",seed); //TODO remove
   //Monster stuff
   Player characters[nummon+1];
   Pair last_seen[nummon];
   memset(last_seen, -1, sizeof(Pair)*nummon);
-  
+
   unsigned int pace[nummon+1];
   characters[0] = pc;
   int l_monsters = nummon;
-  printf("Num of characters: %d\n", nummon);
-  //initialize dungoen with white space and hardness
+
+  /*Initialize dungoen with white space and hardness*/
   for (i = 0; i < nRows; i++){
 		for (j =0; j < nCols; j++){
 			map[i][j].value = 32;
@@ -184,11 +184,52 @@ int main(int argc, char *argv[]){
   	}
   }
   
+  if (save) {
+    char path[100];
+    mkdir(strcat(strcpy(path, getenv("HOME")), "/.rlg327"),0766);
+    strcat(path, "/dungeon");
+    FILE* dungeon_file_l;
+    if (!(dungeon_file_l = fopen(path, "w"))){
+      fprintf(stderr, "Could not write map to file\n");
+      return -1;
+    }else{
+      uint32_t temp = 0;
+      //write dungeon title
+      strcpy(dungeon_title, "RLG327-S2017");
+      fwrite(dungeon_title, 12, 1, dungeon_file_l); //cs: 12
+      
+      //write verison
+      temp = 0;
+      version = htobe32(temp);
+      fwrite(&version, sizeof(version), 1, dungeon_file_l); //cs: 4
+      
+      //write size of file
+      temp = strlen(dungeon_title) + sizeof(version) + sizeof(uint32_t) + nRows * nCols + sizeof(uint32_t) * dungeon.num_rooms;
+      size_dungeon_file = htobe32(temp);
+      fwrite(&size_dungeon_file, 4, 1, dungeon_file_l); //cs:4
+      
+      //write hardness
+      for (i = 0; i < nRows; i++){
+    		for (j =0; j < nCols; j++){
+    		  fwrite(&(map[i][j].hardness), sizeof(unsigned char), 1, dungeon_file_l); //cs:8
+    		}
+      }
+      
+      //write rooms
+      for (i = 0; i < dungeon.num_rooms; i++){
+        Room room_l = dungeon.rooms[i];
+        fwrite(&room_l.x, sizeof(uint8_t), 1, dungeon_file_l);
+        fwrite(&room_l.y, sizeof(uint8_t), 1, dungeon_file_l);
+        fwrite(&room_l.width, sizeof(uint8_t), 1, dungeon_file_l);
+        fwrite(&room_l.height, sizeof(uint8_t), 1, dungeon_file_l);
+      }
+      fclose(dungeon_file_l);
+    }
+  }
+  
   /*Monster magic and initialize random pc if no valid command line argument was entered*/
   Queue evt;
   queue_init(&evt, char_equals, print_player);
-  
-
   
   for(i = 0; i < nummon+1; i++){
     int rand_room = i ? rand_gen(1, dungeon.num_rooms - 1) : 0;
@@ -204,18 +245,14 @@ int main(int argc, char *argv[]){
     characters[i].speed = rand_gen(5, 20);
     characters[i].id = i;
     chars[characters[i].y][characters[i].x] = i;
-    pace[i] = 1000/characters[i].speed;//TODO: warning: does not enqueue PC
+    pace[i] = 1000/characters[i].speed;
     add_with_priority(&evt, &characters[i], pace[i]);
-    // printf("monster %d: x = %s\n", i, characters[i].value);
   }
   characters[0].speed = 10; //Make sure this actually happens
-  puts("Initial queue");
-  print_queue(&evt);
   
   Player* pcp = &characters[0]; //TODO make sure this works
-  int papi = 400;
   do{
-    Pair target = {0,0}; //initilised to 0 because of PC
+    Pair target = {0,0};
     Player* p_curr;
     p_curr = (Player *)peek(&evt, &p_curr);
     Player curr = *p_curr;
@@ -226,35 +263,27 @@ int main(int argc, char *argv[]){
       continue;
     }
 
-    //check each characteristic and make sure it's not pc
+    /*Determine next position of character*/
     if (strcmp(curr.value, characters[0].value) == 0){ //might be able to use ==
       /* PC stuff */
       while (target.x < 1 || (target.x > nCols - 1) || target.y < 1 || target.y > nRows - 1){ //Reverse psych lol :)
         target.x = rand_gen(curr.x - 1, curr.x + 1);
         target.y = rand_gen(curr.y - 1, curr.y + 1);
       }
-      // printf("PC is the fastest\n");
-      // pace[curr.id] = ((pace[curr.id]*2) >= 1000) ? 1000/curr.speed : pace[curr.id]*2;
-      // continue;
     }else{
       
-      /*Telephathy*/ //TODO check next 6 lines for lame code if there is
-      int curr_room_no = getRoom(dungeon, curr.x, curr.y); //TODO split line
+      /*Telephathy*/
+      int curr_room_no = getRoom(dungeon, curr.x, curr.y);
       if ((curr.type & 0x2) || (curr_room_no == getRoom(dungeon, pcp->x, pcp->y))){ //smart or line of sight //TODO might want to check corridor
         target.x = pcp->x;
         target.y = pcp->y;
         last_seen[curr.id - 1] = target;
-        // printf("New last seen x: %d, y: %d\n", target.x, target.y);
       }else{ //change to its own if
-        // target = (last_seen[i].x == -1 && (curr.type & 0x1)) ? determine_position(dungeon.rooms[curr_room_no]) : last_seen[curr.id]; //add a condition that before you can use last seen, you have to intelligent
         if((curr.type & 0x1) && last_seen[curr.id - 1].x != -1){
           target = last_seen[curr.id - 1];
-          // printf("Last seen x: %d, y: %d\n", target.x, target.y);
         }else{
-          // printf("Current room number: %d\n", curr_room_no);
           curr_room_no = (curr_room_no == -1) ? 0 : curr_room_no; //if the player is not in a room TODO: generate random room instead of sebding it to room 0
           target = determine_position(dungeon.rooms[curr_room_no]);
-          // printf("Determined x: %d y: %d\n", target.x, target.y);
         }
         // if(last_seen[i].x == -1 && !(curr.type & 0x1)){
         //   target = determine_position(dungeon.rooms[curr_room_no]);
@@ -313,38 +342,31 @@ int main(int argc, char *argv[]){
           target.x = rand_gen(curr.x - 1,curr.x + 1);
           target.y = rand_gen(curr.y - 1, curr.y + 1);
           found = ((!(target.y == curr.y && target.x == curr.x) && (target.x > 0 && target.y > 0 && target.y < nRows-1 && target.x < nCols-1)) && (curr.type & 0x4 || map[target.y][target.x].hardness == 0));
-          // for (i = curr.y-1; i <= curr.y+1; i++){
-          //     for (j = curr.x-1; j <= curr.x+1; j++){
-          //       if (!(i== y && j == x) && (i > 0 && j > 0 && i < nRows-1 && j < nCols-1)){
-                  
-          //       }
-          //     }
-          // }
         }
       }
       
     }
     
-    //move
+    /*Attempt to move*/
     if (map[target.y][target.x].hardness != 0){
       map[target.y][target.x].hardness = ((map[target.y][target.x].hardness - 85) < 0) ? 0 : map[target.y][target.x].hardness - 85;
     }
     if (map[target.y][target.x].hardness == 0){
       chars[curr.y][curr.x] = -1;
       if ((curr.id != 0)&&(pcp->x == target.x && pcp->y == target.y)){
-        puts("The PC is dead :(");
+        puts("The PC is dead :(");//TODO: do something fancy when PC dies
         break;
       }
       if ((chars[target.y][target.x] != -1) && (chars[target.y][target.x] != curr.id)){ //weird stuff.
-        printf("Chars: %d", chars[target.y][target.x]);
         characters[(int)chars[target.y][target.x]].value = NULL;
         if(!(--l_monsters)) break;
+          printf("Num of characters: %d\n", l_monsters);
       }
       chars[target.y][target.x] = (char)curr.id; /*TODO WARNING Max monsters have to be 255*/
       if (map[target.y][target.x].value != '.') map[target.y][target.x].value = '#';
-      //MOVE Monster
+      
+      /*Re-renders dungeon*/
       if (curr.x != target.x || curr.y != target.y){
-        
         render_dungeon(map, chars, characters);
         fflush(stdout);
         usleep(80000);
@@ -355,17 +377,12 @@ int main(int argc, char *argv[]){
       p_curr->x = target.x;
       p_curr->y = target.y;
     }
-    
-    //dequeue
-    // pace[curr.id] = 2 * pace[curr.id];
     pace[curr.id] = ((pace[curr.id]*2) >= 1000) ? 1000/curr.speed : pace[curr.id]*2;
-    // puts("before:");
-    // print_queue(&evt);
     change_priority(&evt, &curr, pace[curr.id]);
-    // puts("Added: ");
-    // add_with_priority(&evt, &curr, pace[curr.id]);
-  }while(1);
-  if (papi == 0 || papi == -1) puts("I killed it myself");
+  }while(l_monsters || solo);
+  
+  /*Print win message*/
+  if (nummon && !l_monsters) printf("PC wins!");
   
   empty_queue(&evt);
   
@@ -389,48 +406,7 @@ int main(int argc, char *argv[]){
 		// putchar('\n');
   // }
 
-  if (save) {
-    char path[100];
-    mkdir(strcat(strcpy(path, getenv("HOME")), "/.rlg327"),0766);
-    strcat(path, "/dungeon");
-    FILE* dungeon_file_l;
-    if (!(dungeon_file_l = fopen(path, "w"))){
-      fprintf(stderr, "Could not write map to file\n");
-      return -1;
-    }else{
-      uint32_t temp = 0;
-      //write dungeon title
-      strcpy(dungeon_title, "RLG327-S2017");
-      fwrite(dungeon_title, 12, 1, dungeon_file_l); //cs: 12
-      
-      //write verison
-      temp = 0;
-      version = htobe32(temp);
-      fwrite(&version, sizeof(version), 1, dungeon_file_l); //cs: 4
-      
-      //write size of file
-      temp = strlen(dungeon_title) + sizeof(version) + sizeof(uint32_t) + nRows * nCols + sizeof(uint32_t) * dungeon.num_rooms;
-      size_dungeon_file = htobe32(temp);
-      fwrite(&size_dungeon_file, 4, 1, dungeon_file_l); //cs:4
-      
-      //write hardness
-      for (i = 0; i < nRows; i++){
-    		for (j =0; j < nCols; j++){
-    		  fwrite(&(map[i][j].hardness), sizeof(unsigned char), 1, dungeon_file_l); //cs:8
-    		}
-      }
-      
-      //write rooms
-      for (i = 0; i < dungeon.num_rooms; i++){
-        Room room_l = dungeon.rooms[i];
-        fwrite(&room_l.x, sizeof(uint8_t), 1, dungeon_file_l);
-        fwrite(&room_l.y, sizeof(uint8_t), 1, dungeon_file_l);
-        fwrite(&room_l.width, sizeof(uint8_t), 1, dungeon_file_l);
-        fwrite(&room_l.height, sizeof(uint8_t), 1, dungeon_file_l);
-      }
-      fclose(dungeon_file_l);
-    }
-  }
+
   
   /*Free all mallocs before exiting*/
   free(dungeon.rooms);
@@ -509,7 +485,7 @@ void render_dungeon(Cell map[][nCols], char chars[][nCols], Player monsts[]){
   int i = 0, j = 0;
   for (i = 0; i < nRows; i++){
 		for (j =0; j < nCols; j++){
-		  if (i == 0 || j == 0 || i == (nRows - 1) || j == (nCols - 1)) putchar('X');//TODO remove
+		  if (i == 0 || j == 0 || i == (nRows - 1) || j == (nCols - 1)) putchar(' ');
 		  else{
   		  int temp = (int)chars[i][j];
   		  if (temp != -1) printf(monsts[temp].value);
@@ -563,16 +539,13 @@ int cell_equals(void* c1, void* c2){
 }
 
 int char_equals(void* c1, void* c2){
-  Player oldCell = *(Player *)c1;
-  Player newCell = *(Player *)c2;
-  return (oldCell.id == newCell.id);
+  return (*(Player *)c1).id == (*(Player *)c2).id;
 }
 
 void BFS_impl(int dist[][nCols], Cell map[][nCols], Queue* q, Cell pc){
     int i = 0,j = 0;
     uint8_t marked[nRows][nCols];
-    // printf("Pc is x: %d, y:%d\n", pc.x,pc.y);
-    //initialize distance of all cells to infinity & initialized all cells as unmarked
+    /* Initialize distance of all cells to infinity & initialize all cells as unmarked*/
     for (i = 0; i < nRows; i++){
   		for (j =0; j < nCols; j++){
   		  dist[i][j] = INT_MAX;
@@ -589,7 +562,7 @@ void BFS_impl(int dist[][nCols], Cell map[][nCols], Queue* q, Cell pc){
     }
   
   	/*BFS implementation with linear queue*/
-    enqueue(q, &pc); //NOTE: In case of any warnings, pc is not type cell but is expected to evaluate type cell
+    enqueue(q, &pc);
     marked[pc.y][pc.x] = 1;
     dist[pc.y][pc.x] = 0;
     while (q->size > 0){
@@ -603,7 +576,6 @@ void BFS_impl(int dist[][nCols], Cell map[][nCols], Queue* q, Cell pc){
             if (marked[i][j] && (dist[y][x] + 1 < dist[i][j])) dist[i][j] = dist[y][x] + 1;
             else if (marked[i][j] == 0){
               temps[i][j] = (Cell *)malloc(sizeof(Cell));
-              // printf("Malloc'd temp[%d][%d]\n", i, j);
               Cell temp_cell = {j, i, map[i][j].value, map[i][j].hardness};
               *temps[i][j] = temp_cell;
               enqueue(q, temps[i][j]);
@@ -620,13 +592,12 @@ void BFS_impl(int dist[][nCols], Cell map[][nCols], Queue* q, Cell pc){
     for (i = 0; i < nRows; i++){
       for (j = 0; j< nCols; j++){
         if (temps[i][j]){
-          // printf("Free'd temp[%d][%d]\n", i, j);
           free(temps[i][j]);
           temps[i][j] = NULL;
         }
       }
     }
-  	empty_queue(q);//TODO do this here or outside the function?
+  	empty_queue(q);
   }
   
 void Djikstra_impl(int t_dist[][nCols], Cell map[][nCols], Queue* q, Cell pc){
@@ -681,12 +652,13 @@ void Djikstra_impl(int t_dist[][nCols], Cell map[][nCols], Queue* q, Cell pc){
     }
   }
 
+  /*Free all memory malloc'd for masked cells*/
   for (i = 0; i < nRows; i++)
       for (j = 0; j< nCols; j++)
           free(temps[i][j]);
 }
 
-void print_player(void* player){ //REname tp print player
+void print_player(void* player){
   Player player_c = *(Player *)player;
   printf("id: %d => %s speed is %d\n",player_c.id, player_c.value, player_c.speed);
 }
@@ -708,23 +680,6 @@ Pair determine_position(Room room){
   };
   return result;
 }
-
-
-//test crap
-// puts("Initial queue");
-  // print_queue(&evt);
-  // do{
-  //   Player curr = *(Player *)peek(&evt, &curr);
-  //   printf("Curr: ");
-  //   print_player(&curr);
-  // }while(0);
-  // print_queue(&evt);
-  // dequeue(&evt);
-  // puts("Dequeueing");
-  // print_queue(&evt);
-  // puts("Emptying");
-  // empty_queue(&evt);
-  // print_queue(&evt);
   
   //weird 4: --nummon=1 --seed=1487510267
   //weird PC, a couple of 7s and a b: --nummon=3 -e 1487512423
