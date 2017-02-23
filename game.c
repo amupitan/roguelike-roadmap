@@ -25,6 +25,7 @@ int main(int argc, char *argv[]){
   char const *values[8] = {"\x1B[31m", "\x1B[33m", "\x1B[34m", "\x1B[35m", "\x1B[36m", "\x1B[37m", "\x1B[32m", "\x1B[31m"};
   int t_dist[nRows][nCols];
   int dist[nRows][nCols];
+  int nummon_flag = 0;
   
   int area = 0, tries = 0, count = 0;
 	Cell map[nRows][nCols];
@@ -75,7 +76,10 @@ int main(int argc, char *argv[]){
         }
         break;
       case 'm':
-        if (optarg) nummon = atoi(optarg);
+        if (optarg) {
+          nummon = atoi(optarg);
+          nummon_flag = 1;
+        }
         break;
       case 0:
         break;
@@ -92,15 +96,6 @@ int main(int argc, char *argv[]){
   }
   
   srand(seed);
-  printf("Seed: %d\n", seed);
-  //Monster stuff
-  Player characters[nummon+1];
-  Pair last_seen[nummon];
-  memset(last_seen, -1, sizeof(Pair)*nummon);
-
-  unsigned int pace[nummon+1];
-  characters[0] = pc;
-  int l_monsters = nummon;
 
   /*Initialize dungoen with white space and hardness*/
   for (i = 0; i < nRows; i++){
@@ -232,6 +227,16 @@ int main(int argc, char *argv[]){
   queue_init(&evt, char_equals, print_player);
   
   /*Initialize all players (PC and monster)*/
+  if (nummon_flag == 0) nummon = rand_gen(dungeon.num_rooms, dungeon.num_rooms*2);
+  int l_monsters = nummon;
+  Player characters[nummon+1];
+  Pair last_seen[nummon];
+  memset(last_seen, -1, sizeof(Pair)*nummon);
+
+  /*Dungeon monster setup*/
+  unsigned int pace[nummon+1];
+  characters[0] = pc;
+  
   for(i = 0; i < nummon+1; i++){
     int rand_room = i ? rand_gen(1, dungeon.num_rooms - 1) : 0; //This makes sure no monster is spawned int he same room as the PC.
     if ( (i != 0) || (i == 0 && characters[i].type == 0)){
@@ -265,7 +270,7 @@ int main(int argc, char *argv[]){
     }
 
     /*Determine next position of character*/
-    if (/*strcmp(curr.value, characters[0].value) == 0*/p_curr == pcp){
+    if (p_curr == pcp){
       /* PC stuff */
       while (target.x < 1 || (target.x > nCols - 1) || target.y < 1 || target.y > nRows - 1 || (target.x == curr.x && target.y == curr.y)){ //Reverse psych lol :) and the PC must move, cannot stay in the same spot, just because it's lame to stay in the same place
         target.x = rand_gen(curr.x - 1, curr.x + 1);
@@ -381,7 +386,8 @@ int main(int argc, char *argv[]){
       p_curr->y = target.y;
     }
     recalculate = (curr.id == 0) ? 1 : 0;
-    pace[curr.id] = ((pace[curr.id]*2) >= 1000) ? 1000/curr.speed : pace[curr.id]*2;
+    pace[curr.id] +=  1000/curr.speed;
+    // pace[curr.id] = ((pace[curr.id]*2) >= 1000) ? 1000/curr.speed : pace[curr.id]*2;
     change_priority(&evt, &curr, pace[curr.id]);
   }while(l_monsters || solo);
   
