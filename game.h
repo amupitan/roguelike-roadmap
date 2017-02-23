@@ -66,7 +66,7 @@ int update_cell(Cell* p, char value, unsigned char hardness);
 void render(Cell map[][nCols], int x, int y);
 int write_room(Cell map[][nCols], Room room);
 int add_room(Dungeon* rlg, Room room);
-void render_dungeon(Cell map[][nCols], char chars[][nCols], Player monsts[]);
+void render_dungeon(Cell map[][nCols], int chars[][nCols], Player monsts[]);
 int getRoom(Dungeon d, int x, int y);
 Pair determine_position(Room room);
 
