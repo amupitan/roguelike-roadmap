@@ -112,7 +112,7 @@ void change_priority(Queue* q, void* data, int new_priority){
         }
         if (q->rear == NULL) q->rear = current;
       }
-      else if (current->priority == new_priority) return;
+      else if (current->priority == new_priority) break;
       else if (current->priority < new_priority){/*move to lower part*/
         current->priority = new_priority;
         struct Node* curr = current->next;
