@@ -8,6 +8,7 @@
 #include <endian.h>
 #include <limits.h>
 #include <unistd.h>
+#include <ncurses.h>
 
 #include "queue.h"
 #include "game.h"
@@ -16,7 +17,7 @@ int main(int argc, char *argv[]){
   
   //regular
   Dungeon dungeon;
-  dungeon.rooms = (Room *)malloc(sizeof(Room)*2500); //debug this issue
+  dungeon.rooms = (Room *)malloc(sizeof(Room)*50);
   dungeon.num_rooms = 0;
   
   //monster
@@ -143,11 +144,6 @@ int main(int argc, char *argv[]){
         fread(&room.width, sizeof(uint8_t), 1, dungeon_file);
         fread(&room.height, sizeof(uint8_t), 1, dungeon_file);
         write_room(map, room);
-        // printf("%d\n", ++put);
-        // if ((dungeon.num_rooms%20 == 0) && (dungeon.num_rooms != 0)){
-        //   int ratio = dungeon.num_rooms/20 + 1;
-        //   if (!realloc(dungeon.rooms, ratio*20)) return -1;
-        // }
         add_room(&dungeon, room);
       }
       
@@ -221,6 +217,9 @@ int main(int argc, char *argv[]){
       fclose(dungeon_file_l);
     }
   }
+  
+  /*Ncurses start*/
+  initscr();
   
   /*Monster magic and initialize random pc if no valid command line argument was entered*/
   Queue evt;
@@ -508,10 +507,10 @@ int write_room(Cell map[][nCols], Room room){
 }
 
 int add_room(Dungeon* rlg, Room room){ //TODO debug with 20
-  // if ((rlg->num_rooms%30 == 0) && (rlg->num_rooms != 0)){
-  //   int ratio = rlg->num_rooms/30 + 1;
-  //   if (!realloc(rlg->rooms, ratio*30)) return -1;
-  // }
+  if ((rlg->num_rooms%50 == 0) && (rlg->num_rooms != 0)){
+    int ratio = rlg->num_rooms*2;
+    if (!(rlg->rooms = (Room *)realloc(rlg->rooms, ratio*sizeof(Room)))) return -1;
+  }
   rlg->rooms[rlg->num_rooms].x = room.x;
   rlg->rooms[rlg->num_rooms].y = room.y;
   rlg->rooms[rlg->num_rooms].width = room.width;
