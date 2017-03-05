@@ -9,6 +9,8 @@ extern "C" {
 
 #define nRows 105
 #define nCols 160
+
+/*TODO Get rid of these?*/
 #define PC "\x1B[32m@\x1B[0m"
 #define RESET "\x1B[0m"
 
@@ -40,7 +42,7 @@ typedef struct Dungeon{
 typedef struct Player{
   int x;
   int y;
-  char* value;
+  char value;
   uint8_t type:4;
   int: 4;
   uint8_t speed; //can use :5?
@@ -76,6 +78,12 @@ void Djikstra_impl(int t_dist[][nCols], Cell map[][nCols], Queue* q, Cell pc);
 
 void print_player(void* player);
 int char_equals(void* c1, void* c2);
+
+/*ncurses*/
+void ncurses_init();
+void printmon(Player player);
+void nrender_dungeon(Cell map[][nCols], int chars[][nCols], Player monsts[]);
+void endgame(Dungeon* dungeon);
 
 # ifdef __cplusplus
 }
