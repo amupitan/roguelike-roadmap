@@ -23,7 +23,6 @@ int main(int argc, char *argv[]){
   //monster
   int chars[nRows][nCols];
   memset(chars, -1, sizeof(int)*nRows*nCols);
-  // char const *values[8] = {"\x1B[31m", "\x1B[33m", "\x1B[34m", "\x1B[35m", "\x1B[36m", "\x1B[37m", "\x1B[32m", "\x1B[31m"};
   int t_dist[nRows][nCols];
   int dist[nRows][nCols];
   int nummon_flag = 0;
@@ -32,7 +31,7 @@ int main(int argc, char *argv[]){
 	Cell map[nRows][nCols];
 	int i = 0, j = 0;
 	Cell room_cells[50];
-	Player pc = {-1, -1, '@', 0, 10}; //TODO see if it's better to have in struct or as a variable 2. You just straight up copy characters[0] = pc, does that work well with PC being a macro and string?
+	Player pc = {-1, -1, '@', 0, 10}; //TODO see if it's better to have in struct or as a variable 2.
 
   //dungeon
   FILE *dungeon_file;
@@ -97,7 +96,6 @@ int main(int argc, char *argv[]){
   }
   
   srand(seed);
-
   /*Initialize dungoen with white space and hardness*/
   for (i = 0; i < nRows; i++){
 		for (j =0; j < nCols; j++){
@@ -219,7 +217,7 @@ int main(int argc, char *argv[]){
   }
   
   /*Ncurses start*/
-  int row = 0, col = 0;
+  int col = 0;
   ncurses_init();
   
   /*Monster magic and initialize random pc if no valid command line argument was entered*/
@@ -229,9 +227,9 @@ int main(int argc, char *argv[]){
   /*Initialize all players (PC and monster)*/
   if (nummon_flag == 0) nummon = rand_gen(dungeon.num_rooms, dungeon.num_rooms*2);
   int l_monsters = nummon;
-  Player characters[nummon+1];
+  Player characters[nummon + 1];
   Pair last_seen[nummon];
-  memset(last_seen, -1, sizeof(Pair)*nummon);
+  memset(last_seen, - 1, sizeof(Pair)*nummon);
 
   /*Dungeon monster setup*/
   unsigned int pace[nummon+1];
@@ -277,20 +275,30 @@ int main(int argc, char *argv[]){
       //   target.x = rand_gen(curr.x - 1, curr.x + 1);
       //   target.y = rand_gen(curr.y - 1, curr.y + 1);
       // }
-      // nrender_dungeon(map, chars, characters);
-      Pair start = {0, 0};
-      render_partial(map, chars, characters, start); //TODO!!!
+      Pair start = {curr.x - 40, curr.y - 10};
+      render_partial(map, chars, characters, start, NULL); //TODO!!!
       do{
         target = *(Pair *)getInputC(&target);
         if (target.x == -1 && target.y == -1) endgame(&dungeon, &evt, "Game ended");
-        if (map[target.y][target.x].hardness == 0) break;
-        target.x = curr.x; target.y = curr.y;
+        if (target.x == -2 && target.y == -2) {
+          /*Enter look mode*/
+          Pair look = start;
+          do{
+            int ctrl = 0;
+            look = *(look_mode(&look, &ctrl));
+            if (ctrl == 1){
+              render_partial(map, chars, characters, start, NULL);
+              break;
+            }
+            render_partial(map, chars, characters, look, &look);
+          }while(1);
+        }else if (map[target.y][target.x].hardness == 0) break;
+        target.x = curr.x;
+        target.y = curr.y;
       }while(1);
-      getmaxyx(stdscr, row, col);
+      getmaxyx(stdscr, longindex, col); /*Longindex is passed here but this macro function requires an argument*/
       mvprintw(0, col/2, "Target x: %d, y: %d PC x: %d, y: %d", target.x, target.y, curr.x, curr.y);
       refresh();
-      // nrender_dungeon(map, chars, characters);
-      
     }else{
       
       /*Telephathy*/
@@ -380,11 +388,10 @@ int main(int argc, char *argv[]){
         p_curr->y = target.y;
         chars[target.y][target.x] = curr.id;
         // nrender_dungeon(map, chars, characters);
-        Pair start = {0, 0};
-        render_partial(map, chars, characters, start); //TODO, fix start position!!!
-        fflush(stdout);
-        puts("The PC is dead :(");//TODO: do something fancy when PC dies
-        break;
+        
+        Pair start = {curr.x - 40, curr.y - 10}; //TODO: any point os the bext two lines? except if status message will be rendered after
+        render_partial(map, chars, characters, start, NULL); //TODO, fix start position!!!
+        endgame(&dungeon, &evt, "The PC is dead :(");
       }
       if ((chars[target.y][target.x] != -1) && (chars[target.y][target.x] != curr.id)){ //weird stuff.
         characters[chars[target.y][target.x]].value = -1;
@@ -399,7 +406,6 @@ int main(int argc, char *argv[]){
       //   fflush(stdout);
       //   usleep(200000);
       // }
-
       p_curr->x = target.x;
       p_curr->y = target.y;
     }
@@ -458,9 +464,11 @@ void endgame(Dungeon* dungeon, Queue* game_queue, char* endmessage){
   free(dungeon->rooms);
   empty_queue(game_queue);
   endwin();
+  system("clear");
   /*Display some nice stats*/
   puts(endmessage);
-  _nc_free_and_exit(); /*TODO: necessary much?*/
+  // _nc_freeall();
+  // _nc_free_and_exit(0); /*TODO: necessary much?*/
 	exit(0);
 }
 
@@ -528,12 +536,11 @@ Pair* getInputC(Pair* target){ /*TODO: make void?*/
       break;
     case 'L':
       /*Enter look mode*/
+      target->x = target->y = -2;
       break;
     case 'Q':
       /*Quit the game*/
-      // endgame(&dungeon, "Game ended");
-      target->x = -1;
-      target->y = -1;
+      target->x = target->y = -1;
       break;
     default:
       break;
@@ -541,6 +548,41 @@ Pair* getInputC(Pair* target){ /*TODO: make void?*/
   return target;
 }
 
-int getInputL(Pair* curr){
-  return 0;
+Pair* look_mode(Pair *target, int* control_mode){ //TODO: uses hardcoded width/height
+  switch(getch()){
+    case 'k':
+    case '8':
+    case KEY_UP: /*TODO remove?*/
+      /*move up*/
+      target->y -= 10;
+      break;
+    case 'l':
+    case '6':
+    case KEY_RIGHT: /*TODO remove?*/
+      /*move right*/
+      target->x += 40;
+      break;
+    case 'j':
+    case '2':
+    case KEY_DOWN: /*TODO remove?*/
+      /*move down*/
+      target->y += 10;
+      break;
+    case 'h':
+    case '4':
+    case KEY_LEFT: /*TODO remove?*/
+      /*move left*/
+      target->x -= 40;
+      break;
+    case 'Q':
+      /*Quit the game*/
+      ungetch('Q');
+    case 27:
+      /*go back to control mode*/
+      *control_mode = 1;
+      break;
+    default:
+      break;
+  }
+  return target;
 }

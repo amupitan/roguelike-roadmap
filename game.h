@@ -80,8 +80,8 @@ void print_player(void* player);
 int char_equals(void* c1, void* c2);
 
 Pair* getInputC(Pair* target);
-int getInputL(Pair* curr);
-void render_partial(Cell map[][nCols], int chars[][nCols], Player monsts[], Pair start);
+void render_partial(Cell map[][nCols], int chars[][nCols], Player monsts[], Pair start, Pair* newPos);
+Pair* look_mode(Pair *target, int* control_mode);
 
 /*ncurses*/
 void ncurses_init();

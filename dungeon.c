@@ -278,8 +278,10 @@ void nrender_dungeon(Cell map[][nCols], int chars[][nCols], Player monsts[]){
 // 	move(0,0);
 }
 
-void render_partial(Cell map[][nCols], int chars[][nCols], Player monsts[], Pair start){
+void render_partial(Cell map[][nCols], int chars[][nCols], Player monsts[], Pair start, Pair* newPos){
   int i = 0, j = 0;
+  start.x = (start.x < 0) ? 0 : start.x;
+  start.y = (start.y < 0) ? 0 : start.y;
   int endRow = start.y + 21, endCol = start.x + 80;
   if (endCol > nCols - 1){
     start.x = nCols - 1 - 80;
@@ -301,6 +303,7 @@ void render_partial(Cell map[][nCols], int chars[][nCols], Player monsts[], Pair
 		}
 		addch('\n');
 	}
+	if(newPos) *newPos = start;
 	refresh();
 }
 
