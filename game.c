@@ -219,6 +219,7 @@ int main(int argc, char *argv[]){
   }
   
   /*Ncurses start*/
+  int row = 0, col = 0;
   ncurses_init();
   
   /*Monster magic and initialize random pc if no valid command line argument was entered*/
@@ -276,81 +277,18 @@ int main(int argc, char *argv[]){
       //   target.x = rand_gen(curr.x - 1, curr.x + 1);
       //   target.y = rand_gen(curr.y - 1, curr.y + 1);
       // }
-      nrender_dungeon(map, chars, characters);
+      // nrender_dungeon(map, chars, characters);
+      Pair start = {0, 0};
+      render_partial(map, chars, characters, start); //TODO!!!
       do{
-        int pos = getch();
-        switch(pos){
-        case 'y':
-        case '7':
-          /*upper-left*/
-          target.y--;
-          target.x--;
-          break;
-        case 'k':
-        case '8':
-        case KEY_UP: /*TODO remove?*/
-          /*up*/
-          target.y--;
-          break;
-        case 'u':
-        case '9':
-          /*upper-right*/
-          target.y--;
-          target.x++;
-          break;
-        case 'l':
-        case '6':
-        case KEY_RIGHT: /*TODO remove?*/
-          /*right*/
-          target.x++;
-          break;
-        case 'n':
-        case '3':
-          /*lower-right*/
-          target.y++;
-          target.x++;
-          break;
-        case 'j':
-        case '2':
-        case KEY_DOWN: /*TODO remove?*/
-          /*down*/
-          target.y++;
-          break;
-        case 'b':
-        case '1':
-          /*lower-left*/
-          target.x--;
-          target.y++;
-          break;
-        case 'h':
-        case '4':
-        case KEY_LEFT: /*TODO remove?*/
-          /*left*/
-          target.x--;
-          break;
-        case ' ':
-        case '5':
-          /*rest*/
-          break;
-        case '>':
-          /*attempt to go downstairs*/
-          break;
-        case '<':
-          /*attempt to go upstairs*/
-          break;
-        case 'L':
-          /*Enter look mode*/
-          break;
-        case 'Q':
-          /*Quit the game*/
-          endgame(&dungeon);
-          break;
-        default:
-          break;
-      }
-      if (map[target.y][target.x].hardness == 0) break;
-      }while(map[target.y][target.x].hardness != 0);
-
+        target = *(Pair *)getInputC(&target);
+        if (target.x == -1 && target.y == -1) endgame(&dungeon, &evt, "Game ended");
+        if (map[target.y][target.x].hardness == 0) break;
+        target.x = curr.x; target.y = curr.y;
+      }while(1);
+      getmaxyx(stdscr, row, col);
+      mvprintw(0, col/2, "Target x: %d, y: %d PC x: %d, y: %d", target.x, target.y, curr.x, curr.y);
+      refresh();
       // nrender_dungeon(map, chars, characters);
       
     }else{
@@ -441,7 +379,9 @@ int main(int argc, char *argv[]){
         p_curr->x = target.x;
         p_curr->y = target.y;
         chars[target.y][target.x] = curr.id;
-        nrender_dungeon(map, chars, characters);
+        // nrender_dungeon(map, chars, characters);
+        Pair start = {0, 0};
+        render_partial(map, chars, characters, start); //TODO, fix start position!!!
         fflush(stdout);
         puts("The PC is dead :(");//TODO: do something fancy when PC dies
         break;
@@ -465,12 +405,11 @@ int main(int argc, char *argv[]){
     }
     recalculate = (curr.id == 0) ? 1 : 0;
     pace[curr.id] +=  1000/curr.speed;
-    // pace[curr.id] = ((pace[curr.id]*2) >= 1000) ? 1000/curr.speed : pace[curr.id]*2;
     change_priority(&evt, &curr, pace[curr.id]);
   }while(l_monsters || solo);
   
   /*Print win message*/
-  if (nummon && !l_monsters) endgame(&dungeon, "PC killed em all");
+  if (nummon && !l_monsters) endgame(&dungeon, &evt, "PC killed em all");
   
   empty_queue(&evt);
   
@@ -515,11 +454,93 @@ void ncurses_init(){
 	init_pair(7, COLOR_WHITE, COLOR_BLACK);
 }
 
-void endgame(Dungeon* dungeon, char* endmessage){
+void endgame(Dungeon* dungeon, Queue* game_queue, char* endmessage){
   free(dungeon->rooms);
+  empty_queue(game_queue);
   endwin();
   /*Display some nice stats*/
   puts(endmessage);
+  _nc_free_and_exit(); /*TODO: necessary much?*/
 	exit(0);
 }
 
+/*Get input in control mode*/
+Pair* getInputC(Pair* target){ /*TODO: make void?*/
+  // int pos = getch();
+  switch(getch()){
+    case 'y':
+    case '7':
+      /*upper-left*/
+      target->y--;
+      target->x--;
+      break;
+    case 'k':
+    case '8':
+    case KEY_UP: /*TODO remove?*/
+      /*up*/
+      target->y--;
+      break;
+    case 'u':
+    case '9':
+      /*upper-right*/
+      target->y--;
+      target->x++;
+      break;
+    case 'l':
+    case '6':
+    case KEY_RIGHT: /*TODO remove?*/
+      /*right*/
+      target->x++;
+      break;
+    case 'n':
+    case '3':
+      /*lower-right*/
+      target->y++;
+      target->x++;
+      break;
+    case 'j':
+    case '2':
+    case KEY_DOWN: /*TODO remove?*/
+      /*down*/
+      target->y++;
+      break;
+    case 'b':
+    case '1':
+      /*lower-left*/
+      target->x--;
+      target->y++;
+      break;
+    case 'h':
+    case '4':
+    case KEY_LEFT: /*TODO remove?*/
+      /*left*/
+      target->x--;
+      break;
+    case ' ':
+    case '5':
+      /*rest*/
+      break;
+    case '>':
+      /*attempt to go downstairs*/
+      break;
+    case '<':
+      /*attempt to go upstairs*/
+      break;
+    case 'L':
+      /*Enter look mode*/
+      break;
+    case 'Q':
+      /*Quit the game*/
+      // endgame(&dungeon, "Game ended");
+      target->x = -1;
+      target->y = -1;
+      break;
+    default:
+      break;
+  }
+  return target;
+}
+
+int getInputL(Pair* curr){
+  return 0;
+}

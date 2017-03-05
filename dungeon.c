@@ -262,6 +262,7 @@ void Djikstra_impl(int t_dist[][nCols], Cell map[][nCols], Queue* q, Cell pc){
 
 void nrender_dungeon(Cell map[][nCols], int chars[][nCols], Player monsts[]){
   int i = 0, j = 0;
+  move(1, 1);
   for (i = 0; i < nRows; i++){
 		for (j =0; j < nCols; j++){
 		  if (i == 0 || j == 0 || i == (nRows - 1) || j == (nCols - 1)) addch(' ');
@@ -274,12 +275,37 @@ void nrender_dungeon(Cell map[][nCols], int chars[][nCols], Player monsts[]){
 		addch('\n');
 	}
 	refresh();
-	move(0,0);
+// 	move(0,0);
+}
+
+void render_partial(Cell map[][nCols], int chars[][nCols], Player monsts[], Pair start){
+  int i = 0, j = 0;
+  int endRow = start.y + 21, endCol = start.x + 80;
+  if (endCol > nCols - 1){
+    start.x = nCols - 1 - 80;
+    endCol = nCols - 1;
+  }
+  if (endRow > nRows - 1){
+    start.y = nRows - 1 - 21;
+    endRow = nRows - 1;
+  }
+  move(1, 0);
+  for (i = start.y; i < endRow; i++){
+		for (j = start.x; j < endCol; j++){
+		  if (i == 0 || j == 0 || i == (nRows - 1) || j == (nCols - 1)) addch(' ');
+		  else{
+  		  int temp = chars[i][j];
+  		  if (temp != -1) printmon(monsts[chars[i][j]]);
+  		  else addch(map[i][j].value);
+		  }
+		}
+		addch('\n');
+	}
+	refresh();
 }
 
 void printmon(Player player){
   attron(COLOR_PAIR((player.id % 6) + 1));
-  // printw("%c",player.value);
   addch(player.value);
   attroff(COLOR_PAIR((player.id % 6) + 1));
 }

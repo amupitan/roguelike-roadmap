@@ -79,11 +79,15 @@ void Djikstra_impl(int t_dist[][nCols], Cell map[][nCols], Queue* q, Cell pc);
 void print_player(void* player);
 int char_equals(void* c1, void* c2);
 
+Pair* getInputC(Pair* target);
+int getInputL(Pair* curr);
+void render_partial(Cell map[][nCols], int chars[][nCols], Player monsts[], Pair start);
+
 /*ncurses*/
 void ncurses_init();
 void printmon(Player player);
 void nrender_dungeon(Cell map[][nCols], int chars[][nCols], Player monsts[]);
-void endgame(Dungeon* dungeon);
+void endgame(Dungeon* dungeon, Queue* game_queue, char* endmessage);
 
 # ifdef __cplusplus
 }
