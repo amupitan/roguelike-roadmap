@@ -10,10 +10,6 @@ extern "C" {
 #define nRows 105
 #define nCols 160
 
-/*TODO Get rid of these?*/
-#define PC "\x1B[32m@\x1B[0m"
-#define RESET "\x1B[0m"
-
 typedef struct Pair{
   int x;
   int y;
@@ -71,6 +67,8 @@ int add_room(Dungeon* rlg, Room room);
 void render_dungeon(Cell map[][nCols], int chars[][nCols], Player monsts[]);
 int getRoom(Dungeon d, int x, int y);
 Pair determine_position(Room room);
+void create_dungeon(Dungeon* dungeon, Cell map[][nCols], Cell room_cells[]);
+void load_dungeon(FILE* dungeon_file, Dungeon* dungeon, Cell map[][nCols], char* dungeon_title, uint32_t* version, uint32_t* size_dungeon_file);
 
 int cell_equals(void* c1, void* c2);
 void BFS_impl(int dist[][nCols], Cell map[][nCols], Queue* q, Cell pc);
@@ -82,12 +80,15 @@ int char_equals(void* c1, void* c2);
 Pair* getInputC(Pair* target);
 void render_partial(Cell map[][nCols], int chars[][nCols], Player monsts[], Pair start, Pair* newPos);
 Pair* look_mode(Pair *target, int* control_mode);
+void addCharcters(Dungeon* dungeon, Queue* evt, int nummon, Player characters[], int chars[][nCols], unsigned int pace[]);
+void delete_dungeon(Dungeon* dungeon, Queue* evt);
 
 /*ncurses*/
 void ncurses_init();
 void printmon(Player player);
 void nrender_dungeon(Cell map[][nCols], int chars[][nCols], Player monsts[]);
 void endgame(Dungeon* dungeon, Queue* game_queue, char* endmessage);
+void _nc_free_and_exit(int sth); /*Avoid implicit deleration warning*/
 
 # ifdef __cplusplus
 }
