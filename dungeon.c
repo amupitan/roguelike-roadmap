@@ -31,7 +31,7 @@ int connect_rooms(Cell map[][nCols], Cell p, Cell q){
 	return 1;
 }
 
-int update_cell(Cell* p, char value, unsigned char hardness){//TODO make function take hardness as arg
+int update_cell(Cell* p, char value, unsigned char hardness){
   if (p->hardness == 255) return 1;
   p->value = value;
   p->hardness = hardness;
@@ -65,7 +65,7 @@ void render(Cell map[][nCols], int x, int y){
 }
 
 int write_room(Cell map[][nCols], Room room){
-  int i=0,j=0;
+  int i = 0,j = 0;
   int n = room.x + room.width - 1;
   int m = room.y + room.height - 1;
   for (i = room.y; i <= m; i++){
@@ -76,7 +76,7 @@ int write_room(Cell map[][nCols], Room room){
   return 0;
 }
 
-int add_room(Dungeon* rlg, Room room){ //TODO debug with 20
+int add_room(Dungeon* rlg, Room room){
   if ((rlg->num_rooms%50 == 0) && (rlg->num_rooms != 0)){
     int ratio = rlg->num_rooms*2;
     if (!(rlg->rooms = (Room *)realloc(rlg->rooms, ratio*sizeof(Room)))) return -1;
@@ -92,7 +92,7 @@ int add_room(Dungeon* rlg, Room room){ //TODO debug with 20
 int create_room(Cell map[][nCols], int x, int y, uint8_t* width, uint8_t* height){//TODO change args up by just passing in a room pointer
 	int i = 0, j= 0;
 	//generate random length and width of room by genrating a random co-ord
-	int max = nCols-2;
+	int max = nCols - 2;
 	int min = x + 6;
 	int end_x = rand_gen(min,max);
 	max = nRows - 2;
@@ -150,7 +150,7 @@ void BFS_impl(int dist[][nCols], Cell map[][nCols], Queue* q, Cell pc){
     /* Initialize distance of all cells to infinity & initialize all cells as unmarked*/
     for (i = 0; i < nRows; i++){
   		for (j =0; j < nCols; j++){
-  		  dist[i][j] = INT_MAX;
+  		  dist[i][j] = INT_MAX - 100;
   			marked[i][j] = 0;
   		}
   	}
@@ -315,12 +315,14 @@ void printmon(Player player){
 
 void addCharcters(Dungeon* dungeon, Queue* evt, int nummon, Player characters[], int chars[][nCols], unsigned int pace[]){
   int i;
+  memset(chars, -1, sizeof(int)*nRows*nCols);
   for(i = 0; i < nummon + 1; i++){
     int rand_room = i ? rand_gen(1, dungeon->num_rooms - 1) : 0; //This makes sure no monster is spawned int he same room as the PC.
     if ( (i != 0) || (i == 0 && characters[i].type == 0)){
       characters[i].x = rand_gen(dungeon->rooms[rand_room].x, dungeon->rooms[rand_room].x + dungeon->rooms[rand_room].width - 1); //use determine_position
+      
       characters[i].y = rand_gen(dungeon->rooms[rand_room].y, dungeon->rooms[rand_room].y + dungeon->rooms[rand_room].height - 1);
-      if (i != 0 ) {
+      if (i != 0 ) { /*Assign every monster a type*/
         characters[i].type = rand() & 0xF;//rand_gen(0x0,0xF);
         char temp_val[2];
         sprintf(temp_val, "%x", characters[i].type);
@@ -335,17 +337,18 @@ void addCharcters(Dungeon* dungeon, Queue* evt, int nummon, Player characters[],
     add_with_priority(evt, &characters[i], pace[i]);
   }
    characters[0].speed = 10;
+   characters[0].speed = 0xF; //not too sure why i do this, i know it blocks pc from getting assigned a value execpt this value is hanged by new dungeon generation
 }
 
 void create_dungeon(Dungeon* dungeon, Cell map[][nCols], Cell room_cells[]){
   int i, count = 0, tries = 0, area = 0;
   dungeon->rooms = (Room *)malloc(sizeof(Room)*50);
-  while ((area < .2*(nRows*nCols) || count < 10) && (++tries < 2000)){
+  while ((area < .2*(nRows*nCols) || count < 10) && (++tries < 10000)){
     Room room; // = {0, 0, 0, 0};
 		room.y = rand()%(nRows-2) + 1;
 		room.x = rand()%(nCols-2) + 1;
 		
-		if (!create_room(map, room.x, room.y, &room.width, &room.height)) continue; //continue loop if roo couldn't be created
+		if (!create_room(map, room.x, room.y, &room.width, &room.height)) continue; //continue loop if room couldn't be created
 		area += room.width * room.height;
 		
     //get random cell in each room
@@ -354,7 +357,9 @@ void create_dungeon(Dungeon* dungeon, Cell map[][nCols], Cell room_cells[]){
 		count++;
 		
 		//add room to rooms array TODO merge this with code above
-		add_room(dungeon, room);
+		if (add_room(dungeon, room) == -1){
+		  count--;
+		}
 	}
     //connect random cells
   	for (i =0; i < count-1; i++){

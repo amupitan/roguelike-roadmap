@@ -81,7 +81,8 @@ Pair* getInputC(Pair* target);
 void render_partial(Cell map[][nCols], int chars[][nCols], Player monsts[], Pair start, Pair* newPos);
 Pair* look_mode(Pair *target, int* control_mode);
 void addCharcters(Dungeon* dungeon, Queue* evt, int nummon, Player characters[], int chars[][nCols], unsigned int pace[]);
-void delete_dungeon(Dungeon* dungeon, Queue* evt);
+void delete_dungeon(Dungeon* dungeon, Queue* evt, Cell map[][nCols]);
+void add_stairs(Dungeon* dungeon, Cell map[][nCols]);
 
 /*ncurses*/
 void ncurses_init();
