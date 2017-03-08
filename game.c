@@ -325,8 +325,11 @@ int main(int argc, char *argv[]){
         target.y = curr.y;
       }while(1);
       if (new_dungeon) continue;
-      getmaxyx(stdscr, longindex, col); /*Longindex is passed here but this macro function requires an argument*/
-      mvprintw(0, col/2, "Monsters left: %d", l_monsters);
+      char mon_log[20];
+      sprintf(mon_log, "Monsters alive: %d", l_monsters);
+      log_message(mon_log);
+      // getmaxyx(stdscr, longindex, col); /*Longindex is passed here but this macro function requires an argument*/
+      // mvprintw(0, col/2, "Monsters left: %d", l_monsters);
       refresh();
     }else{
       
@@ -493,7 +496,7 @@ void ncurses_init(){
 	init_pair(7, COLOR_WHITE, COLOR_BLACK);
 }
 
-void endgame(Dungeon* dungeon, Queue* game_queue, char* endmessage){
+void endgame(Dungeon* dungeon, Queue* game_queue, const char* endmessage){
   free(dungeon->rooms);
   empty_queue(game_queue);
   int row,col;
@@ -659,7 +662,10 @@ void add_stairs(Dungeon* dungeon, Cell map[][nCols]){
 	}
 }
 
-// void log(){
-//   getmaxyx(stdscr, longindex, col); /*Longindex is passed here but this macro function requires an argument*/
-//   mvprintw(0, col/2, "Monsters left: %d", l_monsters);
-// }
+void log_message(const char* message){
+  int row, col;
+  move(0, 0);
+  clrtoeol();
+  getmaxyx(stdscr, row, col); /*Longindex is passed here but this macro function requires an argument*/
+  mvprintw(0/row, (col - strlen(message))/2, message);
+}
