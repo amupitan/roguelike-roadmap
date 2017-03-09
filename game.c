@@ -411,13 +411,12 @@ void endgame(Dungeon* dungeon, Queue* game_queue, const char* endmessage){
   getmaxyx(stdscr, row, col); /*Longindex is passed here but this macro function requires an argument*/
   move(0, 0);
   clrtoeol();
-  mvprintw(0/row, col/2 - (strlen(endmessage) + 22)/2, "%s %s",endmessage, "hit any button to close"); /*variable row is only used to avoid variable-not-used-warning*/
+  mvprintw(0/row, col/2 - (strlen(endmessage) + 22)/2, "%s %s",endmessage, "hit any button to quit"); /*variable row is only used to avoid variable-not-used-warning*/
   getch();/*TODO, i don't call refersh but it works*/
   endwin();
-  system("clear");
+  //system("clear");
   /*Display some nice stats*/
   puts(endmessage);
-  _nc_free_and_exit(0); /*TODO: necessary much?*/
 	exit(0);
 }
 

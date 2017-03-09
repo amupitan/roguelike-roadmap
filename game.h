@@ -90,7 +90,6 @@ void printmon(Player player);
 void log_message(const char* message);
 void nrender_dungeon(Cell map[][nCols], int chars[][nCols], Player monsts[]);
 void endgame(Dungeon* dungeon, Queue* game_queue, const char* endmessage);
-void _nc_free_and_exit(int sth); /*Avoid implicit deleration warning*/
 
 # ifdef __cplusplus
 }
