@@ -17,7 +17,6 @@ int main(int argc, char *argv[]){
   
   //regular
   Dungeon dungeon;
-  // dungeon.rooms = (Room *)malloc(sizeof(Room)*50);
   dungeon.num_rooms = 0;
   
   //monster
@@ -26,8 +25,7 @@ int main(int argc, char *argv[]){
   int t_dist[nRows][nCols];
   int dist[nRows][nCols];
   int nummon_flag = 0;
-  
-  // int area = 0, tries = 0, count = 0;
+
 	Cell map[nRows][nCols];
 	int i = 0, j = 0;
 	Cell room_cells[50];
@@ -109,71 +107,8 @@ int main(int argc, char *argv[]){
     if (!(dungeon_file = fopen(load_file, "r"))){
       fprintf(stderr, "The file: %s couldn't be opened\n", load_file);
       return -1;
-    }else{
-      /*uint32_t temp = 0;
-      //read dungeon title
-      char temp_name[13];
-      temp_name[12] = 0;
-      fread(temp_name, 12, 1, dungeon_file); //cs: 12
-      strcpy(dungeon_title, temp_name);
-      
-      //read verison
-      fread(&temp, 4, 1, dungeon_file); //cs: 4
-      version = be32toh(temp);
-      
-      //read size of file
-      fread(&temp, 4, 1, dungeon_file); //cs:4
-      size_dungeon_file = be32toh(temp);
-      
-      //read hardness
-      for (i = 0; i < nRows; i++)
-    		for (j =0; j < nCols; j++)
-    		  fread(&(map[i][j].hardness), sizeof(unsigned char), 1, dungeon_file); //cs:8
-      
-      //quickly write corridors
-      for (i = 0; i < nRows; i++)
-      		for (j =0; j < nCols; j++)
-      			if (map[i][j].hardness == 0) update_cell(&map[i][j], 35, 0);
-      
-      //read rooms
-      // int put = 0;
-      Room room = {0,0,0,0};
-      while((fread(&room.x, sizeof(uint8_t), 1, dungeon_file)) == 1){
-        fread(&room.y, sizeof(uint8_t), 1, dungeon_file);
-        fread(&room.width, sizeof(uint8_t), 1, dungeon_file);
-        fread(&room.height, sizeof(uint8_t), 1, dungeon_file);
-        write_room(map, room);
-        add_room(&dungeon, room);
-      }
-      
-      //display corridor
-      fclose(dungeon_file);*/
-      load_dungeon(dungeon_file, &dungeon, map, dungeon_title, &version, &size_dungeon_file);
-    }
-  }else{
-    //add rooms to dungeon
-    /*while ((area < .2*(nRows*nCols) || count < 10) && (++tries < 2000)){
-      Room room; // = {0, 0, 0, 0};
-  		room.y = rand()%(nRows-2) + 1;
-  		room.x = rand()%(nCols-2) + 1;
-  		
-  		if (!create_room(map, room.x, room.y, &room.width, &room.height)) continue; //continue loop if roo couldn't be created
-  		area += room.width * room.height;
-  		
-      //get random cell in each room
-  		room_cells[count].x = rand_gen(room.x, room.width + room.x -1);
-  		room_cells[count].y = rand_gen(room.y, room.height + room.y -1);
-  		count++;
-  		
-  		//add room to rooms array TODO merge this with code above
-  		add_room(&dungeon, room);
-	  }
-    //connect random cells
-  	for (i =0; i < count-1; i++){
-  		connect_rooms(map, room_cells[i], room_cells[i+1]);
-  	}*/
-  	create_dungeon(&dungeon, map, room_cells);
-  }
+    }else load_dungeon(dungeon_file, &dungeon, map, dungeon_title, &version, &size_dungeon_file);
+  }else create_dungeon(&dungeon, map, room_cells);
   
   if (save) {
     char path[100];
@@ -217,9 +152,7 @@ int main(int argc, char *argv[]){
       fclose(dungeon_file_l);
     }
   }
-  
-  
-  
+
   /*Ncurses start*/
   int col = 0;
   ncurses_init();
@@ -238,29 +171,8 @@ int main(int argc, char *argv[]){
   /*Dungeon monster setup*/
   unsigned int pace[nummon+1];
   characters[0] = pc;
-  
   addCharcters(&dungeon, &evt, nummon, characters, chars, pace);
-  
-  /*for(i = 0; i < nummon+1; i++){
-    int rand_room = i ? rand_gen(1, dungeon.num_rooms - 1) : 0; //This makes sure no monster is spawned int he same room as the PC.
-    if ( (i != 0) || (i == 0 && characters[i].type == 0)){
-      characters[i].x = rand_gen(dungeon.rooms[rand_room].x, dungeon.rooms[rand_room].x + dungeon.rooms[rand_room].width - 1); //use determine_position
-      characters[i].y = rand_gen(dungeon.rooms[rand_room].y, dungeon.rooms[rand_room].y + dungeon.rooms[rand_room].height - 1);
-      if (i != 0 ) {
-        characters[i].type = rand() & 0xF;//rand_gen(0x0,0xF);
-        char temp_val[2];
-        sprintf(temp_val, "%x", characters[i].type);
-        characters[i].value = *temp_val;
-        
-      }
-    }
-    characters[i].speed = rand_gen(5, 20);
-    characters[i].id = i;
-    chars[characters[i].y][characters[i].x] = i;
-    pace[i] = 1000/characters[i].speed;
-    add_with_priority(&evt, &characters[i], pace[i]);
-  }
-  characters[0].speed = 10; //Make sure this actually happens*/
+
   add_stairs(&dungeon, map);
   char recalculate = 1;
   Player* pcp = &characters[0];
@@ -319,6 +231,16 @@ int main(int argc, char *argv[]){
           /*END*/
           new_dungeon = 1;
           break;
+        }else if (target.x == -5 && target.y == -5) {
+          char* seed_msg = (char* )malloc(20);/*cpp watch*/
+          sprintf(seed_msg, "Seed is %d", seed);
+          log_message(seed_msg);
+          free(seed_msg);
+        }else if (target.x == -6 && target.y == -6){
+          char* stat_msg = (char* )malloc(40);/*cpp watch*/
+          sprintf(stat_msg, "PC is at %d, %d. Number of rooms: %d", curr.x, curr.y, dungeon.num_rooms);
+          log_message(stat_msg);
+          free(stat_msg);
         }
         else if (map[target.y][target.x].hardness == 0) break;
         target.x = curr.x;
@@ -328,9 +250,6 @@ int main(int argc, char *argv[]){
       char mon_log[20];
       sprintf(mon_log, "Monsters alive: %d", l_monsters);
       log_message(mon_log);
-      // getmaxyx(stdscr, longindex, col); /*Longindex is passed here but this macro function requires an argument*/
-      // mvprintw(0, col/2, "Monsters left: %d", l_monsters);
-      refresh();
     }else{
       
       /*Telephathy*/
@@ -419,10 +338,10 @@ int main(int argc, char *argv[]){
         p_curr->x = target.x;
         p_curr->y = target.y;
         chars[target.y][target.x] = curr.id;
-        // nrender_dungeon(map, chars, characters);
+
         Pair start = {curr.x - 40, curr.y - 10};
         render_partial(map, chars, characters, start, NULL); //TODO, fix start position!!!
-        // continue;
+
         endgame(&dungeon, &evt, "The PC is dead :(");
       }
       if ((chars[target.y][target.x] != -1) && (chars[target.y][target.x] != curr.id)){ //weird stuff.
@@ -431,13 +350,6 @@ int main(int argc, char *argv[]){
       }
       chars[target.y][target.x] = curr.id;
       if (map[target.y][target.x].value != '.' && map[target.y][target.x].value != '<' && map[target.y][target.x].value != '>') map[target.y][target.x].value = '#';
-      
-      /*Re-renders dungeon*/
-      // if (curr.id == 0 && (curr.x != target.x || curr.y != target.y)){
-      //   nrender_dungeon(map, chars, characters);
-      //   fflush(stdout);
-      //   usleep(200000);
-      // }
       p_curr->x = target.x;
       p_curr->y = target.y;
     }
@@ -447,11 +359,7 @@ int main(int argc, char *argv[]){
   }while(l_monsters || solo);
   
   /*Print win message*/
-  if (nummon && !l_monsters) {
-    // Pair start = {pcp->x - 40, pcp->y - 10};
-    // render_partial(map, chars, characters, start, NULL); /*TODO: Doesn't work because character's array is not updated*/
-    endgame(&dungeon, &evt, "PC killed em all");
-  }
+  if (nummon && !l_monsters) endgame(&dungeon, &evt, "PC killed em all");
   
   empty_queue(&evt);
   
@@ -503,13 +411,12 @@ void endgame(Dungeon* dungeon, Queue* game_queue, const char* endmessage){
   getmaxyx(stdscr, row, col); /*Longindex is passed here but this macro function requires an argument*/
   move(0, 0);
   clrtoeol();
-  mvprintw(0/row, col/2 - (strlen(endmessage) + 22)/2, "%s %s",endmessage, "hit any button to quit"); /*variable row is only used to avoid variable-not-used-warning*/
+  mvprintw(0/row, col/2 - (strlen(endmessage) + 22)/2, "%s %s",endmessage, "hit any button to close"); /*variable row is only used to avoid variable-not-used-warning*/
   getch();/*TODO, i don't call refersh but it works*/
   endwin();
   system("clear");
   /*Display some nice stats*/
   puts(endmessage);
-  // _nc_freeall();
   _nc_free_and_exit(0); /*TODO: necessary much?*/
 	exit(0);
 }
@@ -586,6 +493,14 @@ Pair* getInputC(Pair* target){ /*TODO: make void?*/
       /*Quit the game*/
       target->x = target->y = -1;
       break;
+    case 'S':
+      /*Display seed*/
+      target->x = target->y = -5;
+      break;
+    case 'R':
+      /*Display number of room*/
+      target->x = target->y = -6;
+      break;
     default:
       break;
   }
@@ -648,7 +563,7 @@ void delete_dungeon(Dungeon* dungeon, Queue* evt, Cell map[][nCols]){
 	
 }
 
-/*This function assumes there are at least 2 rooms*/
+/*This function assumes that there are at least 2 rooms*/
 void add_stairs(Dungeon* dungeon, Cell map[][nCols]){
   int i;
 	int n_stairs = rand_gen(2,4);
@@ -668,4 +583,5 @@ void log_message(const char* message){
   clrtoeol();
   getmaxyx(stdscr, row, col); /*Longindex is passed here but this macro function requires an argument*/
   mvprintw(0/row, (col - strlen(message))/2, message);
+  /*TODO: call refresh()?*/
 }
