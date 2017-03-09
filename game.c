@@ -102,7 +102,6 @@ int main(int argc, char *argv[]){
 		}
 	}
   
-  
   if (load){
     if (!(dungeon_file = fopen(load_file, "r"))){
       fprintf(stderr, "The file: %s couldn't be opened\n", load_file);
@@ -202,7 +201,7 @@ int main(int argc, char *argv[]){
           /*Enter look mode*/
           Pair look = start;
           do{
-            int ctrl = 0; /*1- end look mode, 2- go downstairs*/
+            int ctrl = 0; /*1- end look mode*/
             look = *(look_mode(&look, &ctrl));
             if (ctrl == 1){
               render_partial(map, chars, characters, start, NULL);
@@ -213,7 +212,7 @@ int main(int argc, char *argv[]){
         }
         else if ((target.x == -3 && target.y == -3) || (target.x == -4 && target.y == -4)){
           /*use stairs: if not stair conrinue*/
-          if ((target.x == -3 && map[curr.y][curr.x].value != '>') || (target.x == -4 && map[curr.y][curr.x].value != '<')) continue; /*check up/down stairs*//*TODO: continue vs break*/
+          if ((target.x == -3 && map[curr.y][curr.x].value != '>') || (target.x == -4 && map[curr.y][curr.x].value != '<')) continue; /*check up/down stairs*/
           pcp->type = 0;
           l_monsters = nummon;
           delete_dungeon(&dungeon, &evt, map);
@@ -241,6 +240,8 @@ int main(int argc, char *argv[]){
           sprintf(stat_msg, "PC is at %d, %d. Number of rooms: %d", curr.x, curr.y, dungeon.num_rooms);
           log_message(stat_msg);
           free(stat_msg);
+        }else if (target.x == -10 && target.y == -10){
+          continue;
         }
         else if (map[target.y][target.x].hardness == 0) break;
         target.x = curr.x;
@@ -414,7 +415,7 @@ void endgame(Dungeon* dungeon, Queue* game_queue, const char* endmessage){
   mvprintw(0/row, col/2 - (strlen(endmessage) + 22)/2, "%s %s",endmessage, "hit any button to quit"); /*variable row is only used to avoid variable-not-used-warning*/
   getch();/*TODO, i don't call refersh but it works*/
   endwin();
-  //system("clear");
+  system("clear");
   /*Display some nice stats*/
   puts(endmessage);
 	exit(0);
@@ -501,6 +502,7 @@ Pair* getInputC(Pair* target){ /*TODO: make void?*/
       target->x = target->y = -6;
       break;
     default:
+      target->x = target->y = -10;
       break;
   }
   return target;
