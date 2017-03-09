@@ -7,10 +7,17 @@ The game is in file game.c, a queue that was used in implemting the game is in f
 * --seed takes a required argument of a seed number e.g. --seed=10
 * --solo takes no argumtnts. When set, the game continues as long as the PC is alive, irrespective of the number of monsters
 * --pc takes an argument in form of co-ordinates that should be valid within the dungeon which are separated by a comma with x coming first, e.g --pc="65,43"
-* --nummon takes an integer argument which determines the number of monsters e.g. --nummon=10 causes the dungeon to have 10 monsters
+* --nummon takes an integer argument which determines the number of monsters e.g. --nummon=10 causes the dungeon to have 10 monsters, else a random number of monsters are generated(the number of random monsters generated is >= number of rooms and <= two times the number of rooms
 * If no argument is passed in for --pc then the PC is placed in a random position in a random room
-* Two additional dungeon depictions are rendered which show gradients from that point in the dungeon to the PC, the first one is the regular dungeon, the second is the dungeon for non-tunneling monsters, the third is for tunneling monsters
-* The game is continues to run until the PC is dead or all the monsters are dead. The monsters attempt to kill the PC depending on their abilities
+* All specifications in the pdf are followed including:
+  * Display only 80x21 portion of the screen ignoring the top line and last two lines
+  * The dungeon is displayed every PC turn
+  * There is a look mode ('L' button) that can be used to navigate the dungeon without using a turn or moving the PC
+  * All button specifications in the buttons section are implemented including the following:
+    - KEY_UP, KEY_DOWN, KEY_LEFT, KEY_RIGHT -> to navigate the dungeon accordingly
+    - 'S' -> displays the seed on the top line
+    - 'R' -> displays the number of rooms and co-ordinates of the PC
+* The game continues to run until the PC is dead or all the monsters are dead. The monsters attempt to kill the PC depending on their abilities
 * There are 16 distinct types of monsters which are named from 0-f (using the hex), which are also color-coded
 * The game runs using a discrete event simulator which is implemented using a priority queue
 * The queue is prioritized based on turn and speed of a monster, monsters' speed randomly ranges from 5 - 20, the PC has a speed of 10
