@@ -1,5 +1,5 @@
 # Roguelike Roadmap
-##This game is based on the rogue-like map and is implemented in C
+## This game is based on the rogue-like map and is implemented in C
 The game is in file game.c, a queue that was used in implemting the game is in file queue.c and the game has the following specifications:
 * The game is run with --load, --save, --seed, --solo, --pc and --nummon arguments
 * --load loads a file from {HOME}/.rlg327/dungeon, --save saves a dungeon to that location
