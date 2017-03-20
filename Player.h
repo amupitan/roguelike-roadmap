@@ -19,12 +19,15 @@ class Player{
     int: 4;
     uint8_t speed; //can use :5?
     uint8_t id; //int?
+    char** sight;
     
   public:
     Player(uint8_t id, int x, int y);
     Player(uint8_t id, int x, int y, int speed, uint8_t type);
     void setPos(void* x, void* y);
     void setType(uint8_t type);
+    char** setSight(int height, int width);
+    void freeSight(int height);
     void printPlayer();
     int getX();
     int getY();
@@ -43,6 +46,8 @@ extern "C" {
   Player* construct_player(uint8_t id, int x, int y, int speed, uint8_t type);
   void csetPos(Player* p, void* x, void* y);
   void csetType(Player* p, uint8_t type);
+  char** csetSight(Player* p, int height, int width);
+  void cfreeSight(Player* p, int height);
   void cprintPlayer(Player* p);
   int cgetX(Player* p);
   int cgetY(Player* p);

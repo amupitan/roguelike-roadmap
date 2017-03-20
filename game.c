@@ -200,8 +200,9 @@ int main(int argc, char *argv[]){
       //   target.x = rand_gen(cgetX(p_curr) - 1, cgetX(p_curr) + 1);
       //   target.y = rand_gen(cgetY(p_curr) - 1, cgetY(p_curr) + 1);
       // }
+      updateSight(pcp, map);
       Pair start = {cgetX(p_curr) - 40, cgetY(p_curr) - 10};
-      render_partial(map, chars, characters, start, NULL); //TODO!!!
+      pc_render_partial(map, chars, characters, start, NULL); //TODO!!!
       do{
         target = *(Pair *)getInputC(&target);
         if (target.x == -1 && target.y == -1){
@@ -215,10 +216,10 @@ int main(int argc, char *argv[]){
             int ctrl = 0; /*1- end look mode*/
             look = *(look_mode(&look, &ctrl));
             if (ctrl == 1){
-              render_partial(map, chars, characters, start, NULL);
+              pc_render_partial(map, chars, characters, start, NULL);
               break;
             }
-            render_partial(map, chars, characters, look, &look);
+            pc_render_partial(map, chars, characters, look, &look);
           }while(1);
         }
         else if ((target.x == -3 && target.y == -3) || (target.x == -4 && target.y == -4)){
@@ -359,7 +360,7 @@ int main(int argc, char *argv[]){
         chars[target.y][target.x] = cgetId(p_curr);
 
         Pair start = {cgetX(p_curr) - 40, cgetY(p_curr) - 10};
-        render_partial(map, chars, characters, start, NULL); //TODO, fix start position!!!
+        pc_render_partial(map, chars, characters, start, NULL); //TODO, fix start position!!!
 
         delete_players(characters, nummon + 1);
         endgame(&dungeon, &evt, "The PC is dead :(");
@@ -615,8 +616,11 @@ void log_message(const char* message){
 
 void delete_players(Player* characters[], int num_characters){
   int i;
+  cfreeSight(characters[0], nRows);
   for (i = 0; i < num_characters; i++){
     free(characters[i]);
     characters[i] = NULL;
   }
 }
+
+/*PC can go out 1490025018 to the right*/

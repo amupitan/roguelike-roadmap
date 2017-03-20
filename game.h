@@ -64,12 +64,15 @@ void addCharcters(Dungeon* dungeon, Queue* evt, int nummon, Player* characters[]
 void delete_dungeon(Dungeon* dungeon, Queue* evt, Cell map[][nCols]);
 void add_stairs(Dungeon* dungeon, Cell map[][nCols]);
 void delete_players(Player* characters[], int num_characters);
+void updateSight(Player* pc, Cell map[][nCols]);
 
 /*ncurses*/
 void ncurses_init();
 void printmon(Player* player);
 void log_message(const char* message);
 void nrender_dungeon(Cell map[][nCols], int chars[][nCols], Player* monsts[]);
+
+void pc_render_partial(Cell map[][nCols], int chars[][nCols], Player* monsts[], Pair start, Pair* newPos);
 void endgame(Dungeon* dungeon, Queue* game_queue, const char* endmessage);
 
 # ifdef __cplusplus

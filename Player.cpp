@@ -18,6 +18,7 @@ Player::Player(uint8_t id, int x, int y, int speed, uint8_t type){
   sprintf(temp_val, "%x", type);
   value = *temp_val;
   if (id == 0) value = '@'; /*TODO: find a better way to change PC's value. Consider a setValue method*/
+  sight = NULL;
 }
 
 void Player::setPos(void* x, void* y){
@@ -29,6 +30,27 @@ void Player::setPos(void* x, void* y){
 
 void Player::setType(uint8_t type){
   this->type = type;
+}
+
+char** Player::setSight(int height, int width){
+  if (width < 1 || height < 1 || sight){
+    // fprintf(stderr, "Height %d < 1 Width %d < 1 or sight is not null", height, width);
+    return sight; /*TODO: handle this in a better way, remove fprintf, consider merging both if blocks*/
+  }
+  if ((sight = (char **)malloc(sizeof(char*) * height))){
+    for (int i = 0; i < height; i++)
+      *(sight + i) = (char* )malloc(sizeof(char) * width);
+  }
+  return sight;
+}
+
+void Player::freeSight(int height){
+  if (sight){
+    for (int i = 0; i < height; i++)
+      free(*(sight + i)); //vs free(*(sight + i*sizeof(sight[0]));
+    free(sight);
+    sight = NULL;
+  }
 }
 
 void Player::printPlayer(){
@@ -72,6 +94,15 @@ void csetPos(Player* p, void* x, void* y){
 void csetType(Player* p, uint8_t type){
   p->setType(type);
 }
+
+char** csetSight(Player* p, int height, int width){
+  return p->setSight(height, width);
+}
+
+void cfreeSight(Player* p, int height){
+  return p->freeSight(height);
+}
+
 
 void cprintPlayer(Player* p){
   p->printPlayer();

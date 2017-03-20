@@ -307,38 +307,41 @@ void render_partial(Cell map[][nCols], int chars[][nCols], Player* monsts[], Pai
 	refresh();
 }
 
+void pc_render_partial(Cell map[][nCols], int chars[][nCols], Player* monsts[], Pair start, Pair* newPos){
+  char** sight = csetSight(monsts[0], nRows, nCols); /*TODO: check value of sight*/
+  int i = 0, j = 0;
+  start.x = (start.x < 0) ? 0 : start.x;
+  start.y = (start.y < 0) ? 0 : start.y;
+  int endRow = start.y + 21, endCol = start.x + 80;
+  if (endCol > nCols - 1){
+    start.x = nCols - 1 - 80;
+    endCol = nCols - 1;
+  }
+  if (endRow > nRows - 1){
+    start.y = nRows - 1 - 21;
+    endRow = nRows - 1;
+  }
+  move(1, 0);
+  for (i = start.y; i < endRow; i++){
+		for (j = start.x; j < endCol; j++){
+		  if (i == 0 || j == 0 || i == (nRows - 1) || j == (nCols - 1)) addch(' ');
+		  else if (sight[i][j] != -1){
+  		  int temp = chars[i][j];
+  		  if (temp != -1) printmon(monsts[chars[i][j]]);
+  		  else addch(sight[i][j]);
+		  }else addch(' ');
+		}
+		addch('\n');
+	}
+	if(newPos) *newPos = start;
+	refresh();
+}
+
 void printmon(Player* player){
   attron(COLOR_PAIR((cgetId(player) % 6) + 1));
   addch(cgetValue(player));
   attroff(COLOR_PAIR((cgetId(player) % 6) + 1));
 }
-
-// void addCharcters(Dungeon* dungeon, Queue* evt, int nummon, Player* characters[], int chars[][nCols], unsigned int pace[]){
-//   int i;
-//   memset(chars, -1, sizeof(int)*nRows*nCols);
-//   for(i = 0; i < nummon + 1; i++){
-//     int rand_room = i ? rand_gen(1, dungeon->num_rooms - 1) : 0; //This makes sure no monster is spawned int he same room as the PC.
-//     if ( (i != 0) || (i == 0 && characters[i].type == 0)){
-//       characters[i].x = rand_gen(dungeon->rooms[rand_room].x, dungeon->rooms[rand_room].x + dungeon->rooms[rand_room].width - 1); //use determine_position
-      
-//       characters[i].y = rand_gen(dungeon->rooms[rand_room].y, dungeon->rooms[rand_room].y + dungeon->rooms[rand_room].height - 1);
-//       if (i != 0 ) { /*Assign every monster a type*/
-//         characters[i].type = rand() & 0xF;//rand_gen(0x0,0xF);
-//         char temp_val[2];
-//         sprintf(temp_val, "%x", characters[i].type);
-//         characters[i].value = *temp_val;
-        
-//       }
-//     }
-//     characters[i].speed = rand_gen(5, 20);
-//     characters[i].id = i;
-//     chars[characters[i].y][characters[i].x] = i;
-//     pace[i] = 1000/characters[i].speed;
-//     add_with_priority(evt, characters[i], pace[i]);
-//   }
-//   characters[0].speed = 10;
-//   characters[0].speed = 0xF; //not too sure why i do this, i know it blocks pc from getting assigned a value execpt this value is hanged by new dungeon generation
-// }
 
 void addCharcters(Dungeon* dungeon, Queue* evt, int nummon, Player* characters[], int chars[][nCols], unsigned int pace[]){
   int i;
@@ -372,9 +375,32 @@ Player* pc_init(Player* pc, Room room){
     rand_gen(room.x, room.x + room.width - 1), /*x-position*/
     rand_gen(room.y, room.y + room.height - 1),/*y-position*/
     10, /*speed*/
-    'A' /*type*/
+    '@' /*type TODO: this doesn't actually do anything. The real thing is done in the constructor*/
   );
+  char** sight = csetSight(pc, nRows, nCols); /*TODO: check value of sight*/
+  for (int i = 0; i < nRows; i++){
+    for (int j = 0; j < nCols; j++){
+      sight[i][j] = -1;
+    }
+  }
   return pc;
+}
+
+void updateSight(Player* pc, Cell map[][nCols]){ /*TODO: move to Player class*/
+  int x = cgetX(pc), y = cgetY(pc);
+  int i,j;
+  char** sight = csetSight(pc, nRows, nCols); /*TODO: check value of sight*/
+  Pair start = {(x - 5 > 1) ? x - 5 : 1, (y - 5 > 1) ? y - 5 : 1};
+  // int startX = (x - 5 > 1) ? x - 5 : 1;
+  // int startY = (y - 5 > 1) ? y - 5 : 1;
+  Pair end = {(x + 5 < nCols - 1) ? x + 5 : nCols - 1, (y + 5 < nRows - 1) ? y + 5 : nRows - 1};
+  // int endX = (x + 5 < nCols - 1) ? x + 5 : nCols - 2;
+  // int endY = (y + 5 < nRows - 1) ? y + 5 : nRows - 2;
+  for (i = start.y; i < end.y; i++){
+    for (j = start.x; j < end.x; j++){
+      sight[i][j] = map[i][j].value;
+    }
+  }
 }
 
 void create_dungeon(Dungeon* dungeon, Cell map[][nCols], Cell room_cells[]){
