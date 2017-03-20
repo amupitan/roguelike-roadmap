@@ -391,11 +391,7 @@ void updateSight(Player* pc, Cell map[][nCols]){ /*TODO: move to Player class*/
   int i,j;
   char** sight = csetSight(pc, nRows, nCols); /*TODO: check value of sight*/
   Pair start = {(x - 5 > 1) ? x - 5 : 1, (y - 5 > 1) ? y - 5 : 1};
-  // int startX = (x - 5 > 1) ? x - 5 : 1;
-  // int startY = (y - 5 > 1) ? y - 5 : 1;
   Pair end = {(x + 5 < nCols - 1) ? x + 5 : nCols - 1, (y + 5 < nRows - 1) ? y + 5 : nRows - 1};
-  // int endX = (x + 5 < nCols - 1) ? x + 5 : nCols - 2;
-  // int endY = (y + 5 < nRows - 1) ? y + 5 : nRows - 2;
   for (i = start.y; i < end.y; i++){
     for (j = start.x; j < end.x; j++){
       sight[i][j] = map[i][j].value;

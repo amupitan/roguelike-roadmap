@@ -34,4 +34,7 @@ The game is in file game.c, a queue that was used in implemting the game is in f
 * Corridors do not overlay rooms
 * C strucutres are used to identify cells and charcters in the game
 * game.c and queue.c both have header files game.h and game.c respectively
+* There is a fog which makes the PC see only a raduis of 5 units
+* Whenever a portion of the dungeon is seen, it remains seen
+* The PC only remembers what it sees so it updates its only when the PC is within a range of 5 units to the updated unit
 

@@ -367,7 +367,6 @@ int main(int argc, char *argv[]){
       }
       if ((chars[target.y][target.x] != -1) && (chars[target.y][target.x] != cgetId(p_curr))){ //weird stuff.
         ckillPlayer(characters[chars[target.y][target.x]]);
-        // .value = -1;
         if(!(--l_monsters)) break;
       }
       chars[target.y][target.x] = cgetId(p_curr);
@@ -622,5 +621,3 @@ void delete_players(Player* characters[], int num_characters){
     characters[i] = NULL;
   }
 }
-
-/*PC can go out 1490025018 to the right*/
