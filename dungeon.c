@@ -260,7 +260,7 @@ void Djikstra_impl(int t_dist[][nCols], Cell map[][nCols], Queue* q, Cell pc){
           free(temps[i][j]);
 }
 
-void nrender_dungeon(Cell map[][nCols], int chars[][nCols], Player monsts[]){
+void nrender_dungeon(Cell map[][nCols], int chars[][nCols], Player* monsts[]){
   int i = 0, j = 0;
   move(1, 1);
   for (i = 0; i < nRows; i++){
@@ -278,7 +278,7 @@ void nrender_dungeon(Cell map[][nCols], int chars[][nCols], Player monsts[]){
 // 	move(0,0);
 }
 
-void render_partial(Cell map[][nCols], int chars[][nCols], Player monsts[], Pair start, Pair* newPos){
+void render_partial(Cell map[][nCols], int chars[][nCols], Player* monsts[], Pair start, Pair* newPos){
   int i = 0, j = 0;
   start.x = (start.x < 0) ? 0 : start.x;
   start.y = (start.y < 0) ? 0 : start.y;
@@ -307,37 +307,74 @@ void render_partial(Cell map[][nCols], int chars[][nCols], Player monsts[], Pair
 	refresh();
 }
 
-void printmon(Player player){
-  attron(COLOR_PAIR((player.id % 6) + 1));
-  addch(player.value);
-  attroff(COLOR_PAIR((player.id % 6) + 1));
+void printmon(Player* player){
+  attron(COLOR_PAIR((cgetId(player) % 6) + 1));
+  addch(cgetValue(player));
+  attroff(COLOR_PAIR((cgetId(player) % 6) + 1));
 }
 
-void addCharcters(Dungeon* dungeon, Queue* evt, int nummon, Player characters[], int chars[][nCols], unsigned int pace[]){
+// void addCharcters(Dungeon* dungeon, Queue* evt, int nummon, Player* characters[], int chars[][nCols], unsigned int pace[]){
+//   int i;
+//   memset(chars, -1, sizeof(int)*nRows*nCols);
+//   for(i = 0; i < nummon + 1; i++){
+//     int rand_room = i ? rand_gen(1, dungeon->num_rooms - 1) : 0; //This makes sure no monster is spawned int he same room as the PC.
+//     if ( (i != 0) || (i == 0 && characters[i].type == 0)){
+//       characters[i].x = rand_gen(dungeon->rooms[rand_room].x, dungeon->rooms[rand_room].x + dungeon->rooms[rand_room].width - 1); //use determine_position
+      
+//       characters[i].y = rand_gen(dungeon->rooms[rand_room].y, dungeon->rooms[rand_room].y + dungeon->rooms[rand_room].height - 1);
+//       if (i != 0 ) { /*Assign every monster a type*/
+//         characters[i].type = rand() & 0xF;//rand_gen(0x0,0xF);
+//         char temp_val[2];
+//         sprintf(temp_val, "%x", characters[i].type);
+//         characters[i].value = *temp_val;
+        
+//       }
+//     }
+//     characters[i].speed = rand_gen(5, 20);
+//     characters[i].id = i;
+//     chars[characters[i].y][characters[i].x] = i;
+//     pace[i] = 1000/characters[i].speed;
+//     add_with_priority(evt, characters[i], pace[i]);
+//   }
+//   characters[0].speed = 10;
+//   characters[0].speed = 0xF; //not too sure why i do this, i know it blocks pc from getting assigned a value execpt this value is hanged by new dungeon generation
+// }
+
+void addCharcters(Dungeon* dungeon, Queue* evt, int nummon, Player* characters[], int chars[][nCols], unsigned int pace[]){
   int i;
   memset(chars, -1, sizeof(int)*nRows*nCols);
+  characters[0] = pc_init(characters[0], dungeon->rooms[0]);
   for(i = 0; i < nummon + 1; i++){
-    int rand_room = i ? rand_gen(1, dungeon->num_rooms - 1) : 0; //This makes sure no monster is spawned int he same room as the PC.
-    if ( (i != 0) || (i == 0 && characters[i].type == 0)){
-      characters[i].x = rand_gen(dungeon->rooms[rand_room].x, dungeon->rooms[rand_room].x + dungeon->rooms[rand_room].width - 1); //use determine_position
-      
-      characters[i].y = rand_gen(dungeon->rooms[rand_room].y, dungeon->rooms[rand_room].y + dungeon->rooms[rand_room].height - 1);
-      if (i != 0 ) { /*Assign every monster a type*/
-        characters[i].type = rand() & 0xF;//rand_gen(0x0,0xF);
-        char temp_val[2];
-        sprintf(temp_val, "%x", characters[i].type);
-        characters[i].value = *temp_val;
-        
-      }
+    /*Initialize monsters*/
+    if (i != 0){
+      int rand_room = rand_gen(1, dungeon->num_rooms - 1); //This makes sure no monster is spawned int he same room as the PC.
+      uint8_t type = rand() & 0xF;//rand_gen(0x0,0xF);
+      char temp_val[2];
+      sprintf(temp_val, "%x", type);
+      characters[i] = construct_player(
+        i, /*id*/
+        rand_gen(dungeon->rooms[rand_room].x, dungeon->rooms[rand_room].x + dungeon->rooms[rand_room].width - 1), /*x-position*/
+        rand_gen(dungeon->rooms[rand_room].y, dungeon->rooms[rand_room].y + dungeon->rooms[rand_room].height - 1),/*y-position*/
+        rand_gen(5, 20), /*speed*/
+        type /*type*/
+      );
     }
-    characters[i].speed = rand_gen(5, 20);
-    characters[i].id = i;
-    chars[characters[i].y][characters[i].x] = i;
-    pace[i] = 1000/characters[i].speed;
-    add_with_priority(evt, &characters[i], pace[i]);
+    chars[cgetY(characters[i])][cgetX(characters[i])] = i;
+    pace[i] = 1000/cgetSpeed(characters[i]);
+    add_with_priority(evt, characters[i], pace[i]);
   }
-   characters[0].speed = 10;
-   characters[0].speed = 0xF; //not too sure why i do this, i know it blocks pc from getting assigned a value execpt this value is hanged by new dungeon generation
+  // characters[0].speed = 0xF; //not too sure why i do this, i know it blocks pc from getting assigned a value execpt this value is hanged by new dungeon generation
+}
+
+Player* pc_init(Player* pc, Room room){
+  pc = construct_player(
+    0, /*id*/
+    rand_gen(room.x, room.x + room.width - 1), /*x-position*/
+    rand_gen(room.y, room.y + room.height - 1),/*y-position*/
+    10, /*speed*/
+    'A' /*type*/
+  );
+  return pc;
 }
 
 void create_dungeon(Dungeon* dungeon, Cell map[][nCols], Cell room_cells[]){
