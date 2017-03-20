@@ -1,13 +1,31 @@
+CC = gcc
+CXX = g++
+DEBUG = -ggdb
+LFLAGS = -Wall -Werror
+CFLAGS = $(LFLAGS) $(DEBUG) -c
+CXXFLAGS = $(LFLAGS) $(DEBUG) -c
+LDFLAGS = -lncurses
+OBJS = game.o dungeon.o Player.o queue.o
+
 default: game
 
-game:	game.c queue.c game.h queue.h dungeon.c
-	gcc -o game game.c queue.c dungeon.c -lncurses -Wall -Werror -ggdb
+game.o: game.c game.h Player.h queue.h
+	$(CC) $(CFLAGS) game.c
+	
+queue.o: queue.c queue.h
+	$(CC) $(CFLAGS) queue.c
+	
+dungeon.o: dungeon.c game.h Player.h queue.h
+	$(CC) $(CFLAGS) dungeon.c
+	
+Player.o: Player.cpp game.h Player.h queue.h
+	$(CXX) $(CXXFLAGS) Player.cpp
+	
+game: $(OBJS)
+	$(CC) $(LDFLAGS) $(LFLAGS) $(DEBUG) $(OBJS) -o game
 
 clean:
-	rm -f a.out game cpgame
+	rm -f a.out cpgame game *.o
 
-fast:	game.c queue.c game.h queue.h dungeon.c
-	gcc -o game game.c queue.c dungeon.c -lncurses -Wall -ggdb
-
-cpp:	game.c queue.c game.h queue.h dungeon.c
-	g++ -lncurses -o cpgame game.c queue.c dungeon.c  -Wall -Werror -ggdb
+cpp: $(OBJS)
+	$(CXX) $(LDFLAGS) $(LFLAGS) $(DEBUG) $(OBJS) -o cpgame
