@@ -2,27 +2,15 @@
 #define GAME_H
 
 #include "Player.h" /*TODO remove?*/
+#include <stdint.h>
+#include "Cell_Pair.h"
 
 # ifdef __cplusplus
 extern "C" {
 # endif
 
-#include <stdint.h>
-
 #define nRows 105
 #define nCols 160
-
-typedef struct Pair{
-  int x;
-  int y;
-} Pair;
-
-typedef struct Cell{
-	int x;
-	int y;
-	char value;
-	unsigned char hardness;
-}Cell;
 
 typedef struct Room{
   int x;
