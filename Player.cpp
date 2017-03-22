@@ -44,6 +44,22 @@ char** Player::setSight(int height, int width){
   return sight;
 }
 
+// void Player::updateSight(int height, int width, char map[][width]){
+//   // char** sight = csetSight(pc, nRows, nCols); /*TODO: check value of sight*/
+//   if (sight && id == 0){ /*Checks that Player is PC*/
+//     int startX = (x - 5 > 1) ? x - 5 : 1;
+//     int startY = (y - 5 > 1) ? y - 5 : 1;
+//     int endX = (x + 5 < width - 1) ? x + 5 : width - 1;
+//     int endY = (y + 5 < height - 1) ? y + 5 : height - 1;
+//     for (int i = startY; i < endY; i++){
+//       for (int j = startX; j < endX; j++){
+//         sight[i][j] = map[i][j];
+//       }
+//     }
+//   }
+  
+// }
+
 void Player::freeSight(int height){
   if (sight){
     for (int i = 0; i < height; i++)
@@ -98,6 +114,10 @@ void csetType(Player* p, uint8_t type){
 char** csetSight(Player* p, int height, int width){
   return p->setSight(height, width);
 }
+
+// void cupdateSight(Player* p, int height, int width, char map[][width]){
+//   p->updateSight(height, width, map);
+// }
 
 void cfreeSight(Player* p, int height){
   return p->freeSight(height);

@@ -327,7 +327,8 @@ void pc_render_partial(Cell map[][nCols], int chars[][nCols], Player* monsts[], 
 		  if (i == 0 || j == 0 || i == (nRows - 1) || j == (nCols - 1)) addch(' ');
 		  else if (sight[i][j] != -1){
   		  int temp = chars[i][j];
-  		  if (temp != -1) printmon(monsts[chars[i][j]]);
+  		  int in_range = (j <= cgetX(monsts[0]) + 5) && (j >= cgetX(monsts[0]) - 5) && (i <= cgetY(monsts[0]) + 5) && (i >= cgetY(monsts[0]) - 5);
+  		  if ((temp != -1) && (in_range)) printmon(monsts[chars[i][j]]); /*There is a monster on the terrain and the monster is within range*/
   		  else addch(sight[i][j]);
 		  }else addch(' ');
 		}
@@ -391,9 +392,9 @@ void updateSight(Player* pc, Cell map[][nCols]){ /*TODO: move to Player class*/
   int i,j;
   char** sight = csetSight(pc, nRows, nCols); /*TODO: check value of sight*/
   Pair start = {(x - 5 > 1) ? x - 5 : 1, (y - 5 > 1) ? y - 5 : 1};
-  Pair end = {(x + 5 < nCols - 1) ? x + 5 : nCols - 1, (y + 5 < nRows - 1) ? y + 5 : nRows - 1};
-  for (i = start.y; i < end.y; i++){
-    for (j = start.x; j < end.x; j++){
+  Pair end = {(x + 5 < nCols - 1) ? x + 5 : nCols - 2, (y + 5 < nRows - 1) ? y + 5 : nRows - 2};
+  for (i = start.y; i <= end.y; i++){
+    for (j = start.x; j <= end.x; j++){
       sight[i][j] = map[i][j].value;
     }
   }

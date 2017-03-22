@@ -27,6 +27,7 @@ class Player{
     void setPos(void* x, void* y);
     void setType(uint8_t type);
     char** setSight(int height, int width);
+    // void updateSight(int height, int width, char map[][width]);
     void freeSight(int height);
     void printPlayer();
     int getX();
@@ -47,6 +48,7 @@ extern "C" {
   void csetPos(Player* p, void* x, void* y);
   void csetType(Player* p, uint8_t type);
   char** csetSight(Player* p, int height, int width);
+  // void cupdateSight(Player* p, int height, int width, char map[][width]);
   void cfreeSight(Player* p, int height);
   void cprintPlayer(Player* p);
   int cgetX(Player* p);

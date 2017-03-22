@@ -186,7 +186,6 @@ int main(int argc, char *argv[]){
     pcp = characters[0];
     Player* p_curr;
     p_curr = (Player *)peek(&evt, &p_curr);
-    // Player curr = *p_curr;
     Pair target = {cgetX(p_curr), cgetY(p_curr)};// {cgetX(p_curr), cgetY(p_curr)};
     if (cgetValue(p_curr) == -1){ //it was killed
       dequeue(&evt);
@@ -200,6 +199,9 @@ int main(int argc, char *argv[]){
       //   target.x = rand_gen(cgetX(p_curr) - 1, cgetX(p_curr) + 1);
       //   target.y = rand_gen(cgetY(p_curr) - 1, cgetY(p_curr) + 1);
       // }
+      
+      // char** map_values = (char **)malloc(sizeof(char *) * nRows);
+      // for
       updateSight(pcp, map);
       Pair start = {cgetX(p_curr) - 40, cgetY(p_curr) - 10};
       pc_render_partial(map, chars, characters, start, NULL); //TODO!!!
@@ -272,7 +274,7 @@ int main(int argc, char *argv[]){
       
       /*Telephathy*/
       int curr_room_no = getRoom(dungeon, cgetX(p_curr), cgetY(p_curr));
-      if (ccheckType(p_curr, 0x2) || (curr_room_no == getRoom(dungeon, cgetX(pcp), cgetY(pcp)))){ //smart or line of sight //TODO might want to check corridor
+      if (ccheckType(p_curr, 0x2) || (curr_room_no == getRoom(dungeon, cgetX(pcp), cgetY(pcp)))){ //smart or line of sight //TODO might want to check corridor, this makes the PC visible to all monsters on a corridor when it's on the corridor because getRoom for both will return -1
         target.x = cgetX(pcp);
         target.y = cgetY(pcp);
         last_seen[cgetId(p_curr) - 1] = target;
@@ -441,7 +443,7 @@ void endgame(Dungeon* dungeon, Queue* game_queue, const char* endmessage){
   mvprintw(0/row, col/2 - (strlen(endmessage) + 22)/2, "%s %s",endmessage, "hit any button to quit"); /*variable row is only used to avoid variable-not-used-warning*/
   getch();/*TODO, i don't call refersh but it works*/
   endwin();
-  // system("clear");
+  system("clear");
   /*Display some nice stats*/
   puts(endmessage);
 	exit(0);
@@ -621,3 +623,6 @@ void delete_players(Player* characters[], int num_characters){
     characters[i] = NULL;
   }
 }
+
+//1490045401 --nummon=10
+//1490063401 visible monster
