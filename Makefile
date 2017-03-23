@@ -22,7 +22,7 @@ Player.o: Player.cpp game.h Player.h queue.h Cell_Pair.h
 	$(CXX) $(CXXFLAGS) Player.cpp
 	
 game: $(OBJS)
-	$(CC) $(LDFLAGS) $(LFLAGS) $(DEBUG) $(OBJS) -o game
+	$(CXX) $(LDFLAGS) $(LFLAGS) $(DEBUG) $(OBJS) -o game
 
 clean:
 	rm -f a.out cpgame game *.o

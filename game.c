@@ -619,7 +619,8 @@ void delete_players(Player* characters[], int num_characters){
   int i;
   cfreeSight(characters[0], nRows);
   for (i = 0; i < num_characters; i++){
-    free(characters[i]);
+    // free(characters[i]);
+    deletePlayer(characters[i]);
     characters[i] = NULL;
   }
 }

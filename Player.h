@@ -37,6 +37,7 @@ class Player{
     uint8_t getSpeed();
     bool checkType(uint8_t type);
     void killPlayer();
+    ~Player();
 };
 
 
@@ -58,6 +59,7 @@ extern "C" {
   int ccheckType(Player* p, uint8_t type);
   void ckillPlayer(Player *p);
   uint8_t cgetSpeed(Player* p);
+  void deletePlayer(Player* p);
   
   
 #ifdef __cplusplus

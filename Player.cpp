@@ -101,6 +101,8 @@ bool Player::checkType(uint8_t type){
   return (type & this->type) != 0;
 }
 
+Player::~Player(){}
+
 
 /*C Wrapper functions*/
 void csetPos(Player* p, void* x, void* y){
@@ -135,9 +137,10 @@ Player* c_construct(uint8_t id, int x, int y){
 }
 
 Player* construct_player(uint8_t id, int x, int y, int speed, uint8_t type){
-  Player* temp = (Player *)malloc(sizeof(Player));
-  *temp = Player(id, x, y, speed, type);
-  return temp;
+  // Player* temp = (Player *)malloc(sizeof(Player));
+  // *temp = Player(id, x, y, speed, type);
+  // return temp;
+  return new Player(id, x, y, speed, type);
 }
 
 int cgetX(Player* p){
@@ -166,4 +169,8 @@ int ccheckType(Player* p, uint8_t type){
 
 void ckillPlayer(Player* p){
   p->killPlayer();
+}
+
+void deletePlayer(Player* p){
+  delete p;
 }
