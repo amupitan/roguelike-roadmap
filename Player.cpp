@@ -2,7 +2,7 @@
 #include <cstdlib>
 #include "Player.h"
 
-Player::Player(uint8_t id, int x, int y){
+Player::Player(uint8_t id, int x, int y) : speed(0), pace(0){
   this->id = id;
   this->x = x;
   this->y = y;
@@ -19,6 +19,7 @@ Player::Player(uint8_t id, int x, int y, int speed, uint8_t type){
   value = *temp_val;
   if (id == 0) value = '@'; /*TODO: find a better way to change PC's value. Consider a setValue method*/
   sight = NULL;
+  pace = 1000/speed;
 }
 
 void Player::setPos(void* x, void* y){
@@ -69,27 +70,27 @@ void Player::freeSight(int height){
   }
 }
 
-void Player::printPlayer(){
+void Player::printPlayer() const{
   printf("x: %d, y: %d\n", x, y);
 }
 
-int Player::getX(){
+int Player::getX() const{
   return x;
 }
 
-int Player::getY(){
+int Player::getY() const{
   return y;
 }
 
-int Player::getId(){
+int Player::getId() const{
   return id;
 }
 
-char Player::getValue(){
+char Player::getValue() const{
   return value;
 }
 
-uint8_t Player::getSpeed(){
+uint8_t Player::getSpeed() const{
   return speed;
 }
 
@@ -97,12 +98,35 @@ void Player::killPlayer(){
   value = -1;
 }
 
-bool Player::checkType(uint8_t type){
+bool Player::checkType(uint8_t type) const{
   return (type & this->type) != 0;
 }
 
 Player::~Player(){}
 
+bool Player::operator<(const Player& rhs) const{
+	return pace < rhs.pace;
+}
+
+bool Player::operator>(const Player& rhs) const{
+	return pace > rhs.pace;
+}
+
+bool Player::operator==(const Player& rhs) const{
+	return id < rhs.id;
+}
+
+
+
+void Player::updatePace(){
+	pace += 1000/speed;
+}
+
+// struct PlayerComparator{
+  // bool operator<(const Player& lhs, const Player& rhs){
+  // 	return lhs.pace < rhs.pace;
+  // }
+// }
 
 /*C Wrapper functions*/
 void csetPos(Player* p, void* x, void* y){

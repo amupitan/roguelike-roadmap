@@ -19,6 +19,7 @@ class Player{
     int: 4;
     uint8_t speed; //can use :5?
     uint8_t id; //int?
+    uint32_t pace;
     char** sight;
     
   public:
@@ -28,22 +29,29 @@ class Player{
     void setType(uint8_t type);
     char** setSight(int height, int width);
     // void updateSight(int height, int width, char map[][width]);
+    void updatePace();
     void freeSight(int height);
-    void printPlayer();
-    int getX();
-    int getY();
-    int getId();
-    char getValue();
-    uint8_t getSpeed();
-    bool checkType(uint8_t type);
+    void printPlayer() const;
+    int getX() const;
+    int getY() const;
+    int getId() const;
+    // Pair getPos() const; //remove?
+    char getValue() const;
+    uint8_t getSpeed() const;
+    bool checkType(uint8_t type) const;
     void killPlayer();
+    
+    bool operator<(const Player& rhs) const;
+    bool operator>(const Player& rhs) const;
+    bool operator==(const Player& rhs) const;
     ~Player();
 };
 
 
 extern "C" {
 #endif /*EXTERN OPEN*/
-
+  // struct PlayerComparator;
+  // bool operator<(const Player& lhs, const Player& rhs);
   Player* c_construct(uint8_t id, int x, int y);
   Player* construct_player(uint8_t id, int x, int y, int speed, uint8_t type);
   void csetPos(Player* p, void* x, void* y);
