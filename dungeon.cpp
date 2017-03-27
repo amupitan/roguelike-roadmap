@@ -12,6 +12,7 @@
 
 #include "queue.h"
 #include "game.h"
+#include "dungeon.h"
 
 
 
@@ -468,4 +469,37 @@ void load_dungeon(FILE* dungeon_file, Dungeon* dungeon, Cell map[][nCols], char*
   
   //display corridor
   fclose(dungeon_file);
+}
+
+
+
+/*This function assumes that there are at least 2 rooms*/
+void add_stairs(Dungeon* dungeon, Cell map[][nCols]){
+  int i;
+	int n_stairs = rand_gen(2,4);
+	for(i = 0; i < n_stairs; i++){
+	  /*create upstair in random room then downstair in the next room */
+	  int room_no = rand_gen(0, dungeon->num_rooms - 2);
+	  Pair pos = determine_position(dungeon->rooms[room_no]);
+	  map[pos.y][pos.x].value = '<';
+	  pos = determine_position(dungeon->rooms[room_no + 1]);
+	  map[pos.y][pos.x].value = '>';
+	}
+}
+
+void delete_dungeon(Dungeon* dungeon, Queue* evt, Cell map[][nCols]){
+  int i,j;
+  /*free dungeon rooms*/
+  free(dungeon->rooms);
+  dungeon->num_rooms = 0;
+  /*free queue*/
+  empty_queue(evt);
+  /*Reset map*/
+  for (i = 0; i < nRows; i++){
+		for (j =0; j < nCols; j++){
+			map[i][j].value = 32;
+			map[i][j].hardness = (i == 0 || j == 0 || i == nRows-1 || j == nCols-1) ? 255 : rand_gen(1,254);
+		}
+	}
+	
 }
