@@ -11,10 +11,9 @@
 #include <ncurses.h>
 
 #include "queue.h"
-#include "game.h"
 #include "dungeon.h"
-
-
+#include "game.h"
+#include "Player.h"
 
 int connect_rooms(Cell map[][nCols], Cell p, Cell q){
 	while (p.x != q.x){
@@ -39,7 +38,7 @@ int update_cell(Cell* p, char value, unsigned char hardness){
   return 0;
 }
 
-// void render_dungeon(Cell map[][nCols], int chars[][nCols], Player monsts[]){
+// void render_dungeon(Cell map[][nCols], int chars[][nCols], Character monsts[]){
 //   int i = 0, j = 0;
 //   for (i = 0; i < nRows; i++){
 // 		for (j =0; j < nCols; j++){
@@ -261,7 +260,7 @@ void Djikstra_impl(int t_dist[][nCols], Cell map[][nCols], Queue* q, Cell pc){
           free(temps[i][j]);
 }
 
-void nrender_dungeon(Cell map[][nCols], int chars[][nCols], Player* monsts[]){
+void nrender_dungeon(Cell map[][nCols], int chars[][nCols], Character* monsts[]){
   int i = 0, j = 0;
   move(1, 1);
   for (i = 0; i < nRows; i++){
@@ -279,7 +278,7 @@ void nrender_dungeon(Cell map[][nCols], int chars[][nCols], Player* monsts[]){
 // 	move(0,0);
 }
 
-void render_partial(Cell map[][nCols], int chars[][nCols], Player* monsts[], Pair start, Pair* newPos){
+void render_partial(Cell map[][nCols], int chars[][nCols], Character* monsts[], Pair start, Pair* newPos){
   int i = 0, j = 0;
   start.x = (start.x < 0) ? 0 : start.x;
   start.y = (start.y < 0) ? 0 : start.y;
@@ -308,7 +307,7 @@ void render_partial(Cell map[][nCols], int chars[][nCols], Player* monsts[], Pai
 	refresh();
 }
 
-void pc_render_partial(Cell map[][nCols], int chars[][nCols], Player* monsts[], Pair start, Pair* newPos){
+void pc_render_partial(Cell map[][nCols], int chars[][nCols], Character* monsts[], Pair start, Pair* newPos){
   char** sight = csetSight(monsts[0], nRows, nCols); /*TODO: check value of sight*/
   int i = 0, j = 0;
   start.x = (start.x < 0) ? 0 : start.x;
@@ -339,13 +338,13 @@ void pc_render_partial(Cell map[][nCols], int chars[][nCols], Player* monsts[], 
 	refresh();
 }
 
-void printmon(Player* player){
-  attron(COLOR_PAIR((cgetId(player) % 6) + 1));
-  addch(cgetValue(player));
-  attroff(COLOR_PAIR((cgetId(player) % 6) + 1));
+void printmon(Character* Character){
+  attron(COLOR_PAIR((cgetId(Character) % 6) + 1));
+  addch(cgetValue(Character));
+  attroff(COLOR_PAIR((cgetId(Character) % 6) + 1));
 }
 
-void addCharcters(Dungeon* dungeon, Queue* evt, int nummon, Player* characters[], int chars[][nCols], unsigned int pace[]){
+void addCharcters(Dungeon* dungeon, Queue* evt, int nummon, Character* characters[], int chars[][nCols], unsigned int pace[]){
   int i;
   memset(chars, -1, sizeof(int)*nRows*nCols);
   characters[0] = pc_init(characters[0], dungeon->rooms[0]);
@@ -356,7 +355,7 @@ void addCharcters(Dungeon* dungeon, Queue* evt, int nummon, Player* characters[]
       uint8_t type = rand() & 0xF;//rand_gen(0x0,0xF);
       char temp_val[2];
       sprintf(temp_val, "%x", type);
-      characters[i] = construct_player(
+      characters[i] = new Monster(
         i, /*id*/
         rand_gen(dungeon->rooms[rand_room].x, dungeon->rooms[rand_room].x + dungeon->rooms[rand_room].width - 1), /*x-position*/
         rand_gen(dungeon->rooms[rand_room].y, dungeon->rooms[rand_room].y + dungeon->rooms[rand_room].height - 1),/*y-position*/
@@ -371,14 +370,18 @@ void addCharcters(Dungeon* dungeon, Queue* evt, int nummon, Player* characters[]
   // characters[0].speed = 0xF; //not too sure why i do this, i know it blocks pc from getting assigned a value execpt this value is hanged by new dungeon generation
 }
 
-Player* pc_init(Player* pc, Room room){
-  pc = construct_player(
-    0, /*id*/
-    rand_gen(room.x, room.x + room.width - 1), /*x-position*/
-    rand_gen(room.y, room.y + room.height - 1),/*y-position*/
-    10, /*speed*/
-    '@' /*type TODO: this doesn't actually do anything. The real thing is done in the constructor*/
-  );
+Character* pc_init(Character* pc, Room room){
+  // pc = new Character(
+  //   0, /*id*/
+  //   rand_gen(room.x, room.x + room.width - 1), /*x-position*/
+  //   rand_gen(room.y, room.y + room.height - 1),/*y-position*/
+  //   10, /*speed*/
+  //   '@' /*type TODO: this doesn't actually do anything. The real thing is done in the constructor*/
+  // );
+  int pc_x = rand_gen(room.x, room.x + room.width - 1);
+  int pc_y = rand_gen(room.y, room.y + room.height - 1);
+  pc = Player::getPlayer();
+  pc->setPos(&pc_x, &pc_y);
   char** sight = csetSight(pc, nRows, nCols); /*TODO: check value of sight*/
   for (int i = 0; i < nRows; i++){
     for (int j = 0; j < nCols; j++){
@@ -388,7 +391,7 @@ Player* pc_init(Player* pc, Room room){
   return pc;
 }
 
-void updateSight(Player* pc, Cell map[][nCols]){ /*TODO: move to Player class*/
+void updateSight(Character* pc, Cell map[][nCols]){ /*TODO: move to Character class*/
   int x = cgetX(pc), y = cgetY(pc);
   int i,j;
   char** sight = csetSight(pc, nRows, nCols); /*TODO: check value of sight*/

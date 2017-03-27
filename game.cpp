@@ -12,7 +12,8 @@
 
 #include "display.h"
 #include "queue.h"
-#include "Player.h"
+#include "Character.h"
+#include "Monster.h"
 #include "game.h"
 #include "dungeon.h"
 
@@ -162,12 +163,12 @@ int main(int argc, char *argv[]){
   
   /*Monster magic and initialize random pc if no valid command line argument was entered*/
   Queue evt;
-  queue_init(&evt, char_equals, print_player);
+  queue_init(&evt, char_equals, print_Character);
   
-  /*Initialize all players (PC and monster)*/
+  /*Initialize all Characters (PC and monster)*/
   if (nummon_flag == 0) nummon = rand_gen(dungeon.num_rooms, dungeon.num_rooms*2);
   int l_monsters = nummon;
-  Player* characters[nummon + 1];
+  Character* characters[nummon + 1];
   Pair last_seen[nummon];
   memset(last_seen, - 1, sizeof(Pair)*nummon);
 
@@ -183,11 +184,11 @@ int main(int argc, char *argv[]){
 
   add_stairs(&dungeon, map);
   char recalculate = 1;
-  Player* pcp = characters[0];
+  Character* pcp = characters[0];
   do{
     pcp = characters[0];
-    Player* p_curr;
-    p_curr = (Player *)peek(&evt, &p_curr);
+    Character* p_curr;
+    p_curr = (Character *)peek(&evt, &p_curr);
     Pair target = {cgetX(p_curr), cgetY(p_curr)};// {cgetX(p_curr), cgetY(p_curr)};
     if (cgetValue(p_curr) == -1){ //it was killed
       dequeue(&evt);
@@ -210,7 +211,7 @@ int main(int argc, char *argv[]){
       do{
         target = *(Pair *)getInputC(&target);
         if (target.x == -1 && target.y == -1){
-          delete_players(characters, nummon + 1);
+          delete_Characters(characters, nummon + 1);
           endgame(&dungeon, &evt, "Game ended");
         }
         if (target.x == -2 && target.y == -2) {
@@ -224,7 +225,7 @@ int main(int argc, char *argv[]){
               break;
             }
             pc_render_partial(map, chars, characters, look, &look);
-          }while(1);
+          }while(true);
         }
         else if ((target.x == -3 && target.y == -3) || (target.x == -4 && target.y == -4)){
           /*use stairs: if not stair continue*/
@@ -236,7 +237,7 @@ int main(int argc, char *argv[]){
           // csetType(pcp, 0);
           l_monsters = nummon;
           delete_dungeon(&dungeon, &evt, map);
-          delete_players(characters, nummon + 1);
+          delete_Characters(characters, nummon + 1);
           create_dungeon(&dungeon, map, room_cells);
           add_stairs(&dungeon, map);
           addCharcters(&dungeon, &evt, nummon, characters, chars, pace);
@@ -262,6 +263,8 @@ int main(int argc, char *argv[]){
           log_message(stat_msg);
           free(stat_msg);
         }else if (target.x == -10 && target.y == -10){
+          target.x = p_curr->getX();
+          target.y = p_curr->getY(); //TODO: this happens in case -3 and shuld prolly happen in every case, refactor?
           continue;
         }
         else if (map[target.y][target.x].hardness == 0) break;
@@ -286,7 +289,7 @@ int main(int argc, char *argv[]){
           target = last_seen[cgetId(p_curr) - 1];
           recalculate = recalculate && ccheckType(p_curr, 0x1);
         }else{
-          /*if the player is not in a room, it's target is a random posotion in room 0*/
+          /*if the Character is not in a room, it's target is a random posotion in room 0*/
           curr_room_no = (curr_room_no == -1) ? /*rand_gen(0, dungeon.num_rooms)*/0 : curr_room_no;
           target = determine_position(dungeon.rooms[curr_room_no]);
         }
@@ -366,11 +369,11 @@ int main(int argc, char *argv[]){
         Pair start = {cgetX(p_curr) - 40, cgetY(p_curr) - 10};
         pc_render_partial(map, chars, characters, start, NULL); //TODO, fix start position!!!
 
-        delete_players(characters, nummon + 1);
+        delete_Characters(characters, nummon + 1);
         endgame(&dungeon, &evt, "The PC is dead :(");
       }
       if ((chars[target.y][target.x] != -1) && (chars[target.y][target.x] != cgetId(p_curr))){ //weird stuff.
-        ckillPlayer(characters[chars[target.y][target.x]]);
+        ckillCharacter(characters[chars[target.y][target.x]]);
         if(!(--l_monsters)) break;
       }
       chars[target.y][target.x] = cgetId(p_curr);
@@ -385,7 +388,7 @@ int main(int argc, char *argv[]){
   
   /*Print win message*/
   if (nummon && !l_monsters) {
-    delete_players(characters, nummon + 1);
+    delete_Characters(characters, nummon + 1);
     endgame(&dungeon, &evt, "PC killed em all");
   }
   
@@ -408,14 +411,14 @@ int cell_equals(void* c1, void* c2){
 }
 
 int char_equals(void* c1, void* c2){
-  return cgetId((Player *)c1) == cgetId((Player *)c2);
-  // return (*(Player *)c1).id == (*(Player *)c2).id;
+  return cgetId((Character *)c1) == cgetId((Character *)c2);
+  // return (*(Character *)c1).id == (*(Character *)c2).id;
 }
 
-void print_player(void* player){
-//   Player player_c = *(Player *)player;
-//   printf("id: %d => %c speed is %d\n",player_c.id, player_c.value, player_c.speed);
-  printf("id: %d => %c speed is %d\n",cgetId((Player *)player), cgetValue((Player *)player), cgetSpeed((Player *)player));
+void print_Character(void* character){
+//   character character_c = *(character *)character;
+//   printf("id: %d => %c speed is %d\n",character_c.id, character_c.value, character_c.speed);
+  printf("id: %d => %c speed is %d\n",cgetId((Character *)character), cgetValue((Character *)character), cgetSpeed((Character *)character));
 }
 
 
@@ -435,12 +438,12 @@ void endgame(Dungeon* dungeon, Queue* game_queue, const char* endmessage){
 	exit(0);
 }
 
-void delete_players(Player* characters[], int num_characters){
+void delete_Characters(Character* characters[], int num_characters){
   int i;
   cfreeSight(characters[0], nRows);
-  for (i = 0; i < num_characters; i++){
+  for (i = 1; i < num_characters; i++){
     // free(characters[i]);
-    deletePlayer(characters[i]);
+    deleteCharacter(characters[i]);
     characters[i] = NULL;
   }
 }

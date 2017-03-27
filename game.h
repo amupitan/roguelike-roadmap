@@ -1,12 +1,12 @@
 #ifndef GAME_H
 #define GAME_H
 
-#include "Player.h" /*TODO remove?*/
+#include "Character.h" /*TODO remove?*/
 #include <stdint.h>
 #include <queue>
 
 #include "Cell_Pair.h"
-#include "dungeon.h"
+#include "dungeon.h" //TODO find a way to remove
 
 # ifdef __cplusplus
 extern "C" {
@@ -21,19 +21,19 @@ int rand_gen(int min, int max);
 
 int cell_equals(void* c1, void* c2);
 
-void print_player(void* player);
+void print_Character(void* Character);
 int char_equals(void* c1, void* c2);
 
-// void delete_dungeon(Dungeon* dungeon,std::priority_queue<Player, std::vector<Player> >* evt, Cell map[][nCols]);
+// void delete_dungeon(Dungeon* dungeon,std::priority_queue<Character, std::vector<Character> >* evt, Cell map[][nCols]);
 // void delete_dungeon(Dungeon* dungeon, Queue* evt, Cell map[][nCols]);
 
-void delete_players(Player* characters[], int num_characters);
+void delete_Characters(Character* characters[], int num_characters);
 
-// void endgame(Dungeon* dungeon, std::priority_queue<Player, std::vector<Player> >* game_queue, const char* endmessage);
-// void endgame(Dungeon* dungeon, std::priority_queue<Player, std::vector<Player> >* game_queue, const char* endmessage);
+// void endgame(Dungeon* dungeon, std::priority_queue<Character, std::vector<Character> >* game_queue, const char* endmessage);
+// void endgame(Dungeon* dungeon, std::priority_queue<Character, std::vector<Character> >* game_queue, const char* endmessage);
 void endgame(Dungeon* dungeon, Queue* game_queue, const char* endmessage);
 
-// void clear_queue(std::priority_queue<Player, std::vector<Player>, std::greater<Player>>* q);
+// void clear_queue(std::priority_queue<Character, std::vector<Character>, std::greater<Character>>* q);
 
 # ifdef __cplusplus
 }
