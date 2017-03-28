@@ -53,6 +53,12 @@ void Player::freeSight(int height){
   }
 }
 
+void Player::deletePlayer(){ //TODO: is it standard to have such a member?
+  delete player;
+  player = NULL;
+}
+
+/*C Wrapper functions*/
 char** csetSight(Character* p, int height, int width){
   return static_cast<Player*>(p)->setSight(height, width);//TODO: check if type is player
 }

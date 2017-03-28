@@ -20,6 +20,7 @@ class Player : public Character{
     char** setSight(int height, int width);
     // void updateSight(int height, int width, char map[][width]);
     void freeSight(int height);
+    static void deletePlayer();
 };
 
 

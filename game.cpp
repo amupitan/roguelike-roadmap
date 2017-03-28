@@ -441,6 +441,7 @@ void endgame(Dungeon* dungeon, Queue* game_queue, const char* endmessage){
 void delete_Characters(Character* characters[], int num_characters){
   int i;
   cfreeSight(characters[0], nRows);
+  Player::deletePlayer();
   for (i = 1; i < num_characters; i++){
     // free(characters[i]);
     deleteCharacter(characters[i]);
@@ -450,3 +451,4 @@ void delete_Characters(Character* characters[], int num_characters){
 
 //1490045401 --nummon=10
 //1490063401 visible monster
+//1490647963 stairs
