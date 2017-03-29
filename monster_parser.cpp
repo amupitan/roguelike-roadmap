@@ -5,10 +5,10 @@
 
 namespace monster_parser{
   namespace private_wrapper{
-    monster_stub::monster_stub (){
-      // speed = 10;
+    monster_stub::monster_stub (){}
+    bool monster_stub::complete(){
+      return (name != "") && (desc != "") && (color != "") && (speed != "") && (abilities != "") && (hp != "") && (damage != "");
     }
-    
     void monster_stub::print(){ //add algo to render description nicely
       std::cout << name << "\n"
                 << desc << symb << "\n"
@@ -21,19 +21,11 @@ namespace monster_parser{
     
     std::ifstream monster_file;
     const char* path;
+    
     bool startsWith(const char* str, const char* start){
       size_t str_len = strlen(str), start_len = strlen(start);
       return str_len < start_len ? false : strncmp(str, start, start_len) == 0;
     }
-  
-    char* mstrcat(char* des, const char* src){
-      if (strlen(src) == 0) return 0;
-      des = (des) ? (char* )realloc(des, strlen(des) + strlen(src) + 1) :
-                    (char* )calloc(strlen(src) + 1, 1);
-      des = strcat(des, src);
-      return des;
-    }
-    
     std::ostream& operator<< (std::ostream& stream, const monster_stub& monster){
       return std::cout << monster.name << "\n"
                 << monster.desc << monster.symb << "\n"
@@ -55,7 +47,6 @@ namespace monster_parser{
     }else exit(-1); //could not open file
   }
   
-  //TODO
   void complete_parse(){
     if (!private_wrapper::path) start_parser("monster_desc.txt");
     while (private_wrapper::monster_file.good()){
@@ -69,7 +60,6 @@ namespace monster_parser{
     private_wrapper::monster_file.close();
   }
   
-  //TODO
   bool parse_monster(){
     private_wrapper::monsters.emplace_back();
     private_wrapper::monster_stub& curr = private_wrapper::monsters.back();
@@ -80,12 +70,14 @@ namespace monster_parser{
         return false;
       }
     }
-    // curr.print(); //TODO remove
-    return true;
+     if (!curr.complete()) {
+       private_wrapper::monsters.pop_back();
+       return false;
+     }
+     return true;
      //doesn't need to be 79, doesn't parse the desc
   }
   
-  //TODO
   bool private_wrapper::monster_stub::build_monster(std::ifstream& file, const char* line){
     if (private_wrapper::startsWith(line, "NAME")){
       if (name == ""){
@@ -95,20 +87,17 @@ namespace monster_parser{
     }
     else if (private_wrapper::startsWith(line, "DESC")){
       if (desc == ""){
-        char* description = NULL;
+        std::string description;
         char nextline[79];
         file.getline(nextline, 79);
+        description.append(nextline);
         while (!((strlen(nextline) == 1) && (*nextline == '.')) && file.good()){ //is it possible for nextline to be null? or have a length of 0? Empty line
-          description = private_wrapper::mstrcat(description, nextline);
           file.getline(nextline, 79);
+          description.append(nextline);
         }
-        if (*nextline != '.'){
-          free(description);
-          return false;
-        }
-        if (description[strlen(description) - 1] != '\n') description = private_wrapper::mstrcat(description, "\n");
+        if (*nextline != '.') return false;
+        if (description[description.length() - 1] != '\n') description.append("\n");
         desc = description;
-        free(description);
         return true;
       }
     }
@@ -162,7 +151,7 @@ namespace monster_parser{
 int main(int argc, char** argv){
   if (argc > 1) monster_parser::start_parser(argv[1]);
   monster_parser::complete_parse();
-  // std::cout << monster_parser::private_wrapper::monsters.size() << std::endl;
+  std::cout << monster_parser::private_wrapper::monsters.size() << std::endl;
   for (std::vector<int>::size_type i = 0; i < monster_parser::private_wrapper::monsters.size(); i++){
     std::cout << monster_parser::private_wrapper::monsters[i] << std::endl;
   }

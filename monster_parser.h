@@ -24,6 +24,7 @@ namespace monster_parser{
         bool build_monster(std::ifstream& file, const char* line);
         monster_stub();
         void print();
+        bool complete();
         friend std::ostream& operator<< (std::ostream& stream, const monster_stub& monster);
   	};
   	std::vector<monster_stub> monsters;
@@ -31,7 +32,6 @@ namespace monster_parser{
   	extern std::ifstream monster_file;
   	bool startsWith(const char* str, const char* start);
   	char* mstrcat(char* des, const char* src);
-  // 	typedef enum
 	}
 	void start_parser(const char* chosen_path);
 	void complete_parse();
