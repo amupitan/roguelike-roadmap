@@ -32,10 +32,10 @@ namespace monster_parser{
           file.getline(nextline, 79);
           while (!((strlen(nextline) == 1) && (*nextline == '.')) && file.good()){ //is it possible for nextline to be null? or have a length of 0? Empty line
             description.append(nextline);
+	    description.append("\n");
             file.getline(nextline, 79);
           }
           if (*nextline != '.') return false;
-          if (description[description.length() - 1] != '\n') description.append("\n");
           desc = description;
           return true;
         }
