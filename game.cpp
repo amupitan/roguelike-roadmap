@@ -10,12 +10,15 @@
 #include <unistd.h>
 #include <ncurses.h>
 
+#include <iostream>
+
 #include "display.h"
 #include "queue.h"
 #include "Character.h"
 #include "Monster.h"
-#include "game.h"
+#include "game.h" //TODO: forwatd declration problems when this is the first include
 #include "dungeon.h"
+#include "monster_parser.h"
 
 int main(int argc, char *argv[]){
   
@@ -107,6 +110,15 @@ int main(int argc, char *argv[]){
 		}
 	}
   
+  /*PRINT PARSED MONSTERS AND EXIT*/
+  monster_parser::start_parser(strcat(strcpy(load_file, getenv("HOME")), "/.rlg327/monster_desc.txt")); //reuses old variable
+  monster_parser::complete_parse();
+  std::vector<monster_parser::private_wrapper::monster_stub> parsed_monsters = monster_parser::getMonsterStubs(); //shouldn't be need since we'll be getting monsters not stubs
+  for (std::vector<int>::size_type i = 0; i < parsed_monsters.size(); i++)
+    std::cout << parsed_monsters[i] << std::endl;
+  return 0;
+  /*END*/
+  
   if (load){
     if (!(dungeon_file = fopen(load_file, "r"))){
       fprintf(stderr, "The file: %s couldn't be opened\n", load_file);
@@ -156,6 +168,7 @@ int main(int argc, char *argv[]){
       fclose(dungeon_file_l);
     }
   }
+
 
   /*Ncurses start*/
   int col = 0;

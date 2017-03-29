@@ -27,18 +27,15 @@ namespace monster_parser{
         bool complete();
         friend std::ostream& operator<< (std::ostream& stream, const monster_stub& monster);
   	};
-  	std::vector<monster_stub> monsters;
+  	extern std::vector<monster_stub> monsters;
   	extern const char* path;
   	extern std::ifstream monster_file;
   	bool startsWith(const char* str, const char* start);
-  	char* mstrcat(char* des, const char* src);
 	}
 	void start_parser(const char* chosen_path);
 	void complete_parse();
 	bool parse_monster();
-	int addMonster();
-	
-  
+	std::vector<private_wrapper::monster_stub> getMonsterStubs();
 }
 
 #endif
