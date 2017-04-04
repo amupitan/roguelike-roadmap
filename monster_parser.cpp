@@ -2,86 +2,138 @@
 #include <iostream>
 #include <fstream>
 #include <cstring>
+#include <time.h>
+#include <map>
 
 namespace monster_parser{
   namespace private_wrapper{
-    monster_stub::monster_stub (){}
     bool monster_stub::complete(){
       return (name != "") && (desc != "") && (color != "") && (speed != "") && (abilities != "") && (hp != "") && (damage != "");
     }
-    void monster_stub::print(){ //add algo to render description nicely
-      std::cout << name << "\n"
-                << desc << symb << "\n"
-                << color << "\n"
-                << speed << "\n"
-                << abilities << "\n"
-                << hp << "\n"
-                << damage << std::endl;
-    } //remove
-    bool monster_stub::build_monster(std::ifstream& file, const char* line){
-      if (private_wrapper::startsWith(line, "NAME")){
-        if (name == ""){
-          name = line + strlen("NAME") + 1; //+1 for the space
-          return true;
-        }
+    bool monster_stub::build(std::ifstream& file, const char* line){
+      if (private_wrapper::startsWith(line, "NAME") && name == ""){
+        return assign_attrbute(name, line, strlen("NAME"));
       }
-      else if (private_wrapper::startsWith(line, "DESC")){
-        if (desc == ""){
-          std::string description;
-          char nextline[79];
+      else if (private_wrapper::startsWith(line, "DESC") && desc == ""){
+        std::string description;
+        char nextline[79];
+        file.getline(nextline, 79);
+        while (!((strlen(nextline) == 1) && (*nextline == '.')) && file.good()){ //is it possible for nextline to be null? or have a length of 0? Empty line
+          description.append(nextline);
+          description.append("\n");
           file.getline(nextline, 79);
-          while (!((strlen(nextline) == 1) && (*nextline == '.')) && file.good()){ //is it possible for nextline to be null? or have a length of 0? Empty line
-            description.append(nextline);
-	    description.append("\n");
-            file.getline(nextline, 79);
-          }
-          if (*nextline != '.') return false;
-          desc = description;
-          return true;
         }
+        if (*nextline != '.') return false;
+        desc = description;
+        return true;
       }
-      else if (private_wrapper::startsWith(line, "COLOR")){
-        if (color == ""){
-          color = line + strlen("COLOR") + 1; //+1 for the space
-          return true;
-        }
+      else if (private_wrapper::startsWith(line, "COLOR") && color == ""){
+        return assign_attrbute(color, line, strlen("COLOR"));
       }
-      else if (private_wrapper::startsWith(line, "SPEED")){
-        if (speed == ""){
-          speed = line + strlen("SPEED") + 1; //+1 for the space
-          return true;
-        }
+      else if (private_wrapper::startsWith(line, "SPEED") && speed == ""){
+        return assign_attrbute(speed, line, strlen("SPEED"));
       }
-      else if (private_wrapper::startsWith(line, "ABIL")){
-        if (abilities == ""){
-          abilities = line + strlen("ABIL") + 1; //+1 for the space
-          return true;
-        }
+      else if (private_wrapper::startsWith(line, "ABIL") && abilities == ""){
+        return assign_attrbute(abilities, line, strlen("ABIL"));
       }
-      else if (private_wrapper::startsWith(line, "DAM")){
-        if (damage == ""){
-          damage = line + strlen("DAM") + 1; //+1 for the space
-          return true;
-        }
+      else if (private_wrapper::startsWith(line, "DAM") && damage == ""){
+        return assign_attrbute(damage, line, strlen("DAM"));
       }
-      else if (private_wrapper::startsWith(line, "SYMB")){
-        if (symb == ""){
-          symb = line + strlen("SYMB") + 1; //+1 for the space
-          return true;
-        }
+      else if (private_wrapper::startsWith(line, "SYMB") && symb == ""){
+        return assign_attrbute(symb, line, strlen("SYMB"));
       }
-      else if (private_wrapper::startsWith(line, "HP")){
-        if (hp == ""){
-          hp = line + strlen("HP") + 1; //+1 for the space
-          return true;
-        }
+      else if (private_wrapper::startsWith(line, "HP") && hp == ""){
+        return assign_attrbute(hp, line, strlen("HP"));
       }
       return false;
     }
     
-    std::vector<monster_stub> monsters;
-    std::ifstream monster_file;
-    const char* path;
+    
+    monster_stub monster_stub::operator=(monster_stub& copy){
+      copy.name = name;
+    	copy.desc = desc;
+    	copy.color = color; //make enum? use array
+    	copy.speed = speed;
+    	copy.abilities = abilities; //enum?
+    	copy.hp = hp;
+    	copy.damage = damage;
+    	copy.symb = symb;
+    	return copy;
+    }
+
+    item_stub item_stub::operator=(item_stub& copy){
+      copy.name = name;
+    	copy.desc = desc;
+    	copy.type = type;
+    	copy.color = color; //make enum? use array
+    	copy.hit = hit;
+    	copy.damage = damage; //enum?
+    	copy.dodge = dodge;
+    	copy.defense = defense;
+    	copy.weight = weight;
+    	copy.speed = speed;
+    	copy.symb = symb;
+    	copy.special = special;
+    	copy.value = value;
+    	return copy;
+    }
+    bool item_stub::build(std::ifstream& file, const char* line){
+      if (private_wrapper::startsWith(line, "NAME") && name == ""){
+        return assign_attrbute(name, line, strlen("NAME"));
+      }
+      else if (private_wrapper::startsWith(line, "DESC") && desc == ""){
+        std::string description;
+        char nextline[79];
+        file.getline(nextline, 79);
+        while (!((strlen(nextline) == 1) && (*nextline == '.')) && file.good()){ //is it possible for nextline to be null? or have a length of 0? Empty line
+          description.append(nextline);
+          description.append("\n");
+          file.getline(nextline, 79);
+        }
+        if (*nextline != '.') return false;
+        desc = description;
+        return true;
+      }
+      else if (private_wrapper::startsWith(line, "TYPE") && type == ""){
+        return assign_attrbute(type, line, strlen("TYPE"));
+      }
+      else if (private_wrapper::startsWith(line, "COLOR") && color == ""){
+        return assign_attrbute(color, line, strlen("COLOR"));
+      }
+      else if (private_wrapper::startsWith(line, "HIT") && hit == ""){
+        return assign_attrbute(hit, line, strlen("HIT"));
+      }
+      else if (private_wrapper::startsWith(line, "DAM") && damage == ""){
+        return assign_attrbute(damage, line, strlen("DAM"));
+      }
+      else if (private_wrapper::startsWith(line, "DODGE") && dodge == ""){
+        return assign_attrbute(dodge, line, strlen("DODGE"));
+      }
+      else if (private_wrapper::startsWith(line, "DEF") && defense == ""){
+        return assign_attrbute(defense, line, strlen("DEF"));
+      }
+      else if (private_wrapper::startsWith(line, "WEIGHT") && weight == ""){
+        return assign_attrbute(weight, line, strlen("WEIGHT"));
+      }
+      else if (private_wrapper::startsWith(line, "SPEED") && speed == ""){
+        return assign_attrbute(speed, line, strlen("SPEED"));
+      }
+      else if (private_wrapper::startsWith(line, "ATTR") && special == ""){
+        return assign_attrbute(special, line, strlen("ATTR"));
+      }
+      else if (private_wrapper::startsWith(line, "VAL") && value == ""){
+        return assign_attrbute(value, line, strlen("VAL"));
+      }
+      return false;
+    }
+    bool item_stub::complete(){
+      return (name != "") && (desc != "") && (color != "") && (speed != "") && (special != "") && (type != "") && (damage != "") && (dodge != "") && (defense != "") && (weight != "") && (value != "") && (hit != "");
+    }
+    
+    std::vector<stub*> objects;
+    std::ifstream object_file;
+    const char *path, *start, *header;
+    stub* (*getStub)();
     bool startsWith(const char* str, const char* start){
       size_t str_len = strlen(str), start_len = strlen(start);
       return str_len < start_len ? false : strncmp(str, start, start_len) == 0;
@@ -95,51 +147,151 @@ namespace monster_parser{
                 << monster.hp << "\n"
                 << monster.damage << std::endl;
     }
+    bool assign_attrbute(std::string& attr, const char* value, int offset){
+          attr = value + offset + 1; //+1 for the space
+          return true;
+    }
+    /* Add look-up functionality
+    std::map<const char*, std::string*> attr_lookup;
+    void attr_map_init(stub* object, const char* type){
+      if (strncmp(type, "monster", 8) == 0) monster_stub* obj = static_cast<monster_stub*>(object);
+      else if (strncmp(type, "item", 5) == 0) item_stub* obj = static_cast<item_stub*>(object);
+      else stub* obj = object;
+      // std::cout << obj->name << std::endl;
+    }
+    void add_attribute(const char* value, std::string& property){
+      
+    }
+    */
+    void delete_objects(){
+      for (std::vector<int>::size_type i = 0; i < private_wrapper::objects.size(); i++)
+        delete private_wrapper::objects[i];
+      private_wrapper::objects.clear();
+      std::vector<private_wrapper::stub*>(private_wrapper::objects).swap(private_wrapper::objects);
+      private_wrapper::path = 0;
+      private_wrapper::start = 0;
+      private_wrapper::header = 0;
+      private_wrapper::getStub = 0;
+    }
   }
 
   void start_parser(const char* chosen_path){
-    private_wrapper::path = (chosen_path) ? chosen_path : "monster_desc.txt";//TODO don't default
-    private_wrapper::monster_file.open(private_wrapper::path, std::ifstream::in);
-    if (private_wrapper::monster_file.good()){
-      char first_line[29];
-      private_wrapper::monster_file.getline(first_line, 29);
-      if (strncmp("RLG327 MONSTER DESCRIPTION 1", first_line, 29) != 0) exit(-1); /*hard-code*/
+    private_wrapper::path = (chosen_path) ? chosen_path : private_wrapper::path;//TODO don't default
+    private_wrapper::object_file.open(private_wrapper::path, std::ifstream::in);
+    int header_len = strlen(private_wrapper::header) + 1; //+1 to include null character
+    if (private_wrapper::object_file.good()){
+      char first_line[header_len];
+      private_wrapper::object_file.getline(first_line, header_len);
+      if (strncmp(private_wrapper::header, first_line, header_len) != 0) exit(-1); /*hard-code*/
     }else exit(-1); //could not open file
   }
   
   void complete_parse(){
-    if (!private_wrapper::path) start_parser("monster_desc.txt");
-    while (private_wrapper::monster_file.good()){
+    if (!private_wrapper::object_file.is_open()) start_parser(private_wrapper::path);
+    while (private_wrapper::object_file.good()){
       char nextline[79]; //doesn't need to be 79, doesn't parse the desc
-      private_wrapper::monster_file.getline(nextline, 79);
-      if (strncmp("BEGIN MONSTER", nextline, 13) == 0){
-        if (!parse_monster()) continue;
+      private_wrapper::object_file.getline(nextline, 79);
+      if (strncmp(private_wrapper::start, nextline, strlen(private_wrapper::start)) == 0){
+        if (!parse_object()) continue;
       }
       
     }
-    private_wrapper::monster_file.close();
+    private_wrapper::object_file.close();
   }
   
-  bool parse_monster(){
-    private_wrapper::monsters.emplace_back();
-    private_wrapper::monster_stub& curr = private_wrapper::monsters.back();
+  bool parse_object(){
+    private_wrapper::stub* curr = private_wrapper::getStub();
+    private_wrapper::objects.push_back(curr);
     char nextline[79];
-    while(private_wrapper::monster_file.good() && (private_wrapper::monster_file.getline(nextline, 79)) && (strncmp("END", nextline, 4) != 0)){
-      if (!curr.build_monster(private_wrapper::monster_file, nextline)) {
-        private_wrapper::monsters.pop_back();
+    while(private_wrapper::object_file.good() && (private_wrapper::object_file.getline(nextline, 79)) && (strncmp("END", nextline, 4) != 0)){
+      if (*nextline == 0) continue;
+      if (!curr->build(private_wrapper::object_file, nextline)) {
+        delete curr;
+        private_wrapper::objects.pop_back();
         return false;
       }
     }
-     if (!curr.complete()) {
-       private_wrapper::monsters.pop_back();
-       return false;
-     }
-     return true;
+    if (!curr->complete()) {
+      delete curr;
+     private_wrapper::objects.pop_back();
+     return false;
+    }
+    return true;
      //doesn't need to be 79, doesn't parse the desc
   }
   
-  std::vector<private_wrapper::monster_stub> getMonsterStubs(){
-    return private_wrapper::monsters;
+  int parse_dice(std::string dice){
+    int pos;
+    if ((pos = dice.find("+") ) != -1){
+      int pos_d;
+      if ((pos_d = dice.find("d")) != -1){
+        int first = atoi(dice.substr(0, pos).c_str());
+        int second = atoi(dice.substr(pos + 1, pos_d).c_str());
+        int third = atoi(dice.substr(pos_d + 1, dice.length()).c_str());
+        for (int j = 0; j < second; j++)
+          first += (rand() % third) + 1;
+        return first;
+      }
+    }
+    return -1;
   }
+
+  private_wrapper::stub* private_wrapper::getMonsterStub(){
+    return new private_wrapper::monster_stub();
+  }
+  
+  private_wrapper::stub* private_wrapper::getItemStub(){
+    return new private_wrapper::item_stub();
+  }
+  
+  private_wrapper::monster_stub* private_wrapper::getMonsterStubs(private_wrapper::monster_stub* monsters){
+    /*TODO: return monsters not stubs*/
+    for (std::vector<int>::size_type i = 0; i < private_wrapper::objects.size(); i++)
+      monsters[i] = *static_cast<monster_stub*>(private_wrapper::objects[i]);
+    private_wrapper::delete_objects();
+    return monsters;
+  }
+  
+  private_wrapper::item_stub* private_wrapper::getItemStubs(private_wrapper::item_stub* items){
+    /*TODO: return items not stubs*/
+    for (std::vector<int>::size_type i = 0; i < private_wrapper::objects.size(); i++)
+      items[i] = *static_cast<item_stub*>(private_wrapper::objects[i]);
+    private_wrapper::delete_objects();
+    return items;
+  }
+  
+  void parser_init(const char* parser){
+    if (strncmp(parser, "monster", 8) == 0){
+      private_wrapper::path = "monster_desc.txt";
+      private_wrapper::start = "BEGIN MONSTER";
+      private_wrapper::header = "RLG327 MONSTER DESCRIPTION 1";
+      private_wrapper::getStub = private_wrapper::getMonsterStub;
+    }else if (strncmp(parser, "item", 5) == 0){
+      private_wrapper::path = "object_desc.txt";
+      private_wrapper::start = "BEGIN OBJECT";
+      private_wrapper::header = "RLG327 OBJECT DESCRIPTION 1";
+      private_wrapper::getStub = private_wrapper::getItemStub;
+    }
+  }
+  
+  
 };
 
+int main(int argc, char** argv){
+  srand(100);
+  monster_parser::parser_init("monster");
+  monster_parser::complete_parse();
+  for (std::vector<int>::size_type i = 0; i < monster_parser::private_wrapper::objects.size(); i++){
+    std::cout << *static_cast<monster_parser::private_wrapper::monster_stub*>(monster_parser::private_wrapper::objects[i]) << std::endl;
+  }
+  std::cout << "SIZE!!!!" << monster_parser::private_wrapper::objects.size() << std::endl;
+  monster_parser::private_wrapper::delete_objects();
+  /*monster_parser::parser_init("item");
+  monster_parser::complete_parse();
+  for (std::vector<int>::size_type i = 0; i < monster_parser::private_wrapper::objects.size(); i++){
+    std::cout << *static_cast<monster_parser::private_wrapper::monster_stub*>(monster_parser::private_wrapper::objects[i]) << std::endl;
+  }
+  std::cout << monster_parser::private_wrapper::objects.size() << std::endl;
+  monster_parser::private_wrapper::delete_objects();*/
+  return 0;
+}
