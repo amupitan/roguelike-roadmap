@@ -18,7 +18,7 @@
 #include "Monster.h"
 #include "game.h" //TODO: forwatd declration problems when this is the first include
 #include "dungeon.h"
-#include "monster_parser.h"
+#include "object_parser.h"
 
 int main(int argc, char *argv[]){
   
@@ -111,13 +111,17 @@ int main(int argc, char *argv[]){
 	}
   
   /*PRINT PARSED MONSTERS AND EXIT*/
-  monster_parser::start_parser(strcat(strcpy(load_file, getenv("HOME")), "/.rlg327/monster_desc.txt")); //reuses old variable
-  monster_parser::complete_parse();
-  std::vector<monster_parser::private_wrapper::monster_stub> parsed_monsters = monster_parser::getMonsterStubs(); //shouldn't be need since we'll be getting monsters not stubs
+  /*object_parser::start_parser(strcat(strcpy(load_file, getenv("HOME")), "/.rlg327/monster_desc.txt")); //reuses old variable
+  object_parser::complete_parse();
+  std::vector<object_parser::private_wrapper::monster_stub*> parsed_monsters;
+  parsed_monsters = object_parser::private_wrapper::getMonsterStubs(parsed_monsters); //shouldn't be need since we'll be getting monsters not stubs
   for (std::vector<int>::size_type i = 0; i < parsed_monsters.size(); i++)
     std::cout << parsed_monsters[i] << std::endl;
-  return 0;
+  return 0;*/
   /*END*/
+  object_parser::parser_init("monster");
+  object_parser::complete_parse();
+  // object_parser::getCompleteMonsterStub(0);//TODO:
   
   if (load){
     if (!(dungeon_file = fopen(load_file, "r"))){
@@ -438,6 +442,7 @@ void print_Character(void* character){
 void endgame(Dungeon* dungeon, Queue* game_queue, const char* endmessage){
   free(dungeon->rooms);
   empty_queue(game_queue);
+  object_parser::private_wrapper::delete_objects();
   int row,col;
   getmaxyx(stdscr, row, col); /*Longindex is passed here but this macro function requires an argument*/
   move(0, 0);

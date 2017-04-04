@@ -14,7 +14,7 @@ class Character{
   private:
     int x;
     int y;
-    char value;
+    
     uint8_t type:4;
     int: 4;
     uint8_t speed; //can use :5?
@@ -25,6 +25,7 @@ class Character{
     
   protected:
     Character();
+    char value;
     
   public:
     Character(uint8_t id, int x, int y);

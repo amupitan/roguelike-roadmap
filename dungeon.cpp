@@ -14,6 +14,7 @@
 #include "dungeon.h"
 #include "game.h"
 #include "Player.h"
+#include "object_parser.h"
 
 int connect_rooms(Cell map[][nCols], Cell p, Cell q){
 	while (p.x != q.x){
@@ -344,6 +345,32 @@ void printmon(Character* Character){
   attroff(COLOR_PAIR((cgetId(Character) % 6) + 1));
 }
 
+// void addCharcters(Dungeon* dungeon, Queue* evt, int nummon, Character* characters[], int chars[][nCols], unsigned int pace[]){
+//   int i;
+//   memset(chars, -1, sizeof(int)*nRows*nCols);
+//   characters[0] = pc_init(characters[0], dungeon->rooms[0]);
+//   for(i = 0; i < nummon + 1; i++){
+//     /*Initialize monsters*/
+//     if (i != 0){
+//       int rand_room = rand_gen(1, dungeon->num_rooms - 1); //This makes sure no monster is spawned int he same room as the PC.
+//       uint8_t type = rand() & 0xF;//rand_gen(0x0,0xF);
+//       char temp_val[2];
+//       sprintf(temp_val, "%x", type);
+//       characters[i] = new Monster(
+//         i, /*id*/
+//         rand_gen(dungeon->rooms[rand_room].x, dungeon->rooms[rand_room].x + dungeon->rooms[rand_room].width - 1), /*x-position*/
+//         rand_gen(dungeon->rooms[rand_room].y, dungeon->rooms[rand_room].y + dungeon->rooms[rand_room].height - 1),/*y-position*/
+//         rand_gen(5, 20), /*speed*/
+//         type /*type*/
+//       );
+//     }
+//     chars[cgetY(characters[i])][cgetX(characters[i])] = i;
+//     pace[i] = 1000/cgetSpeed(characters[i]);
+//     add_with_priority(evt, characters[i], pace[i]);
+//   }
+//   // characters[0].speed = 0xF; //not too sure why i do this, i know it blocks pc from getting assigned a value execpt this value is hanged by new dungeon generation
+// }
+
 void addCharcters(Dungeon* dungeon, Queue* evt, int nummon, Character* characters[], int chars[][nCols], unsigned int pace[]){
   int i;
   memset(chars, -1, sizeof(int)*nRows*nCols);
@@ -359,8 +386,7 @@ void addCharcters(Dungeon* dungeon, Queue* evt, int nummon, Character* character
         i, /*id*/
         rand_gen(dungeon->rooms[rand_room].x, dungeon->rooms[rand_room].x + dungeon->rooms[rand_room].width - 1), /*x-position*/
         rand_gen(dungeon->rooms[rand_room].y, dungeon->rooms[rand_room].y + dungeon->rooms[rand_room].height - 1),/*y-position*/
-        rand_gen(5, 20), /*speed*/
-        type /*type*/
+        object_parser::getCompleteMonsterStub(rand_gen(0, object_parser::private_wrapper::objects.size() - 1)) /*monster stub ranging from 0 to stubs - 1*/
       );
     }
     chars[cgetY(characters[i])][cgetX(characters[i])] = i;

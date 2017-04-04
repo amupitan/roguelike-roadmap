@@ -24,7 +24,7 @@ Character::Character(uint8_t id, int x, int y, int speed, uint8_t type){
  *This initializes to PC and should only be called by PC
  *
  **/
-Character::Character() : value('@'), speed(10), id(0) {}//TODO: add functionality that only PC type can call this
+Character::Character() :  speed(10), id(0), value('@') {}//TODO: add functionality that only PC type can call this
 
 void Character::setPos(void* x, void* y){
   if (x)

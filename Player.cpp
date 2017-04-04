@@ -9,7 +9,9 @@ Player* Player::getPlayer(){
   return player;
 }
 
-Player::Player() : sight(0) {}
+Player::Player() : sight(0) {
+  value = '@';
+}
 
 Player::Player(Player const& player_copy){
   // player_copy = player;
@@ -70,3 +72,9 @@ char** csetSight(Character* p, int height, int width){
 void cfreeSight(Character* p, int height){
   return static_cast<Player*>(p)->freeSight(height);
 }
+
+/**
+ * TODO readings:
+ * Look into why protected members don't work in the initization lists
+ *
+ */

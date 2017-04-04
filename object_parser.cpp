@@ -1,11 +1,11 @@
-#include "monster_parser.h"
+#include "object_parser.h"
 #include <iostream>
-#include <fstream>
 #include <cstring>
-#include <time.h>
-#include <map>
 
-namespace monster_parser{
+
+#include <cstdlib>
+
+namespace object_parser{
   namespace private_wrapper{
     bool monster_stub::complete(){
       return (name != "") && (desc != "") && (color != "") && (speed != "") && (abilities != "") && (hp != "") && (damage != "");
@@ -48,7 +48,6 @@ namespace monster_parser{
       return false;
     }
     
-    
     monster_stub monster_stub::operator=(monster_stub& copy){
       copy.name = name;
     	copy.desc = desc;
@@ -60,7 +59,6 @@ namespace monster_parser{
     	copy.symb = symb;
     	return copy;
     }
-
     item_stub item_stub::operator=(item_stub& copy){
       copy.name = name;
     	copy.desc = desc;
@@ -163,6 +161,28 @@ namespace monster_parser{
       
     }
     */
+    int parse_dice(std::string dice){
+      int pos;
+      if ((pos = dice.find("+") ) != -1){
+        int pos_d;
+        if ((pos_d = dice.find("d")) != -1){
+          int first = atoi(dice.substr(0, pos).c_str());
+          int second = atoi(dice.substr(pos + 1, pos_d).c_str());
+          int third = atoi(dice.substr(pos_d + 1, dice.length()).c_str());
+          for (int j = 0; j < second; j++)
+            first += (rand() % third) + 1;
+          return first;
+        }
+      }
+      return -1;
+    }
+    stub* getMonsterStub(){
+      return new monster_stub();
+    }
+    
+    stub* getItemStub(){
+      return new item_stub();
+    }
     void delete_objects(){
       for (std::vector<int>::size_type i = 0; i < private_wrapper::objects.size(); i++)
         delete private_wrapper::objects[i];
@@ -173,6 +193,27 @@ namespace monster_parser{
       private_wrapper::header = 0;
       private_wrapper::getStub = 0;
     }
+    /*TODO: function and fix type*/
+    unsigned short getAbility(std::string abilities){
+      return 0;
+    }
+    unsigned short getColor(std::string color){
+      return 0;
+    }
+    // std::vector<Monster*> getMonsterStubs(std::vector<Monster*>& monsters){
+    //   //TODO: return monsters not stubs
+    //   for (std::vector<int>::size_type i = 0; i < objects.size(); i++){
+    //     monster_stub* temp = static_cast<monster_stub*>(objects[i]);
+    //     monsters.push_back(new Monster(i, 0, 0, parse_dice(temp->speed),
+    //                         temp->symb.front(),
+    //                         getAbility(temp->abilities), getColor(temp->color),
+    //                         parse_dice(temp->hp), temp->damage.c_str())
+    //                       );
+    //   }
+    //     // monsters[i] = *static_cast<monster_stub*>(objects[i]);
+    //   delete_objects();
+    //   return monsters;
+    // }
   }
 
   void start_parser(const char* chosen_path){
@@ -220,38 +261,18 @@ namespace monster_parser{
      //doesn't need to be 79, doesn't parse the desc
   }
   
-  int parse_dice(std::string dice){
-    int pos;
-    if ((pos = dice.find("+") ) != -1){
-      int pos_d;
-      if ((pos_d = dice.find("d")) != -1){
-        int first = atoi(dice.substr(0, pos).c_str());
-        int second = atoi(dice.substr(pos + 1, pos_d).c_str());
-        int third = atoi(dice.substr(pos_d + 1, dice.length()).c_str());
-        for (int j = 0; j < second; j++)
-          first += (rand() % third) + 1;
-        return first;
-      }
-    }
-    return -1;
-  }
-
-  private_wrapper::stub* private_wrapper::getMonsterStub(){
-    return new private_wrapper::monster_stub();
+  private_wrapper::monster_stub* getCompleteMonsterStub(unsigned int num){
+      return (num < private_wrapper::objects.size())  ? static_cast<private_wrapper::monster_stub*>(private_wrapper::objects[num]) : 0;
   }
   
-  private_wrapper::stub* private_wrapper::getItemStub(){
-    return new private_wrapper::item_stub();
-  }
-  
-  private_wrapper::monster_stub* private_wrapper::getMonsterStubs(private_wrapper::monster_stub* monsters){
-    /*TODO: return monsters not stubs*/
+  /*private_wrapper::monster_stub* private_wrapper::getMonsterStubs(private_wrapper::monster_stub* monsters){
+    //TODO: return monsters not stubs
     for (std::vector<int>::size_type i = 0; i < private_wrapper::objects.size(); i++)
       monsters[i] = *static_cast<monster_stub*>(private_wrapper::objects[i]);
     private_wrapper::delete_objects();
     return monsters;
-  }
-  
+  }*/
+
   private_wrapper::item_stub* private_wrapper::getItemStubs(private_wrapper::item_stub* items){
     /*TODO: return items not stubs*/
     for (std::vector<int>::size_type i = 0; i < private_wrapper::objects.size(); i++)
@@ -277,21 +298,15 @@ namespace monster_parser{
   
 };
 
-int main(int argc, char** argv){
+/*int main(){
   srand(100);
-  monster_parser::parser_init("monster");
-  monster_parser::complete_parse();
-  for (std::vector<int>::size_type i = 0; i < monster_parser::private_wrapper::objects.size(); i++){
-    std::cout << *static_cast<monster_parser::private_wrapper::monster_stub*>(monster_parser::private_wrapper::objects[i]) << std::endl;
-  }
-  std::cout << "SIZE!!!!" << monster_parser::private_wrapper::objects.size() << std::endl;
-  monster_parser::private_wrapper::delete_objects();
-  /*monster_parser::parser_init("item");
-  monster_parser::complete_parse();
-  for (std::vector<int>::size_type i = 0; i < monster_parser::private_wrapper::objects.size(); i++){
-    std::cout << *static_cast<monster_parser::private_wrapper::monster_stub*>(monster_parser::private_wrapper::objects[i]) << std::endl;
-  }
-  std::cout << monster_parser::private_wrapper::objects.size() << std::endl;
-  monster_parser::private_wrapper::delete_objects();*/
-  return 0;
-}
+  object_parser::parser_init("monster");
+  object_parser::complete_parse();
+  // std::vector<Monster*> mons;
+  // mons = object_parser::private_wrapper::getMonsterStubs(mons);
+  // for (std::vector<int>::size_type i = 0; i < mons.size(); i++){
+    // printf("%c\n", mons[i]->getValue());
+    // std::cout << mons[i] << 0 << std::endl;
+  // }
+  object_parser::private_wrapper::delete_objects();
+}*/

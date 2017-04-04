@@ -1,11 +1,10 @@
-#ifndef MONSTER_PARSER_H_
-#define MONSTER_PARSER_H_
+#ifndef OBJECT_PARSER_H_
+#define OBJECT_PARSER_H_
 #include <string>
 #include <vector>
 #include <fstream>
-#include "Monster.h"
 
-namespace monster_parser{
+namespace object_parser{
 	namespace private_wrapper{
   	class stub{
       public:
@@ -15,7 +14,7 @@ namespace monster_parser{
         virtual ~stub(){}
   	};
   	class monster_stub : public stub{
-	    private:
+	    public:
   	    std::string name;
       	std::string desc;
       	std::string color; //make enum? use array
@@ -28,7 +27,6 @@ namespace monster_parser{
       	std::string hp;
       	std::string damage;
       	std::string symb;
-      public:
         monster_stub(){}
         monster_stub operator=(monster_stub& copy);
         bool complete();
@@ -36,7 +34,7 @@ namespace monster_parser{
         friend std::ostream& operator<< (std::ostream& stream, const monster_stub& monster);
   	};
   	class item_stub : public stub{
-	    private:
+	    public:
 	      std::string name;
       	std::string desc;
       	std::string type;
@@ -50,7 +48,6 @@ namespace monster_parser{
       	std::string symb;
       	std::string special;
       	std::string value;
-      public:
         item_stub(){}
         item_stub operator=(item_stub& copy);
         bool complete();
@@ -69,10 +66,16 @@ namespace monster_parser{
   	stub* getItemStub();
   	bool startsWith(const char* str, const char* start);
   	void delete_objects();
+  	int parse_dice(std::string dice);
   	
   	bool assign_attrbute(std::string& attr, const char* value, int offset);
-  	monster_stub* getMonsterStubs(monster_stub* monsters);
+  // 	monster_stub* getMonsterStubs(monster_stub* monsters);
   	item_stub* getItemStubs(item_stub* items);
+  	
+  // 	std::vector<Monster*> getMonsterStubs(std::vector<Monster*>& monsters);
+  	unsigned short getAbility(std::string abilities);
+  	unsigned short getColor(std::string color);
+  // 	Monster* createMonster(monster_stub* stub);
 	}
 	
 	/*Parser methods*/
@@ -80,6 +83,8 @@ namespace monster_parser{
 	void start_parser(const char* chosen_path);
 	void complete_parse();
 	bool parse_object();
+	private_wrapper::monster_stub* getCompleteMonsterStub(unsigned int num);
+// 	monster_stub* getCompleteMonsterStub(int num);
 // 	std::vector<private_wrapper::monster_stub> getMonsterStubs();
 }
 
