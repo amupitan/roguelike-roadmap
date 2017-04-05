@@ -1,7 +1,6 @@
-#ifndef MONSTER_H
-#define MONSTER_H
+#ifndef MONSTER_H_
+#define MONSTER_H_
 #include "Character.h"
-
 #include "object_parser.h"
 
 class Monster : public Character{

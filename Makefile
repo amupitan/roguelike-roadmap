@@ -5,7 +5,7 @@ LFLAGS = -Wall -Werror
 CFLAGS = $(LFLAGS) $(DEBUG) -c
 CXXFLAGS = $(LFLAGS) $(DEBUG) -c -std=c++11
 LDFLAGS = -lncurses
-OBJS = game.o dungeon.o Character.o queue.o display.o Monster.o Player.o object_parser.o
+OBJS = game.o dungeon.o Character.o queue.o display.o Monster.o Player.o object_parser.o Item.o
 
 default: game
 
@@ -15,8 +15,8 @@ game.o: game.cpp game.h Character.h queue.h Cell_Pair.h
 queue.o: queue.c queue.h
 	$(CXX) $(CXXFLAGS) queue.c
 
-item.o: item.cpp item.h
-	$(CXX) $(CXXFLAGS) item.c
+Item.o: Item.cpp Item.h
+	$(CXX) $(CXXFLAGS) Item.cpp
 
 object_parser.o: object_parser.cpp object_parser.h
 	$(CXX) $(CXXFLAGS) object_parser.cpp

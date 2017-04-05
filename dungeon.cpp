@@ -386,7 +386,7 @@ void addCharcters(Dungeon* dungeon, Queue* evt, int nummon, Character* character
         i, /*id*/
         rand_gen(dungeon->rooms[rand_room].x, dungeon->rooms[rand_room].x + dungeon->rooms[rand_room].width - 1), /*x-position*/
         rand_gen(dungeon->rooms[rand_room].y, dungeon->rooms[rand_room].y + dungeon->rooms[rand_room].height - 1),/*y-position*/
-        object_parser::getCompleteMonsterStub(rand_gen(0, object_parser::private_wrapper::objects.size() - 1)) /*monster stub ranging from 0 to stubs - 1*/
+        object_parser::getCompleteMonsterStub(rand_gen(0, object_parser::getNumMonstubs() - 1)) /*monster stub ranging from 0 to stubs - 1*/
       );
     }
     chars[cgetY(characters[i])][cgetX(characters[i])] = i;

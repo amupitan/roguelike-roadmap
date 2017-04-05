@@ -1,5 +1,6 @@
 #ifndef OBJECT_PARSER_H_
 #define OBJECT_PARSER_H_
+// #include <cstdint>
 #include <string>
 #include <vector>
 #include <fstream>
@@ -84,6 +85,9 @@ namespace object_parser{
 	void complete_parse();
 	bool parse_object();
 	private_wrapper::monster_stub* getCompleteMonsterStub(unsigned int num);
+	private_wrapper::item_stub* getCompleteItemStub(unsigned int num);
+	int getNumMonstubs();
+	int getNumItemstubs();
 // 	monster_stub* getCompleteMonsterStub(int num);
 // 	std::vector<private_wrapper::monster_stub> getMonsterStubs();
 }

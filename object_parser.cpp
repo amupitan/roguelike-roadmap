@@ -134,6 +134,12 @@ namespace object_parser{
     std::ifstream object_file;
     const char *path, *start, *header;
     stub* (*getStub)();
+    
+    int num_monstubs;
+    int num_itemstubs;
+    char current;
+    std::vector<monster_stub*> monstubs;
+    std::vector<item_stub*> itemstubs;
     const char* colors[] = {"BLACK", "RED", "GREEN", "YELLOW", "BLUE", "MAGNETA", "CYAN", "WHITE"};
     const char* abilities[] = {"SMART", "TELE", "TUNNEL", "ERRATIC"}; //Todo: add other monster types (will need new equation)
     /*helper functions*/
@@ -187,9 +193,7 @@ namespace object_parser{
     stub* getItemStub(){
       return new item_stub();
     }
-    void delete_objects(){
-      for (std::vector<int>::size_type i = 0; i < private_wrapper::objects.size(); i++)
-        delete private_wrapper::objects[i];
+    void clear_parser(){
       private_wrapper::objects.clear();
       std::vector<private_wrapper::stub*>(private_wrapper::objects).swap(private_wrapper::objects);
       private_wrapper::path = 0;
@@ -197,6 +201,19 @@ namespace object_parser{
       private_wrapper::header = 0;
       private_wrapper::getStub = 0;
     }
+    
+    void delete_objects(){
+      if (private_wrapper::current == 'm'){
+        for (std::vector<int>::size_type i = 0; i < private_wrapper::monstubs.size(); i++)
+          delete private_wrapper::monstubs[i];
+      }else if (private_wrapper::current == 'i') {
+        for (std::vector<int>::size_type i = 0; i < private_wrapper::itemstubs.size(); i++)
+          delete private_wrapper::itemstubs[i];
+      }
+      private_wrapper::current = 0;
+      clear_parser();
+    }
+    
     /*TODO: function and fix type*/
     unsigned short getAbility(std::string types){
       unsigned short result = 0;
@@ -259,6 +276,14 @@ namespace object_parser{
       
     }
     private_wrapper::object_file.close();
+    if (private_wrapper::current == 'm'){
+      for (std::vector<int>::size_type i = 0; i < private_wrapper::objects.size(); i++)
+        private_wrapper::monstubs.push_back(static_cast<private_wrapper::monster_stub*>(private_wrapper::objects[i]));
+    }else if (private_wrapper::current == 'i'){
+      for (std::vector<int>::size_type i = 0; i < private_wrapper::objects.size(); i++)
+        private_wrapper::itemstubs.push_back(static_cast<private_wrapper::item_stub*>(private_wrapper::objects[i]));
+    }
+    private_wrapper::clear_parser();
   }
   
   bool parse_object(){
@@ -283,8 +308,13 @@ namespace object_parser{
   }
   
   private_wrapper::monster_stub* getCompleteMonsterStub(unsigned int num){
-      return (num < private_wrapper::objects.size())  ? static_cast<private_wrapper::monster_stub*>(private_wrapper::objects[num]) : 0;
+      return (num < private_wrapper::monstubs.size())  ? static_cast<private_wrapper::monster_stub*>(private_wrapper::monstubs[num]) : 0;
   }
+  
+  private_wrapper::item_stub* getCompleteItemStub(unsigned int num){
+    return (num < private_wrapper::itemstubs.size())  ? static_cast<private_wrapper::item_stub*>(private_wrapper::itemstubs[num]) : 0;
+  }
+
   
   /*private_wrapper::monster_stub* private_wrapper::getMonsterStubs(private_wrapper::monster_stub* monsters){
     //TODO: return monsters not stubs
@@ -314,7 +344,16 @@ namespace object_parser{
       private_wrapper::header = "RLG327 OBJECT DESCRIPTION 1";
       private_wrapper::getStub = private_wrapper::getItemStub;
     }
+    private_wrapper::current = *parser;
   }
   
+  int getNumMonstubs(){
+    return private_wrapper::monstubs.size();
+  }
+  
+  int getNumItemstubs(){
+    return private_wrapper::itemstubs.size();
+  }
 };
 //1491351232 color monsters
+//stairs 1491375121
