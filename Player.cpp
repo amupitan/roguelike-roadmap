@@ -1,5 +1,6 @@
 #include <iostream>
 #include "Player.h"
+#include "display.h"
 
 Player* Player::player = 0;
 
@@ -11,6 +12,7 @@ Player* Player::getPlayer(){
 
 Player::Player() : sight(0) {
   value = '@';
+  color = 2;//GREEN
 }
 
 Player::Player(Player const& player_copy){

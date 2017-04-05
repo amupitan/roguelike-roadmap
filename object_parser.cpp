@@ -1,12 +1,14 @@
 #include "object_parser.h"
 #include <iostream>
 #include <cstring>
+#include <sstream>
 
 
 #include <cstdlib>
 
 namespace object_parser{
   namespace private_wrapper{
+    /*class methods*/
     bool monster_stub::complete(){
       return (name != "") && (desc != "") && (color != "") && (speed != "") && (abilities != "") && (hp != "") && (damage != "");
     }
@@ -47,7 +49,6 @@ namespace object_parser{
       }
       return false;
     }
-    
     monster_stub monster_stub::operator=(monster_stub& copy){
       copy.name = name;
     	copy.desc = desc;
@@ -128,10 +129,14 @@ namespace object_parser{
       return (name != "") && (desc != "") && (color != "") && (speed != "") && (special != "") && (type != "") && (damage != "") && (dodge != "") && (defense != "") && (weight != "") && (value != "") && (hit != "");
     }
     
+    /*member variables*/
     std::vector<stub*> objects;
     std::ifstream object_file;
     const char *path, *start, *header;
     stub* (*getStub)();
+    const char* colors[] = {"BLACK", "RED", "GREEN", "YELLOW", "BLUE", "MAGNETA", "CYAN", "WHITE"};
+    const char* abilities[] = {"SMART", "TELE", "TUNNEL", "ERRATIC"}; //Todo: add other monster types (will need new equation)
+    /*helper functions*/
     bool startsWith(const char* str, const char* start){
       size_t str_len = strlen(str), start_len = strlen(start);
       return str_len < start_len ? false : strncmp(str, start, start_len) == 0;
@@ -179,7 +184,6 @@ namespace object_parser{
     stub* getMonsterStub(){
       return new monster_stub();
     }
-    
     stub* getItemStub(){
       return new item_stub();
     }
@@ -194,11 +198,28 @@ namespace object_parser{
       private_wrapper::getStub = 0;
     }
     /*TODO: function and fix type*/
-    unsigned short getAbility(std::string abilities){
-      return 0;
+    unsigned short getAbility(std::string types){
+      unsigned short result = 0;
+      std::stringstream ss(types);
+      std::string str;
+      while (std::getline(ss, str, ' ')){
+        for (unsigned int i = 0; i < sizeof(abilities)/sizeof(abilities[0]); i++){
+          if (strncmp(abilities[i], str.c_str(), str.length()) == 0){
+            result |= ((i * i * i) + 5*i + 6)/6;
+            break;
+          }
+        }
+      }
+      return result;
     }
-    unsigned short getColor(std::string color){
-      return 0;
+
+    unsigned short getColor(std::string in_colors){ /*TODO: return zero, return type, allow multiple colors*/
+      const char* color = in_colors.substr(0, in_colors.find(" ")).c_str();
+      for (unsigned int i = 0; i < sizeof(colors)/sizeof(colors[0]); i++){
+        if (i && strncmp(colors[i], color, strlen(colors[i])) == 0)
+          return i;
+      }
+      return 7;
     }
     // std::vector<Monster*> getMonsterStubs(std::vector<Monster*>& monsters){
     //   //TODO: return monsters not stubs
@@ -295,18 +316,5 @@ namespace object_parser{
     }
   }
   
-  
 };
-
-/*int main(){
-  srand(100);
-  object_parser::parser_init("monster");
-  object_parser::complete_parse();
-  // std::vector<Monster*> mons;
-  // mons = object_parser::private_wrapper::getMonsterStubs(mons);
-  // for (std::vector<int>::size_type i = 0; i < mons.size(); i++){
-    // printf("%c\n", mons[i]->getValue());
-    // std::cout << mons[i] << 0 << std::endl;
-  // }
-  object_parser::private_wrapper::delete_objects();
-}*/
+//1491351232 color monsters

@@ -20,12 +20,11 @@ class Character{
     uint8_t speed; //can use :5?
     uint8_t id; //int?
     uint32_t pace;
-    
-    
-    
+
   protected:
     Character();
     char value;
+    int color;
     
   public:
     Character(uint8_t id, int x, int y);
@@ -41,6 +40,7 @@ class Character{
     // Pair getPos() const; //remove?
     char getValue() const;
     uint8_t getSpeed() const;
+    int getColor() const;
     bool checkType(uint8_t type) const;
     void killCharacter();
     

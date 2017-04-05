@@ -61,6 +61,10 @@ uint8_t Character::getSpeed() const{
   return speed;
 }
 
+int Character::getColor() const{
+  return color;
+}
+
 void Character::killCharacter(){
   value = -1;
 }

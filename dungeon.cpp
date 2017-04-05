@@ -339,10 +339,10 @@ void pc_render_partial(Cell map[][nCols], int chars[][nCols], Character* monsts[
 	refresh();
 }
 
-void printmon(Character* Character){
-  attron(COLOR_PAIR((cgetId(Character) % 6) + 1));
-  addch(cgetValue(Character));
-  attroff(COLOR_PAIR((cgetId(Character) % 6) + 1));
+void printmon(Character* character){
+  attron(COLOR_PAIR(character->getColor()));
+  addch(cgetValue(character));
+  attroff(COLOR_PAIR(character->getColor()));
 }
 
 // void addCharcters(Dungeon* dungeon, Queue* evt, int nummon, Character* characters[], int chars[][nCols], unsigned int pace[]){
