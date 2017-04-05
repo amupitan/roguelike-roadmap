@@ -3,29 +3,29 @@ CXX = g++
 DEBUG = -ggdb
 LFLAGS = -Wall -Werror
 CFLAGS = $(LFLAGS) $(DEBUG) -c
-CXXFLAGS = $(LFLAGS) $(DEBUG) -c
+CXXFLAGS = $(LFLAGS) $(DEBUG) -c -std=c++11
 LDFLAGS = -lncurses
 OBJS = game.o dungeon.o Character.o queue.o display.o Monster.o Player.o object_parser.o
 
 default: game
 
 game.o: game.cpp game.h Character.h queue.h Cell_Pair.h
-	$(CXX) $(CFLAGS) game.cpp
+	$(CXX) $(CXXFLAGS) game.cpp
 	
 queue.o: queue.c queue.h
-	$(CXX) $(CFLAGS) queue.c
+	$(CXX) $(CXXFLAGS) queue.c
 
 item.o: item.cpp item.h
-	$(CXX) $(CFLAGS) item.c
+	$(CXX) $(CXXFLAGS) item.c
 
 object_parser.o: object_parser.cpp object_parser.h
-	$(CXX) $(CFLAGS) object_parser.cpp
+	$(CXX) $(CXXFLAGS) object_parser.cpp
 
 display.o: display.cpp display.h Cell_Pair.h
-	$(CXX) $(CFLAGS) display.cpp
+	$(CXX) $(CXXFLAGS) display.cpp
 	
 dungeon.o: dungeon.cpp game.h Character.h queue.h Cell_Pair.h
-	$(CXX) $(CFLAGS) dungeon.cpp
+	$(CXX) $(CXXFLAGS) dungeon.cpp
 	
 Character.o: Character.cpp game.h Character.h queue.h Cell_Pair.h
 	$(CXX) $(CXXFLAGS) Character.cpp
