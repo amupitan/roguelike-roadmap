@@ -460,7 +460,7 @@ void updateSight(Character* pc, Cell map[][nCols], int items[][nCols]){ /*TODO: 
   Pair end = {(x + 5 < nCols - 1) ? x + 5 : nCols - 2, (y + 5 < nRows - 1) ? y + 5 : nRows - 2};
   for (i = start.y; i <= end.y; i++){
     for (j = start.x; j <= end.x; j++){
-      sight[i][j] = (items[i][j] == -1) ? map[i][j].value : -2; //TODO:(-2 means item) instead of checking those different values, you can set this one to a constant value that always means object on this position
+      sight[i][j] = (items[i][j] == -1) ? map[i][j].value : -2; //TODO:(-2 means item) instead of checking those different values, you can set this one to a constant value that always means object on this position: NO two monsters on the same spot
     }
   }
 }

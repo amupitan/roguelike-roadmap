@@ -5,7 +5,9 @@ Monster::Monster(uint8_t id, int x, int y, const mon_stub::monster_stub* stub) :
   value = stub->symb.front();
   color = mon_stub::getColor(stub->color);
   hp = mon_stub::parse_dice(stub->hp);
-  damage = ""; //TODO
+  damage = mon_stub::dice(stub->damage); //TODO
+  name = stub->name.c_str();
+  desc = stub->desc.c_str();
 }
 
 Monster::Monster(uint8_t id, int x, int y, int speed, uint8_t type) : Character(id, x, y, speed, type){}

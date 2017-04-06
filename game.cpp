@@ -235,6 +235,7 @@ int main(int argc, char *argv[]){
           items = (Item**)delete_items(items, num_items);
           delete_Characters(characters, nummon + 1);
           endgame(&dungeon, &evt, "Game ended");
+          return 0;
         }
         if (target.x == -2 && target.y == -2) {
           /*Enter look mode*/
@@ -396,7 +397,7 @@ int main(int argc, char *argv[]){
         render(chars, characters, item_map, items, start, NULL); //TODO, fix start position!!!
         items = (Item**)delete_items(items, num_items);
         delete_Characters(characters, nummon + 1);
-        endgame(&dungeon, &evt, "The PC is dead :(");
+        endgame(&dungeon, &evt, "The PC is dead :(");return 0;
       }
       if ((chars[target.y][target.x] != -1) && (chars[target.y][target.x] != cgetId(p_curr))){ //weird stuff.
         ckillCharacter(characters[chars[target.y][target.x]]);
@@ -416,7 +417,7 @@ int main(int argc, char *argv[]){
   if (nummon && !l_monsters) {
     delete_Characters(characters, nummon + 1);
     items = (Item**)delete_items(items, num_items);
-    endgame(&dungeon, &evt, "PC killed em all");
+    endgame(&dungeon, &evt, "PC killed em all"); return 0;
   }
   
   empty_queue(&evt);
@@ -463,7 +464,7 @@ void endgame(Dungeon* dungeon, Queue* game_queue, const char* endmessage){
   system("clear");
   /*Display some nice stats*/
   puts(endmessage);
-	exit(0);
+// 	exit(0);
 }
 
 void delete_Characters(Character* characters[], int num_characters){

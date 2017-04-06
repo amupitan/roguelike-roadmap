@@ -55,7 +55,17 @@ namespace object_parser{
         bool build(std::ifstream& file, const char* line);
         friend std::ostream& operator<< (std::ostream& stream, const item_stub& item);
   	};
-  	
+  	class dice{
+  	  private:
+    	  int base;
+    	  int times;
+    	  int sides;
+  	  public:
+  	    dice();
+  	    dice(const char* probabbility);
+  	    dice(std::string probability);
+  	    int roll();
+  	};
   	/*global varaibles and helper functions*/
   	extern std::vector<stub*> objects;
   	extern const char* path;

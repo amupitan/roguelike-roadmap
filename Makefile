@@ -37,10 +37,7 @@ Monster.o: Monster.cpp Character.cpp Monster.h game.h Character.h queue.h Cell_P
 	$(CXX) $(CXXFLAGS) Monster.cpp
 	
 game: $(OBJS)
-	$(CXX) $(LFLAGS) $(DEBUG) $(OBJS) -o game $(LDFLAGS)
+	$(CXX) $(LFLAGS) $(DEBUG) -std=c++11 $(OBJS) -o game $(LDFLAGS)
 
 clean:
 	rm -f a.out cpgame game *.o
-
-cpp: $(OBJS)
-	$(CXX) $(LDFLAGS) $(LFLAGS) $(DEBUG) $(OBJS) -o cpgame

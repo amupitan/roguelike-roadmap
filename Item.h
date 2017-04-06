@@ -2,6 +2,7 @@
 #define ITEM_H_
 #include <stdint.h>
 #include "object_parser.h"
+
 class Item {
   private:
   //   const char* name;
@@ -20,6 +21,8 @@ class Item {
   	int special;
   	int value;
   	char symbol;
+  	std::string name;
+  	std::string desc;
   public:
     Item(int id, int x, int y, const object_parser::private_wrapper::item_stub* stub);
     char getSymbol();

@@ -128,7 +128,36 @@ namespace object_parser{
     bool item_stub::complete(){
       return (name != "") && (desc != "") && (color != "") && (speed != "") && (special != "") && (type != "") && (damage != "") && (dodge != "") && (defense != "") && (weight != "") && (value != "") && (hit != "");
     }
-    
+    dice::dice() : base(0), times(0), sides(0){}
+    dice::dice(const char* probability) : dice(){
+      int pos;
+      std::string dice_str = probability;
+      if ((pos = dice_str.find("+") ) != -1){
+        int pos_d;
+        if ((pos_d = dice_str.find("d")) != -1){
+          base = atoi(dice_str.substr(0, pos).c_str());
+          times = atoi(dice_str.substr(pos + 1, pos_d).c_str());
+          sides = atoi(dice_str.substr(pos_d + 1, dice_str.length()).c_str());
+        }
+      }
+    }
+    dice::dice(std::string dice_str) : dice(){
+      int pos;
+      if ((pos = dice_str.find("+") ) != -1){
+        int pos_d;
+        if ((pos_d = dice_str.find("d")) != -1){
+          base = atoi(dice_str.substr(0, pos).c_str());
+          times = atoi(dice_str.substr(pos + 1, pos_d).c_str());
+          sides = atoi(dice_str.substr(pos_d + 1, dice_str.length()).c_str());
+        }
+      }
+    }
+    int dice::roll(){
+      int first = base, second = times, third = sides;
+      for (int j = 0; j < second; j++)
+        first += (rand() % third) + 1;
+      return first;
+    }
     /*member variables*/
     std::vector<stub*> objects;
     std::ifstream object_file;
@@ -161,8 +190,8 @@ namespace object_parser{
       {"AMMUNITION", '/'},
       {"FOOD", ','},
       {"WAND", '-'},
-      {"CONTAINER", '%'},
-      {"STACK", '&'}
+      {"CONTAINER", '%'}
+      // {"STACK", '&'}
     };
     /*helper functions*/
     bool startsWith(const char* str, const char* start){
@@ -194,20 +223,22 @@ namespace object_parser{
       
     }
     */
-    int parse_dice(std::string dice){
-      int pos;
-      if ((pos = dice.find("+") ) != -1){
-        int pos_d;
-        if ((pos_d = dice.find("d")) != -1){
-          int first = atoi(dice.substr(0, pos).c_str());
-          int second = atoi(dice.substr(pos + 1, pos_d).c_str());
-          int third = atoi(dice.substr(pos_d + 1, dice.length()).c_str());
-          for (int j = 0; j < second; j++)
-            first += (rand() % third) + 1;
-          return first;
-        }
-      }
-      return -1;
+    int parse_dice(std::string dice_str){
+      // int pos;
+      // if ((pos = dice.find("+") ) != -1){
+      //   int pos_d;
+      //   if ((pos_d = dice.find("d")) != -1){
+      //     int first = atoi(dice.substr(0, pos).c_str());
+      //     int second = atoi(dice.substr(pos + 1, pos_d).c_str());
+      //     int third = atoi(dice.substr(pos_d + 1, dice.length()).c_str());
+      //     for (int j = 0; j < second; j++)
+      //       first += (rand() % third) + 1;
+      //     return first;
+      //   }
+      // }
+      // return -1;
+      dice d(dice_str);
+      return d.roll();
     }
     char symbolize(std::string name){
       auto search = item_symbols.find(name);
@@ -389,3 +420,4 @@ namespace object_parser{
 //1491351232 color monsters
 //stairs 1491375121
 //stairs load dungeon01 1491380966
+//new 1491443039
