@@ -5,15 +5,13 @@
 
 class Item {
   private:
-  //   const char* name;
-  // 	const char* desc;
     int id;
     int x;
     int y;
   	uint8_t type;
   	int color;
   	int hit;
-  	const char* damage;
+  	object_parser::private_wrapper::dice damage;
   	int dodge;
   	int defense;
   	int weight;
