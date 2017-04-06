@@ -72,7 +72,8 @@ void log_message(const char* message);
 void nrender_dungeon(Cell map[][nCols], int chars[][nCols], Character* monsts[]);
 
 void pc_render_partial(Cell map[][nCols], int chars[][nCols], Character* monsts[], Pair start, Pair* newPos);
-void render(int chars[][nCols], Character* monsts[], Pair start, Pair* newPos);
+// void render(int chars[][nCols], Character* monsts[], Pair start, Pair* newPos);
+void render(int chars[][nCols], Character* monsts[], int item_map[][nCols], Item** items, Pair start, Pair* newPos);
 // void endgame(Dungeon* dungeon, Queue* game_queue, const char* endmessage);
 
 // void clear_queue(std::priority_queue<Character*, std::vector<Character*>, CharacterComparator>* q); //TODO remove

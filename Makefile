@@ -24,7 +24,7 @@ object_parser.o: object_parser.cpp object_parser.h
 display.o: display.cpp display.h Cell_Pair.h
 	$(CXX) $(CXXFLAGS) display.cpp
 	
-dungeon.o: dungeon.cpp game.h Character.h queue.h Cell_Pair.h
+dungeon.o: dungeon.cpp dungeon.h game.h Character.h queue.h Cell_Pair.h
 	$(CXX) $(CXXFLAGS) dungeon.cpp
 	
 Character.o: Character.cpp game.h Character.h queue.h Cell_Pair.h

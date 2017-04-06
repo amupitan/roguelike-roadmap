@@ -352,10 +352,10 @@ void render(int chars[][nCols], Character* monsts[], int item_map[][nCols], Item
   		  if ((temp != -1) && (in_range)) printmon(monsts[chars[i][j]]); /*There is a monster on the terrain and the monster is within range*/
   		  else {
   		    //TODO: check for item
-  		    if (sight[i][j] != '.' && sight[i][j] != '#' && sight[i][j] != ' ' && sight[i][j] != '>' && sight[i][j] != '<'){ //TODO: use a function that checks
+  		    if (/*sight[i][j] != '.' && sight[i][j] != '#' && sight[i][j] != ' ' && sight[i][j] != '>' && sight[i][j] != '<'*/sight[i][j] == -2){ //TODO: use a function that checks
   		      printmon(items[item_map[i][j]]);
-  		    }
-  		    addch(sight[i][j]);
+  		    }else
+  		      addch(sight[i][j]);
   		  }
 		  }else addch(' ');
 		}
@@ -466,7 +466,7 @@ void updateSight(Character* pc, Cell map[][nCols], int items[][nCols]){ /*TODO: 
   Pair end = {(x + 5 < nCols - 1) ? x + 5 : nCols - 2, (y + 5 < nRows - 1) ? y + 5 : nRows - 2};
   for (i = start.y; i <= end.y; i++){
     for (j = start.x; j <= end.x; j++){
-      sight[i][j] = (items[i][j] == -1) ? map[i][j].value : items[i][j];
+      sight[i][j] = (items[i][j] == -1) ? map[i][j].value : -2; //TODO:(-2 means item) instead of checking those different values, you can set this one to a constant value that always means object on this position
     }
   }
 }

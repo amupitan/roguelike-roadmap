@@ -228,7 +228,7 @@ int main(int argc, char *argv[]){
       // for
       updateSight(pcp, map, item_map);
       Pair start = {cgetX(p_curr) - 40, cgetY(p_curr) - 10};
-      pc_render_partial(map, chars, characters, start, NULL); //TODO!!!
+      render(chars, characters, item_map, items, start, NULL); //TODO!!!
       do{
         target = *(Pair *)getInputC(&target);
         if (target.x == -1 && target.y == -1){
@@ -243,10 +243,11 @@ int main(int argc, char *argv[]){
             int ctrl = 0; /*1- end look mode*/
             look = *(look_mode(&look, &ctrl));
             if (ctrl == 1){
-              pc_render_partial(map, chars, characters, start, NULL);
+              render(chars, characters, item_map, items, start, NULL);
               break;
             }
-            pc_render_partial(map, chars, characters, look, &look);
+            // pc_render_partial(map, chars, characters, look, &look);
+            render(chars, characters, item_map, items, look, &look);
           }while(true);
         }
         else if ((target.x == -3 && target.y == -3) || (target.x == -4 && target.y == -4)){
@@ -392,7 +393,7 @@ int main(int argc, char *argv[]){
         chars[target.y][target.x] = cgetId(p_curr);
 
         Pair start = {cgetX(p_curr) - 40, cgetY(p_curr) - 10};
-        pc_render_partial(map, chars, characters, start, NULL); //TODO, fix start position!!!
+        render(chars, characters, item_map, items, start, NULL); //TODO, fix start position!!!
         items = (Item**)delete_items(items, num_items);
         delete_Characters(characters, nummon + 1);
         endgame(&dungeon, &evt, "The PC is dead :(");

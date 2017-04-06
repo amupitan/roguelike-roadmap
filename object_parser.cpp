@@ -140,7 +140,7 @@ namespace object_parser{
     char current;
     std::vector<monster_stub*> monstubs;
     std::vector<item_stub*> itemstubs;
-    const char* colors[] = {"BLACK", "RED", "GREEN", "YELLOW", "BLUE", "MAGNETA", "CYAN", "WHITE"};
+    const char* colors[] = {"BLACK", "RED", "GREEN", "YELLOW", "BLUE", "MAGENTA", "CYAN", "WHITE"};
     const char* abilities[] = {"SMART", "TELE", "TUNNEL", "ERRATIC"}; //Todo: add other monster types (will need new equation)
     std::map<std::string, char> item_symbols = {
       {"WEAPON", '|'},
