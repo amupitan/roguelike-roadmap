@@ -11,6 +11,7 @@
 #include <queue>
 
 # ifdef __cplusplus
+template <class T> void printmon(T* object);//TODO: remove C Linkage so this function can join the rest of them
 extern "C" {
 # endif
 
@@ -65,7 +66,8 @@ void delete_dungeon(Dungeon* dungeon, Queue* evt, Cell map[][nCols]);
 
 /*ncurses*/
 void ncurses_init();
-void printmon(Character* Character);
+// void printmon(Character* Character);
+
 void log_message(const char* message);
 void nrender_dungeon(Cell map[][nCols], int chars[][nCols], Character* monsts[]);
 

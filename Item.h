@@ -6,6 +6,7 @@ class Item {
   private:
   //   const char* name;
   // 	const char* desc;
+    int id;
     int x;
     int y;
   	uint8_t type;
@@ -20,7 +21,9 @@ class Item {
   	int value;
   	char symbol;
   public:
-    Item(int x, int y, const object_parser::private_wrapper::item_stub* stub);
+    Item(int id, int x, int y, const object_parser::private_wrapper::item_stub* stub);
     char getSymbol();
+    char getValue();
+    int getColor();
 };
 #endif

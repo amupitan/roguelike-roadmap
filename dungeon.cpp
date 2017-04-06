@@ -328,7 +328,7 @@ void pc_render_partial(Cell map[][nCols], int chars[][nCols], Character* monsts[
 	refresh();
 }
 
-void render(int chars[][nCols], Character* monsts[], Pair start, Pair* newPos){
+void render(int chars[][nCols], Character* monsts[], int item_map[][nCols], Item** items, Pair start, Pair* newPos){
   char** sight = csetSight(monsts[0], nRows, nCols); /*TODO: check value of sight*/
   int i = 0, j = 0;
   start.x = (start.x < 0) ? 0 : start.x;
@@ -352,6 +352,9 @@ void render(int chars[][nCols], Character* monsts[], Pair start, Pair* newPos){
   		  if ((temp != -1) && (in_range)) printmon(monsts[chars[i][j]]); /*There is a monster on the terrain and the monster is within range*/
   		  else {
   		    //TODO: check for item
+  		    if (sight[i][j] != '.' && sight[i][j] != '#' && sight[i][j] != ' ' && sight[i][j] != '>' && sight[i][j] != '<'){ //TODO: use a function that checks
+  		      printmon(items[item_map[i][j]]);
+  		    }
   		    addch(sight[i][j]);
   		  }
 		  }else addch(' ');
@@ -362,10 +365,17 @@ void render(int chars[][nCols], Character* monsts[], Pair start, Pair* newPos){
 	refresh();
 }
 
-void printmon(Character* character){
-  attron(COLOR_PAIR(character->getColor()));
-  addch(cgetValue(character));
-  attroff(COLOR_PAIR(character->getColor()));
+// void printmon(Character* character){
+//   attron(COLOR_PAIR(character->getColor()));
+//   addch(cgetValue(character));
+//   attroff(COLOR_PAIR(character->getColor()));
+// }
+
+template <class T>
+void printmon(T* object){
+  attron(COLOR_PAIR(object->getColor()));
+  addch(object->getValue());
+  attroff(COLOR_PAIR(object->getColor()));
 }
 
 // void addCharcters(Dungeon* dungeon, Queue* evt, int nummon, Character* characters[], int chars[][nCols], unsigned int pace[]){
@@ -424,11 +434,12 @@ Item** addItems(Dungeon* dungeon, Item** items, int item_map[][nCols], int* num_
     Pair co_ords = determine_position(dungeon->rooms[rand_gen(0, dungeon->num_rooms - 1)]); /*get position from random room*/
     int jaja = rand_gen(0, object_parser::getNumItemstubs() - 1);
     items[i] = new Item(
+      i,
       co_ords.x,
       co_ords.y,
       object_parser::getCompleteItemStub(jaja)
     );
-    item_map[co_ords.y][co_ords.x] = items[i]->getSymbol();
+    item_map[co_ords.y][co_ords.x] = i;
   }
   return items;
 }
