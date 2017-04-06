@@ -2,7 +2,7 @@
 #include <iostream>
 #include <cstring>
 #include <sstream>
-
+#include <map>
 
 #include <cstdlib>
 
@@ -142,6 +142,28 @@ namespace object_parser{
     std::vector<item_stub*> itemstubs;
     const char* colors[] = {"BLACK", "RED", "GREEN", "YELLOW", "BLUE", "MAGNETA", "CYAN", "WHITE"};
     const char* abilities[] = {"SMART", "TELE", "TUNNEL", "ERRATIC"}; //Todo: add other monster types (will need new equation)
+    std::map<std::string, char> item_symbols = {
+      {"WEAPON", '|'},
+      {"OFFHAND", ')'},
+      {"RANGED", '}'},
+      {"ARMOR", '['},
+      {"HELMET", ']'},
+      {"CLOAK", '('},
+      {"GLOVES", '{'},
+      {"BOOTS", '\\'},
+      {"RING", '='},
+      {"AMULET", '\"'},
+      {"LIGHT", '_'},
+      {"SCROLL", '~'},
+      {"BOOK", '?'},
+      {"FLASK", '!'},
+      {"GOLD", '$'},
+      {"AMMUNITION", '/'},
+      {"FOOD", ','},
+      {"WAND", '-'},
+      {"CONTAINER", '%'},
+      {"STACK", '&'}
+    };
     /*helper functions*/
     bool startsWith(const char* str, const char* start){
       size_t str_len = strlen(str), start_len = strlen(start);
@@ -187,6 +209,11 @@ namespace object_parser{
       }
       return -1;
     }
+    char symbolize(std::string name){
+      auto search = item_symbols.find(name);
+      if (search != item_symbols.end()) return search->second;
+      return '*'; //defualt symbol for not found
+    }
     stub* getMonsterStub(){
       return new monster_stub();
     }
@@ -203,13 +230,17 @@ namespace object_parser{
     }
     
     void delete_objects(){
-      if (private_wrapper::current == 'm'){
-        for (std::vector<int>::size_type i = 0; i < private_wrapper::monstubs.size(); i++)
+      // if (private_wrapper::current == 'm'){
+        for (std::vector<int>::size_type i = 0; i < private_wrapper::monstubs.size(); i++){
           delete private_wrapper::monstubs[i];
-      }else if (private_wrapper::current == 'i') {
-        for (std::vector<int>::size_type i = 0; i < private_wrapper::itemstubs.size(); i++)
+          private_wrapper::monstubs[i] = 0;
+        }
+      // }else if (private_wrapper::current == 'i') {
+        for (std::vector<int>::size_type i = 0; i < private_wrapper::itemstubs.size(); i++){
           delete private_wrapper::itemstubs[i];
-      }
+          private_wrapper::itemstubs[i] = 0;
+        }
+      // }
       private_wrapper::current = 0;
       clear_parser();
     }
@@ -357,3 +388,4 @@ namespace object_parser{
 };
 //1491351232 color monsters
 //stairs 1491375121
+//stairs load dungeon01 1491380966

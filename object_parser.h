@@ -68,6 +68,7 @@ namespace object_parser{
   	bool startsWith(const char* str, const char* start);
   	void delete_objects();
   	int parse_dice(std::string dice);
+  	char symbolize(std::string name);
   	
   	bool assign_attrbute(std::string& attr, const char* value, int offset);
   // 	monster_stub* getMonsterStubs(monster_stub* monsters);

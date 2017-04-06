@@ -54,17 +54,6 @@ int update_cell(Cell* p, char value, unsigned char hardness){
 // 	}
 // }
 
-void render(Cell map[][nCols], int x, int y){
-  int i = 0, j = 0;
-  for (i = 0; i < nRows; i++){
-		for (j =0; j < nCols; j++){
-		  if (i == y && j == x) printf("@");
-		  else putchar(map[i][j].value);
-		}
-		putchar('\n');
-	}
-}
-
 int write_room(Cell map[][nCols], Room room){
   int i = 0,j = 0;
   int n = room.x + room.width - 1;
@@ -339,6 +328,40 @@ void pc_render_partial(Cell map[][nCols], int chars[][nCols], Character* monsts[
 	refresh();
 }
 
+void render(int chars[][nCols], Character* monsts[], Pair start, Pair* newPos){
+  char** sight = csetSight(monsts[0], nRows, nCols); /*TODO: check value of sight*/
+  int i = 0, j = 0;
+  start.x = (start.x < 0) ? 0 : start.x;
+  start.y = (start.y < 0) ? 0 : start.y;
+  int endRow = start.y + 21, endCol = start.x + 80;
+  if (endCol > nCols - 1){
+    start.x = nCols - 1 - 80;
+    endCol = nCols - 1;
+  }
+  if (endRow > nRows - 1){
+    start.y = nRows - 1 - 21;
+    endRow = nRows - 1;
+  }
+  move(1, 0);
+  for (i = start.y; i < endRow; i++){
+		for (j = start.x; j < endCol; j++){
+		  if (i == 0 || j == 0 || i == (nRows - 1) || j == (nCols - 1)) addch(' ');
+		  else if (sight[i][j] != -1){ /*PC can see/has seen this spot*/
+  		  int temp = chars[i][j];
+  		  int in_range = (j <= cgetX(monsts[0]) + 5) && (j >= cgetX(monsts[0]) - 5) && (i <= cgetY(monsts[0]) + 5) && (i >= cgetY(monsts[0]) - 5);
+  		  if ((temp != -1) && (in_range)) printmon(monsts[chars[i][j]]); /*There is a monster on the terrain and the monster is within range*/
+  		  else {
+  		    //TODO: check for item
+  		    addch(sight[i][j]);
+  		  }
+		  }else addch(' ');
+		}
+		addch('\n');
+	}
+	if(newPos) *newPos = start;
+	refresh();
+}
+
 void printmon(Character* character){
   attron(COLOR_PAIR(character->getColor()));
   addch(cgetValue(character));
@@ -379,9 +402,6 @@ void addCharcters(Dungeon* dungeon, Queue* evt, int nummon, Character* character
     /*Initialize monsters*/
     if (i != 0){
       int rand_room = rand_gen(1, dungeon->num_rooms - 1); //This makes sure no monster is spawned int he same room as the PC.
-      uint8_t type = rand() & 0xF;//rand_gen(0x0,0xF);
-      char temp_val[2];
-      sprintf(temp_val, "%x", type);
       characters[i] = new Monster(
         i, /*id*/
         rand_gen(dungeon->rooms[rand_room].x, dungeon->rooms[rand_room].x + dungeon->rooms[rand_room].width - 1), /*x-position*/
@@ -396,14 +416,24 @@ void addCharcters(Dungeon* dungeon, Queue* evt, int nummon, Character* character
   // characters[0].speed = 0xF; //not too sure why i do this, i know it blocks pc from getting assigned a value execpt this value is hanged by new dungeon generation
 }
 
+Item** addItems(Dungeon* dungeon, Item** items, int item_map[][nCols], int* num_items){
+  memset(item_map, -1, sizeof(int)*nRows*nCols);
+  *num_items = rand_gen(20, dungeon->num_rooms * 2);
+  items = (Item**)malloc(sizeof(Item*) * *num_items);
+  for (int i = 0; i < *num_items; i++){
+    Pair co_ords = determine_position(dungeon->rooms[rand_gen(0, dungeon->num_rooms - 1)]); /*get position from random room*/
+    int jaja = rand_gen(0, object_parser::getNumItemstubs() - 1);
+    items[i] = new Item(
+      co_ords.x,
+      co_ords.y,
+      object_parser::getCompleteItemStub(jaja)
+    );
+    item_map[co_ords.y][co_ords.x] = items[i]->getSymbol();
+  }
+  return items;
+}
+
 Character* pc_init(Character* pc, Room room){
-  // pc = new Character(
-  //   0, /*id*/
-  //   rand_gen(room.x, room.x + room.width - 1), /*x-position*/
-  //   rand_gen(room.y, room.y + room.height - 1),/*y-position*/
-  //   10, /*speed*/
-  //   '@' /*type TODO: this doesn't actually do anything. The real thing is done in the constructor*/
-  // );
   int pc_x = rand_gen(room.x, room.x + room.width - 1);
   int pc_y = rand_gen(room.y, room.y + room.height - 1);
   pc = Player::getPlayer();
@@ -417,7 +447,7 @@ Character* pc_init(Character* pc, Room room){
   return pc;
 }
 
-void updateSight(Character* pc, Cell map[][nCols]){ /*TODO: move to Character class*/
+void updateSight(Character* pc, Cell map[][nCols], int items[][nCols]){ /*TODO: move to Character class*/
   int x = cgetX(pc), y = cgetY(pc);
   int i,j;
   char** sight = csetSight(pc, nRows, nCols); /*TODO: check value of sight*/
@@ -425,7 +455,7 @@ void updateSight(Character* pc, Cell map[][nCols]){ /*TODO: move to Character cl
   Pair end = {(x + 5 < nCols - 1) ? x + 5 : nCols - 2, (y + 5 < nRows - 1) ? y + 5 : nRows - 2};
   for (i = start.y; i <= end.y; i++){
     for (j = start.x; j <= end.x; j++){
-      sight[i][j] = map[i][j].value;
+      sight[i][j] = (items[i][j] == -1) ? map[i][j].value : items[i][j];
     }
   }
 }
@@ -452,7 +482,7 @@ void create_dungeon(Dungeon* dungeon, Cell map[][nCols], Cell room_cells[]){
 		}
 	}
     //connect random cells
-  	for (i =0; i < count-1; i++){
+  	for (i = 0; i < count - 1; i++){
   		connect_rooms(map, room_cells[i], room_cells[i+1]);
     }
 }
@@ -531,4 +561,15 @@ void delete_dungeon(Dungeon* dungeon, Queue* evt, Cell map[][nCols]){
 		}
 	}
 	
+}
+
+void* delete_items(Item** items, int& num_items){
+  if (!items) return 0;
+  for (int i = 0; i < num_items; i++){
+    delete items[i];
+    items[i] = 0;
+  }
+  free(items);
+  items = 0;
+  return items;
 }

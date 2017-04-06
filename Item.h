@@ -21,5 +21,6 @@ class Item {
   	char symbol;
   public:
     Item(int x, int y, const object_parser::private_wrapper::item_stub* stub);
+    char getSymbol();
 };
 #endif

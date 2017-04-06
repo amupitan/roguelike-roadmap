@@ -19,9 +19,9 @@
 #include "game.h" //TODO: forwatd declration problems when this is the first include
 #include "dungeon.h"
 #include "object_parser.h"
+#include "Item.h"
 
 int main(int argc, char *argv[]){
-  
   //regular
   Dungeon dungeon;
   dungeon.num_rooms = 0;
@@ -38,7 +38,7 @@ int main(int argc, char *argv[]){
 	Cell room_cells[50];
 	Pair pc = {-1, -1}; //TODO see if it's better to have in struct or as a variable 2.
 	uint8_t pc_type = 0;
-
+	
   //dungeon
   FILE *dungeon_file;
   char dungeon_title[20];
@@ -110,15 +110,6 @@ int main(int argc, char *argv[]){
 		}
 	}
   
-  /*PRINT PARSED MONSTERS AND EXIT*/
-  /*object_parser::start_parser(strcat(strcpy(load_file, getenv("HOME")), "/.rlg327/monster_desc.txt")); //reuses old variable
-  object_parser::complete_parse();
-  std::vector<object_parser::private_wrapper::monster_stub*> parsed_monsters;
-  parsed_monsters = object_parser::private_wrapper::getMonsterStubs(parsed_monsters); //shouldn't be need since we'll be getting monsters not stubs
-  for (std::vector<int>::size_type i = 0; i < parsed_monsters.size(); i++)
-    std::cout << parsed_monsters[i] << std::endl;
-  return 0;*/
-  /*END*/
   object_parser::parser_init("monster");
   object_parser::complete_parse();
   // object_parser::getCompleteMonsterStub(0);//TODO:
@@ -172,8 +163,7 @@ int main(int argc, char *argv[]){
       fclose(dungeon_file_l);
     }
   }
-
-
+  
   /*Ncurses start*/
   int col = 0;
   ncurses_init();
@@ -198,6 +188,20 @@ int main(int argc, char *argv[]){
     csetPos(characters[0], &(pc.x), &(pc.y));
     chars[cgetY(characters[0])][cgetX(characters[0])] = 0;
   }
+  
+  /*Items*/
+  object_parser::parser_init("item");
+  object_parser::complete_parse();
+  int num_items = 20; /*Will be changed in add items TODO: change initializer to declaration*/
+  int item_map[nRows][nCols];
+  Item** items = 0;
+  items = addItems(&dungeon, items, item_map, &num_items);
+  /* memset(item_map, -1, sizeof(int)*nRows*nCols);
+  // item_map[59][116] = '*';
+  // item_map[58][116] = ']';
+  // item_map[57][115] = '&';
+  // item_map[57][120] = '+';
+  // item_map[59][125] = '+';*/
 
   add_stairs(&dungeon, map);
   char recalculate = 1;
@@ -222,12 +226,13 @@ int main(int argc, char *argv[]){
       
       // char** map_values = (char **)malloc(sizeof(char *) * nRows);
       // for
-      updateSight(pcp, map);
+      updateSight(pcp, map, item_map);
       Pair start = {cgetX(p_curr) - 40, cgetY(p_curr) - 10};
       pc_render_partial(map, chars, characters, start, NULL); //TODO!!!
       do{
         target = *(Pair *)getInputC(&target);
         if (target.x == -1 && target.y == -1){
+          items = (Item**)delete_items(items, num_items);
           delete_Characters(characters, nummon + 1);
           endgame(&dungeon, &evt, "Game ended");
         }
@@ -253,11 +258,14 @@ int main(int argc, char *argv[]){
           }
           // csetType(pcp, 0);
           l_monsters = nummon;
+          items = (Item**)delete_items(items, num_items);
           delete_dungeon(&dungeon, &evt, map);
           delete_Characters(characters, nummon + 1);
+          
           create_dungeon(&dungeon, map, room_cells);
           add_stairs(&dungeon, map);
           addCharcters(&dungeon, &evt, nummon, characters, chars, pace);
+          items = addItems(&dungeon, items, item_map, &num_items); //TODO
           recalculate = 1;
 
           /*START get rid of*/
@@ -385,7 +393,7 @@ int main(int argc, char *argv[]){
 
         Pair start = {cgetX(p_curr) - 40, cgetY(p_curr) - 10};
         pc_render_partial(map, chars, characters, start, NULL); //TODO, fix start position!!!
-
+        items = (Item**)delete_items(items, num_items);
         delete_Characters(characters, nummon + 1);
         endgame(&dungeon, &evt, "The PC is dead :(");
       }
@@ -406,6 +414,7 @@ int main(int argc, char *argv[]){
   /*Print win message*/
   if (nummon && !l_monsters) {
     delete_Characters(characters, nummon + 1);
+    items = (Item**)delete_items(items, num_items);
     endgame(&dungeon, &evt, "PC killed em all");
   }
   
@@ -461,9 +470,8 @@ void delete_Characters(Character* characters[], int num_characters){
   cfreeSight(characters[0], nRows);
   Player::deletePlayer();
   for (i = 1; i < num_characters; i++){
-    // free(characters[i]);
     deleteCharacter(characters[i]);
-    characters[i] = NULL;
+    characters[i] = 0;
   }
 }
 
@@ -471,3 +479,5 @@ void delete_Characters(Character* characters[], int num_characters){
 //1490063401 visible monster
 //1490647963 stairs
 //new stairs 1491369464
+//1491422112 stairs
+//1491429247  stairs
