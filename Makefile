@@ -12,8 +12,8 @@ default: game
 game.o: game.cpp game.h Character.h queue.h Cell_Pair.h
 	$(CXX) $(CXXFLAGS) game.cpp
 	
-queue.o: queue.c queue.h
-	$(CXX) $(CXXFLAGS) queue.c
+queue.o: queue.cpp queue.h
+	$(CXX) $(CXXFLAGS) queue.cpp
 
 Item.o: Item.cpp Item.h
 	$(CXX) $(CXXFLAGS) Item.cpp

@@ -17,6 +17,7 @@ typedef struct Queue {
   struct Node* front;
   struct Node* rear;
   int size;
+  // std::priority_queue<void*, vector<void*>, comp> _q;
   int (*equals)(void* data1, void* data2); //TODO have it use const (const void* data1, const void* data2);
   void (*printer)(void* node);
   void (*copier)(void* dest, void* src);

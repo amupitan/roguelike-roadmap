@@ -365,12 +365,6 @@ void render(int chars[][nCols], Character* monsts[], int item_map[][nCols], Item
 	refresh();
 }
 
-// void printmon(Character* character){
-//   attron(COLOR_PAIR(character->getColor()));
-//   addch(cgetValue(character));
-//   attroff(COLOR_PAIR(character->getColor()));
-// }
-
 template <class T>
 void printmon(T* object){
   attron(COLOR_PAIR(object->getColor()));
