@@ -111,6 +111,7 @@ int main(int argc, char *argv[]){
 	}
   
   object_parser::parser_init("monster");
+  object_parser::start_parser(strcat(strcpy(load_file, getenv("HOME")), "/.rlg327/monster_desc.txt"));
   object_parser::complete_parse();
   // object_parser::getCompleteMonsterStub(0);//TODO:
   
@@ -191,17 +192,12 @@ int main(int argc, char *argv[]){
   
   /*Items*/
   object_parser::parser_init("item");
+  object_parser::start_parser(strcat(strcpy(load_file, getenv("HOME")), "/.rlg327/object_desc.txt"));
   object_parser::complete_parse();
   int num_items = 20; /*Will be changed in add items TODO: change initializer to declaration*/
   int item_map[nRows][nCols];
   Item** items = 0;
   items = addItems(&dungeon, items, item_map, &num_items);
-  /* memset(item_map, -1, sizeof(int)*nRows*nCols);
-  // item_map[59][116] = '*';
-  // item_map[58][116] = ']';
-  // item_map[57][115] = '&';
-  // item_map[57][120] = '+';
-  // item_map[59][125] = '+';*/
 
   add_stairs(&dungeon, map);
   char recalculate = 1;
