@@ -368,7 +368,7 @@ void render(int chars[][nCols], Character* monsts[], int item_map[][nCols], Item
 template <class T>
 void printmon(T* object){
   attron(COLOR_PAIR(object->getColor()));
-  addch(object->getValue());
+  addch(object->getSymbol());
   attroff(COLOR_PAIR(object->getColor()));
 }
 

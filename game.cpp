@@ -207,7 +207,7 @@ int main(int argc, char *argv[]){
     Character* p_curr;
     p_curr = (Character *)peek(&evt, &p_curr);
     Pair target = {cgetX(p_curr), cgetY(p_curr)};// {cgetX(p_curr), cgetY(p_curr)};
-    if (cgetValue(p_curr) == -1){ //it was killed
+    if (cgetSymbol(p_curr) == -1){ //it was killed
       dequeue(&evt);
       continue;
     }
@@ -440,9 +440,7 @@ int char_equals(void* c1, void* c2){
 }
 
 void print_Character(void* character){
-//   character character_c = *(character *)character;
-//   printf("id: %d => %c speed is %d\n",character_c.id, character_c.value, character_c.speed);
-  printf("id: %d => %c speed is %d\n",cgetId((Character *)character), cgetValue((Character *)character), cgetSpeed((Character *)character));
+  printf("id: %d => %c speed is %d\n",cgetId((Character *)character), cgetSymbol((Character *)character), cgetSpeed((Character *)character));
 }
 
 
@@ -479,3 +477,4 @@ void delete_Characters(Character* characters[], int num_characters){
 //new stairs 1491369464
 //1491422112 stairs
 //1491429247  stairs
+//1491608195 new stairs

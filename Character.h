@@ -23,7 +23,7 @@ class Character{
 
   protected:
     Character();
-    char value;
+    char symbol;
     int color;
     
   public:
@@ -38,7 +38,7 @@ class Character{
     int getY() const;
     int getId() const;
     // Pair getPos() const; //remove?
-    char getValue() const;
+    char getSymbol() const;
     uint8_t getSpeed() const;
     int getColor() const;
     bool checkType(uint8_t type) const;
@@ -66,7 +66,7 @@ extern "C" {
   int cgetX(Character* p);
   int cgetY(Character* p);
   int cgetId(Character* p);
-  char cgetValue(Character *p);
+  char cgetSymbol(Character *p);
   int ccheckType(Character* p, uint8_t type);
   void ckillCharacter(Character *p);
   uint8_t cgetSpeed(Character* p);

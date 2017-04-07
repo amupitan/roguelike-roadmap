@@ -16,7 +16,7 @@ Character::Character(uint8_t id, int x, int y, int speed, uint8_t type){
   this->type = type;
   char temp_val[2];
   sprintf(temp_val, "%x", type);
-  value = *temp_val;
+  symbol = *temp_val;
   pace = 1000/speed;
 }
 
@@ -24,7 +24,7 @@ Character::Character(uint8_t id, int x, int y, int speed, uint8_t type){
  *This initializes to PC and should only be called by PC
  *
  **/
-Character::Character() :  speed(10), id(0), value('@') {}//TODO: add functionality that only PC type can call this
+Character::Character() :  speed(10), id(0), symbol('@') {}//TODO: add functionality that only PC type can call this
 
 void Character::setPos(void* x, void* y){
   if (x)
@@ -53,8 +53,8 @@ int Character::getId() const{
   return id;
 }
 
-char Character::getValue() const{
-  return value;
+char Character::getSymbol() const{
+  return symbol;
 }
 
 uint8_t Character::getSpeed() const{
@@ -66,7 +66,7 @@ int Character::getColor() const{
 }
 
 void Character::killCharacter(){
-  value = -1;
+  symbol = -1;
 }
 
 bool Character::checkType(uint8_t type) const{
@@ -138,8 +138,8 @@ uint8_t cgetSpeed(Character* p){
   return p->getSpeed();
 }
 
-char cgetValue(Character *p){
-  return p->getValue();
+char cgetSymbol(Character *p){
+  return p->getSymbol();
 }
 
 int ccheckType(Character* p, uint8_t type){

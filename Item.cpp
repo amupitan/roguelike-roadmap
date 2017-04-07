@@ -15,5 +15,5 @@ int Item::getColor(){
 }
 
 char Item::getValue(){
-  return symbol;
+  return value;
 }

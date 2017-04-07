@@ -11,7 +11,7 @@ Player* Player::getPlayer(){
 }
 
 Player::Player() : sight(0) {
-  value = '@';
+  symbol = '@';
   color = 2;//GREEN
 }
 
