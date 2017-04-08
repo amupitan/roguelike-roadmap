@@ -135,7 +135,7 @@ Pair* look_mode(Pair *target, int* control_mode){ //TODO: uses hardcoded width/h
     case 'Q':
       /*Quit the game*/
       ungetch('Q');
-    case 27:
+    case 27:/*ESC*/
       /*go back to control mode*/
       *control_mode = 1;
       break;

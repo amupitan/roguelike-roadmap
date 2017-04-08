@@ -1,7 +1,6 @@
 #ifndef DISPLAY_H
 #define DISPLAY_H
 
-#include "Player.h" /*TODO remove?*/
 #include <stdint.h>
 #include "Cell_Pair.h"
 # ifdef __cplusplus

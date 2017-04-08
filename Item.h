@@ -21,10 +21,13 @@ class Item {
   	char symbol;
   	std::string name;
   	std::string desc;
+  	Item* next;
   public:
     Item(int id, int x, int y, const object_parser::private_wrapper::item_stub* stub);
     char getSymbol();
     char getValue();
     int getColor();
+    void stack(Item* next);
+    void unstack(int& nextId);/*gets picked up by a charcter, unstacks from other items if stacked*/
 };
 #endif

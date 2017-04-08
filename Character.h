@@ -3,6 +3,7 @@
 
 /*External libs*/
 #include <stdint.h>
+#include "object_parser.h"
 
 #ifndef __cplusplus
 typedef void Character;
@@ -25,6 +26,8 @@ class Character{
     Character();
     char symbol;
     int color;
+    int hp;
+  	object_parser::private_wrapper::dice damage;
     
   public:
     Character(uint8_t id, int x, int y);
@@ -59,7 +62,7 @@ extern "C" {
   Character* construct_Character(uint8_t id, int x, int y, int speed, uint8_t type);
   void csetPos(Character* p, void* x, void* y);
   void csetType(Character* p, uint8_t type);
-  char** csetSight(Character* p, int height, int width);
+  // char** csetSight(Character* p, int height, int width);
   // void cupdateSight(Character* p, int height, int width, char map[][width]);
   void cfreeSight(Character* p, int height);
   void cprintCharacter(Character* p);

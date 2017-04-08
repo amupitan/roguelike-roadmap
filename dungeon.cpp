@@ -298,7 +298,7 @@ void render_partial(Cell map[][nCols], int chars[][nCols], Character* monsts[], 
 }
 
 void pc_render_partial(Cell map[][nCols], int chars[][nCols], Character* monsts[], Pair start, Pair* newPos){
-  char** sight = csetSight(monsts[0], nRows, nCols); /*TODO: check value of sight*/
+  int** sight = csetSight(monsts[0], nRows, nCols); /*TODO: check value of sight*/
   int i = 0, j = 0;
   start.x = (start.x < 0) ? 0 : start.x;
   start.y = (start.y < 0) ? 0 : start.y;
@@ -329,7 +329,7 @@ void pc_render_partial(Cell map[][nCols], int chars[][nCols], Character* monsts[
 }
 
 void render(int chars[][nCols], Character* monsts[], int item_map[][nCols], Item** items, Pair start, Pair* newPos){
-  char** sight = csetSight(monsts[0], nRows, nCols); /*TODO: check value of sight*/
+  int** sight = csetSight(monsts[0], nRows, nCols); /*TODO: check value of sight*/
   int i = 0, j = 0;
   start.x = (start.x < 0) ? 0 : start.x;
   start.y = (start.y < 0) ? 0 : start.y;
@@ -346,14 +346,15 @@ void render(int chars[][nCols], Character* monsts[], int item_map[][nCols], Item
   for (i = start.y; i < endRow; i++){
 		for (j = start.x; j < endCol; j++){
 		  if (i == 0 || j == 0 || i == (nRows - 1) || j == (nCols - 1)) addch(' ');
-		  else if (sight[i][j] != -1){ /*PC can see/has seen this spot*/
+		  else if (sight[i][j] != 0){ /*PC can see/has seen this spot*/
   		  int temp = chars[i][j];
   		  int in_range = (j <= cgetX(monsts[0]) + 5) && (j >= cgetX(monsts[0]) - 5) && (i <= cgetY(monsts[0]) + 5) && (i >= cgetY(monsts[0]) - 5);
   		  if ((temp != -1) && (in_range)) printmon(monsts[chars[i][j]]); /*There is a monster on the terrain and the monster is within range*/
   		  else {
   		    //TODO: check for item
-  		    if (/*sight[i][j] != '.' && sight[i][j] != '#' && sight[i][j] != ' ' && sight[i][j] != '>' && sight[i][j] != '<'*/sight[i][j] == -2){ //TODO: use a function that checks
-  		      printmon(items[item_map[i][j]]);
+  		    if (/*sight[i][j] != '.' && sight[i][j] != '#' && sight[i][j] != ' ' && sight[i][j] != '>' && sight[i][j] != '<'*/sight[i][j] < 0){ //TODO: use a function that checks
+  		    int fog_item = sight[i][j] * -1;
+  		      printmon(items[fog_item]);
   		    }else
   		      addch(sight[i][j]);
   		  }
@@ -422,7 +423,7 @@ void addCharcters(Dungeon* dungeon, Queue* evt, int nummon, Character* character
 
 Item** addItems(Dungeon* dungeon, Item** items, int item_map[][nCols], int* num_items){
   memset(item_map, -1, sizeof(int)*nRows*nCols);
-  *num_items = rand_gen(20, dungeon->num_rooms * 2);
+  *num_items = (*num_items < 0) ? *num_items * -1 : rand_gen(20, dungeon->num_rooms * 2);
   items = (Item**)malloc(sizeof(Item*) * *num_items);
   for (int i = 0; i < *num_items; i++){
     Pair co_ords = determine_position(dungeon->rooms[rand_gen(0, dungeon->num_rooms - 1)]); /*get position from random room*/
@@ -433,6 +434,10 @@ Item** addItems(Dungeon* dungeon, Item** items, int item_map[][nCols], int* num_
       co_ords.y,
       object_parser::getCompleteItemStub(jaja)
     );
+    if (item_map[co_ords.y][co_ords.x] != -1){
+      // item_map[co_ords.y][co_ords.x] = i;
+      items[i]->stack(items[item_map[co_ords.y][co_ords.x]]);
+    }
     item_map[co_ords.y][co_ords.x] = i;
   }
   return items;
@@ -443,10 +448,10 @@ Character* pc_init(Character* pc, Room room){
   int pc_y = rand_gen(room.y, room.y + room.height - 1);
   pc = Player::getPlayer();
   pc->setPos(&pc_x, &pc_y);
-  char** sight = csetSight(pc, nRows, nCols); /*TODO: check value of sight*/
+  int** sight = csetSight(pc, nRows, nCols); /*TODO: check value of sight*/
   for (int i = 0; i < nRows; i++){
     for (int j = 0; j < nCols; j++){
-      sight[i][j] = -1;
+      sight[i][j] = 0;
     }
   }
   return pc;
@@ -455,12 +460,12 @@ Character* pc_init(Character* pc, Room room){
 void updateSight(Character* pc, Cell map[][nCols], int items[][nCols]){ /*TODO: move to Character class*/
   int x = cgetX(pc), y = cgetY(pc);
   int i,j;
-  char** sight = csetSight(pc, nRows, nCols); /*TODO: check value of sight*/
+  int** sight = csetSight(pc, nRows, nCols); /*TODO: check value of sight*/
   Pair start = {(x - 5 > 1) ? x - 5 : 1, (y - 5 > 1) ? y - 5 : 1};
   Pair end = {(x + 5 < nCols - 1) ? x + 5 : nCols - 2, (y + 5 < nRows - 1) ? y + 5 : nRows - 2};
   for (i = start.y; i <= end.y; i++){
     for (j = start.x; j <= end.x; j++){
-      sight[i][j] = (items[i][j] == -1) ? map[i][j].value : -2; //TODO:(-2 means item) instead of checking those different values, you can set this one to a constant value that always means object on this position: NO two monsters on the same spot
+      sight[i][j] = (items[i][j] == -1) ? map[i][j].value : -1 * items[i][j]; //TODO:(-2 means item) instead of checking those different values, you can set this one to a constant value that always means object on this position: NO two monsters on the same spot
     }
   }
 }

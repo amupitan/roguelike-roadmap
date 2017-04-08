@@ -20,14 +20,14 @@ Player::Player(Player const& player_copy){
 }
     // Player& operator=(Player const&);
 
-char** Player::setSight(int height, int width){
+int** Player::setSight(int height, int width){
   if (width < 1 || height < 1 || sight){
     // fprintf(stderr, "Height %d < 1 Width %d < 1 or sight is not null", height, width);
     return sight; /*TODO: handle this in a better way, remove fprintf, consider merging both if blocks*/
   }
-  if ((sight = (char **)malloc(sizeof(char*) * height))){
+  if ((sight = (int **)malloc(sizeof(int*) * height))){
     for (int i = 0; i < height; i++)
-      *(sight + i) = (char* )malloc(sizeof(char) * width);
+      *(sight + i) = (int* )malloc(sizeof(int) * width);
   }
   return sight;
 }
@@ -53,17 +53,17 @@ void Player::freeSight(int height){
     for (int i = 0; i < height; i++)
       free(*(sight + i)); //vs free(*(sight + i*sizeof(sight[0]));
     free(sight);
-    sight = NULL;
+    sight = 0;
   }
 }
 
 void Player::deletePlayer(){ //TODO: is it standard to have such a member?
   delete player;
-  player = NULL;
+  player = 0;
 }
 
 /*C Wrapper functions*/
-char** csetSight(Character* p, int height, int width){
+int** csetSight(Character* p, int height, int width){
   return static_cast<Player*>(p)->setSight(height, width);//TODO: check if type is player
 }
 

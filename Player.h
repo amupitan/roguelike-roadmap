@@ -14,10 +14,10 @@ class Player : public Character{
     Player(Player const&);
     Player& operator=(Player const&);
     static Player* player;
-    char** sight;
+    int** sight;
   public:
     static Player* getPlayer();
-    char** setSight(int height, int width);
+    int** setSight(int height, int width);
     // void updateSight(int height, int width, char map[][width]);
     void freeSight(int height);
     static void deletePlayer();
@@ -26,7 +26,7 @@ class Player : public Character{
 
 extern "C" {
 #endif /*EXTERN OPEN*/
-  char** csetSight(Character* p, int height, int width);
+  int** csetSight(Character* p, int height, int width);
   // void cupdateSight(Character* p, int height, int width, char map[][width]);
   void cfreeSight(Character* p, int height);
   

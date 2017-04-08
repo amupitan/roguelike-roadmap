@@ -14,13 +14,14 @@
 
 #include "display.h"
 #include "queue.h"
-#include "Character.h"
+// #include "Character.h"
+
 #include "Monster.h"
 #include "game.h" //TODO: forwatd declration problems when this is the first include
 #include "dungeon.h"
-#include "object_parser.h"
+// #include "object_parser.h"
 #include "Item.h"
-
+#include "Player.h"
 int main(int argc, char *argv[]){
   //regular
   Dungeon dungeon;
@@ -47,7 +48,7 @@ int main(int argc, char *argv[]){
   
   //handle options an set seed
   int longindex; //TODO remove this and set the args part to NULL
-  int option, load = 0, save = 0, seed = (unsigned) time(NULL), nummon = 0, solo = 0;
+  int option, load = 0, save = 0, seed = (unsigned) time(NULL), nummon = 0, solo = 0, numitem = 0;
   char load_file[100];
   struct option longopts[] = {
     {"load", optional_argument, NULL, 'l'},
@@ -55,6 +56,7 @@ int main(int argc, char *argv[]){
     {"seed", optional_argument, NULL, 'e'},
     {"pc", optional_argument, NULL, 'p'},
     {"nummon", optional_argument, NULL, 'm'},
+    {"numitem", optional_argument, NULL, 'i'},
     {"solo", no_argument, &solo, 1},
     {0,0,0,0}
   };
@@ -87,6 +89,10 @@ int main(int argc, char *argv[]){
           nummon_flag = 1;
         }
         break;
+      case 'i':
+        if (optarg){
+          numitem = atoi(optarg) * -1;
+        }
       case 0:
         break;
       case '?':
@@ -113,8 +119,7 @@ int main(int argc, char *argv[]){
   object_parser::parser_init("monster");
   object_parser::start_parser(strcat(strcpy(load_file, getenv("HOME")), "/.rlg327/monster_desc.txt"));
   object_parser::complete_parse();
-  // object_parser::getCompleteMonsterStub(0);//TODO:
-  
+
   if (load){
     if (!(dungeon_file = fopen(load_file, "r"))){
       fprintf(stderr, "The file: %s couldn't be opened\n", load_file);
@@ -194,10 +199,10 @@ int main(int argc, char *argv[]){
   object_parser::parser_init("item");
   object_parser::start_parser(strcat(strcpy(load_file, getenv("HOME")), "/.rlg327/object_desc.txt"));
   object_parser::complete_parse();
-  int num_items = 20; /*Will be changed in add items TODO: change initializer to declaration*/
+  // int numitem = 20; /*Will be changed in add items TODO: change initializer to declaration*/
   int item_map[nRows][nCols];
   Item** items = 0;
-  items = addItems(&dungeon, items, item_map, &num_items);
+  items = addItems(&dungeon, items, item_map, &numitem);
 
   add_stairs(&dungeon, map);
   char recalculate = 1;
@@ -224,11 +229,11 @@ int main(int argc, char *argv[]){
       // for
       updateSight(pcp, map, item_map);
       Pair start = {cgetX(p_curr) - 40, cgetY(p_curr) - 10};
-      render(chars, characters, item_map, items, start, NULL); //TODO!!!
+      render(chars, characters, item_map, items, start, 0); //TODO!!!
       do{
         target = *(Pair *)getInputC(&target);
         if (target.x == -1 && target.y == -1){
-          items = (Item**)delete_items(items, num_items);
+          items = (Item**)delete_items(items, numitem);
           delete_Characters(characters, nummon + 1);
           endgame(&dungeon, &evt, "Game ended");
           return 0;
@@ -256,14 +261,14 @@ int main(int argc, char *argv[]){
           }
           // csetType(pcp, 0);
           l_monsters = nummon;
-          items = (Item**)delete_items(items, num_items);
+          items = (Item**)delete_items(items, numitem);
           delete_dungeon(&dungeon, &evt, map);
           delete_Characters(characters, nummon + 1);
           
           create_dungeon(&dungeon, map, room_cells);
           add_stairs(&dungeon, map);
           addCharcters(&dungeon, &evt, nummon, characters, chars, pace);
-          items = addItems(&dungeon, items, item_map, &num_items); //TODO
+          items = addItems(&dungeon, items, item_map, &numitem); //TODO
           recalculate = 1;
 
           /*START get rid of*/
@@ -383,7 +388,7 @@ int main(int argc, char *argv[]){
     if (map[target.y][target.x].hardness == 0){
       chars[cgetY(p_curr)][cgetX(p_curr)] = -1;
       /*If PC is killed*/
-      if ((cgetId(p_curr) != 0)&&(cgetX(pcp) == target.x && cgetY(pcp) == target.y)){
+      if ((cgetId(p_curr) != 0)&&(pcp->getX() == target.x && cgetY(pcp) == target.y)){
         /*Move and make final render*/
         csetPos(p_curr,  &(target.x), NULL);
         csetPos(p_curr, NULL,  &(target.y));
@@ -391,15 +396,21 @@ int main(int argc, char *argv[]){
 
         Pair start = {cgetX(p_curr) - 40, cgetY(p_curr) - 10};
         render(chars, characters, item_map, items, start, NULL); //TODO, fix start position!!!
-        items = (Item**)delete_items(items, num_items);
+        items = (Item**)delete_items(items, numitem);
         delete_Characters(characters, nummon + 1);
         endgame(&dungeon, &evt, "The PC is dead :(");return 0;
       }
-      if ((chars[target.y][target.x] != -1) && (chars[target.y][target.x] != cgetId(p_curr))){ //weird stuff.
+      if ((chars[target.y][target.x] != -1) && (chars[target.y][target.x] != cgetId(p_curr))){ //TODO: change from kill to fighr
+        /*FIGHT HERE*/
         ckillCharacter(characters[chars[target.y][target.x]]);
         if(!(--l_monsters)) break;
       }
       chars[target.y][target.x] = cgetId(p_curr);
+      /*NOTE: this assumes that you killed the person and moved*/
+      if (item_map[target.y][target.x] != -1/*&& you can pick/destroy*/){ /*item here, you can pick/destroy, you moved*/
+        /*TODO: add item to inventory or destroy*/
+        items[item_map[target.y][target.x]]->unstack(item_map[target.y][target.x]);
+      }
       if (map[target.y][target.x].value != '.' && map[target.y][target.x].value != '<' && map[target.y][target.x].value != '>') map[target.y][target.x].value = '#';
       csetPos(p_curr,  &(target.x), NULL);
       csetPos(p_curr, NULL,  &(target.y));
@@ -412,7 +423,7 @@ int main(int argc, char *argv[]){
   /*Print win message*/
   if (nummon && !l_monsters) {
     delete_Characters(characters, nummon + 1);
-    items = (Item**)delete_items(items, num_items);
+    items = (Item**)delete_items(items, numitem);
     endgame(&dungeon, &evt, "PC killed em all"); return 0;
   }
   
