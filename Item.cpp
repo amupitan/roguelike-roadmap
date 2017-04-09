@@ -25,6 +25,10 @@ const char* Item::getName() const{
 const char* Item::getDesc() const{
   return desc.c_str();
 }
+    
+int Item::getId() const{
+  return id;
+}
 
 void Item::stack(Item* nextItem){
   if (next) {

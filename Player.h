@@ -23,7 +23,8 @@ class Player : public Character{
     static Player* getPlayer();
     Item ** inventory();
     int** setSight(int height, int width);
-    void pick(Item* item);
+    bool pick(Item* item);
+    int drop(int itm_idx);
     // void updateSight(int height, int width, char map[][width]);
     void freeSight(int height);
     static void deletePlayer();

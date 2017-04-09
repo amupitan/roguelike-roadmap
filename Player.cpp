@@ -50,9 +50,21 @@ Item ** Player::inventory(){ //TODO: player drops inventory when using the stair
   return carry;
 }
 
-void Player::pick(Item* item){
-  if (item_no < 10)
-    carry[item_no++] = item;
+bool Player::pick(Item* item){
+  for (int i = 0; i < 10; i++){
+      if (!carry[i]){
+        carry[i] = item;
+        return true;
+      }
+  }
+  return false;
+}
+
+int Player::drop(int itm_idx){
+  if (!carry[itm_idx]) return -1; //NOTE: -1 not 0 swap maybe?
+  int itm_id = carry[itm_idx]->getId();
+  carry[itm_idx] = 0;
+  return itm_id;
 }
 
 void Player::freeSight(int height){

@@ -294,6 +294,21 @@ int main(int argc, char *argv[]){
           target.x = pcp->getX();
           target.y = pcp->getY();
           render(chars, characters, item_map, items, start, 0);
+        }else if(target.x == -8 && target.y == -8){
+          int drop = drop_from_inventory(pcp->inventory());
+          target.x = pcp->getX();
+          target.y = pcp->getY();
+          if (drop >= 0){
+            int itm_id = pcp->drop(drop);
+            if (item_map[target.y][target.x] != -1){
+              items[itm_id]->stack(items[item_map[target.y][target.x]]);
+            }
+            item_map[target.y][target.x] = itm_id;
+          }
+          log_message("Welcome back to the dungeon!");
+          updateSight(pcp, map, item_map);
+          render(chars, characters, item_map, items, start, 0);
+          continue;
         }else if (target.x == -10 && target.y == -10){
           target.x = p_curr->getX();
           target.y = p_curr->getY(); //TODO: this happens in case -3 and shuld prolly happen in every case, refactor?
@@ -413,12 +428,12 @@ int main(int argc, char *argv[]){
       /*NOTE: this assumes that you killed the person and moved*/
       if (item_map[target.y][target.x] != -1/*&& you can pick/destroy*/){ /*item here, you can pick/destroy, you moved*/
         /*TODO: add item to inventory or destroy*/
-        if(p_curr == pcp/*&& added to invent*/) {
-          static_cast<Player*>(pcp)->pick(items[item_map[target.y][target.x]]);
+        if(p_curr == pcp && pcp->pick(items[item_map[target.y][target.x]])) {
           log_message((std::string("You just picked ") + items[item_map[target.y][target.x]]->getName()).c_str());
+          items[item_map[target.y][target.x]]->unstack(item_map[target.y][target.x]);
+        }else if (p_curr != pcp/* && check for destroy*/){
+          items[item_map[target.y][target.x]]->unstack(item_map[target.y][target.x]);
         }
-        
-        items[item_map[target.y][target.x]]->unstack(item_map[target.y][target.x]);
       }
       if (map[target.y][target.x].value != '.' && map[target.y][target.x].value != '<' && map[target.y][target.x].value != '>') map[target.y][target.x].value = '#';
       csetPos(p_curr,  &(target.x), NULL);

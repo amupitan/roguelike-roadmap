@@ -103,6 +103,10 @@ Pair* getInputC(Pair* target){ /*TODO: make void?*/
       /*display inventory*/
       target->x = target->y = -7;
       break;
+    case 'd':
+      /*display inventory*/
+      target->x = target->y = -8;
+      break;
     default:
       target->x = target->y = -10;
       break;
@@ -169,4 +173,22 @@ void print_inventory(Item ** items){
     mvprintw(i, (80- 15)/2, str.c_str(), i - num);
   }
   refresh();
+}
+
+int drop_from_inventory(Item ** items){
+  print_inventory(items);
+  log_message("PC Inventory: type the number of the item to be removed or press ESC to go back");
+  do{
+    int select = getch();
+    if (select == 27) break; //ESC
+    select -= 48;
+    
+    if (select >=0 && select < 10 && items[select]){
+      log_message((std::to_string(select) + std::string(") ") + std::string(items[select]->getName()) + std::string("has been removed")).c_str());
+      return select;
+    }else{
+      log_message((std::to_string(select) + std::string(" is invalid. Select a valid number or press ESC to quit")).c_str());
+    }
+  }while(1);
+  return -1;
 }

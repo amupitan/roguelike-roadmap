@@ -13,6 +13,7 @@ Pair* getInputC(Pair* target);
 Pair* look_mode(Pair *target, int* control_mode);
 void log_message(const char* message);
 void print_inventory(Item **items);
+int drop_from_inventory(Item ** items);
 
 # ifdef __cplusplus
 }

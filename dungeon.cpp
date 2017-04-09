@@ -435,7 +435,6 @@ Item** addItems(Dungeon* dungeon, Item** items, int item_map[][nCols], int* num_
       object_parser::getCompleteItemStub(jaja)
     );
     if (item_map[co_ords.y][co_ords.x] != -1){
-      // item_map[co_ords.y][co_ords.x] = i;
       items[i]->stack(items[item_map[co_ords.y][co_ords.x]]);
     }
     item_map[co_ords.y][co_ords.x] = i;

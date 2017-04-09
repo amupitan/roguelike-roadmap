@@ -29,6 +29,7 @@ class Item {
     int getColor() const;
     const char* getName() const;
     const char* getDesc() const;
+    int getId() const;
     void stack(Item* next);
     void unstack(int& nextId);/*gets picked up by a charcter, unstacks from other items if stacked*/
 };
