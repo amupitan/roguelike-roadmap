@@ -5,8 +5,6 @@
 
 class Monster : public Character{
   private:
-  // 	int hp;
-  // 	object_parser::private_wrapper::dice damage;
   	const char* name;
   	const char* desc;
   public:

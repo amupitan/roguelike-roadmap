@@ -6,16 +6,24 @@ Item::Item(int id, int x, int y, const item_stub::item_stub* stub) : id(id), x(x
                                                             speed(item_stub::parse_dice(stub->speed)), special(item_stub::parse_dice(stub->special)), value(item_stub::parse_dice(stub->value)),
                                                             symbol(item_stub::symbolize(stub->type)), name(stub->name), desc(stub->desc), next(0) {}
                                                             
-char Item::getSymbol(){
+char Item::getSymbol() const{
   return next ? '&' : symbol;
 }
 
-int Item::getColor(){
+int Item::getColor() const{
   return color;
 }
 
-char Item::getValue(){
+char Item::getValue() const{
   return value;
+}
+
+const char* Item::getName() const{
+  return name.c_str();
+}
+
+const char* Item::getDesc() const{
+  return desc.c_str();
 }
 
 void Item::stack(Item* nextItem){

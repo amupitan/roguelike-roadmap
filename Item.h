@@ -24,9 +24,11 @@ class Item {
   	Item* next;
   public:
     Item(int id, int x, int y, const object_parser::private_wrapper::item_stub* stub);
-    char getSymbol();
-    char getValue();
-    int getColor();
+    char getSymbol() const;
+    char getValue() const;
+    int getColor() const;
+    const char* getName() const;
+    const char* getDesc() const;
     void stack(Item* next);
     void unstack(int& nextId);/*gets picked up by a charcter, unstacks from other items if stacked*/
 };

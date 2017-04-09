@@ -99,6 +99,10 @@ Pair* getInputC(Pair* target){ /*TODO: make void?*/
       /*Display number of room*/
       target->x = target->y = -6;
       break;
+    case 'i':
+      /*display inventory*/
+      target->x = target->y = -7;
+      break;
     default:
       target->x = target->y = -10;
       break;
@@ -149,7 +153,20 @@ void log_message(const char* message){
   int row, col;
   move(0, 0);
   clrtoeol();
-  getmaxyx(stdscr, row, col); /*Longindex is passed here but this macro function requires an argument*/
-  mvprintw(0/row, (col - strlen(message))/2, message);
+  getmaxyx(stdscr, row, col);
+  mvprintw(0/row, (col - strlen(message))/2, message); //0/row is to avoid unused var warning b row
   /*TODO: call refresh()?*/
+}
+
+void print_inventory(Item ** items){
+  clear();
+  int itm_idx, col, num = (22 - 10)/2, i;
+  log_message("PC Inventory");
+  getmaxyx(stdscr, itm_idx, col);
+  for (i = num, itm_idx = 0; i < num + 10; i++, itm_idx++){//10 vs sizeof(items)/sizeof(items[0])?
+    std::string str = "%d) ";
+    if (items[itm_idx]) str += items[itm_idx]->getName();
+    mvprintw(i, (80- 15)/2, str.c_str(), i - num);
+  }
+  refresh();
 }

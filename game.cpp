@@ -206,9 +206,10 @@ int main(int argc, char *argv[]){
 
   add_stairs(&dungeon, map);
   char recalculate = 1;
-  Character* pcp = characters[0];
+  // Character* pcp = characters[0];
+  Player* pcp = static_cast<Player*>(characters[0]);
   do{
-    pcp = characters[0];
+    pcp = static_cast<Player*>(characters[0]);
     Character* p_curr;
     p_curr = (Character *)peek(&evt, &p_curr);
     Pair target = {cgetX(p_curr), cgetY(p_curr)};// {cgetX(p_curr), cgetY(p_curr)};
@@ -218,19 +219,15 @@ int main(int argc, char *argv[]){
     }
     int new_dungeon = 0;
     /*Determine next position of character*/
-    if (p_curr == pcp){
-      /* PC stuff */
+    if (p_curr == pcp){/* PC stuff */
       // while (target.x < 1 || (target.x > nCols - 1) || target.y < 1 || target.y > nRows - 1 || (target.x == cgetX(p_curr) && target.y == cgetY(p_curr))){ //Reverse psych lol :) and the PC must move, cannot stay in the same spot, just because it's lame to stay in the same place
       //   target.x = rand_gen(cgetX(p_curr) - 1, cgetX(p_curr) + 1);
       //   target.y = rand_gen(cgetY(p_curr) - 1, cgetY(p_curr) + 1);
       // }
-      
-      // char** map_values = (char **)malloc(sizeof(char *) * nRows);
-      // for
       updateSight(pcp, map, item_map);
       Pair start = {cgetX(p_curr) - 40, cgetY(p_curr) - 10};
       render(chars, characters, item_map, items, start, 0); //TODO!!!
-      do{
+      do{/*handle input*/
         target = *(Pair *)getInputC(&target);
         if (target.x == -1 && target.y == -1){
           items = (Item**)delete_items(items, numitem);
@@ -290,6 +287,13 @@ int main(int argc, char *argv[]){
           sprintf(stat_msg, "PC is at %d, %d. Number of rooms: %d", cgetX(p_curr), cgetY(p_curr), dungeon.num_rooms);
           log_message(stat_msg);
           free(stat_msg);
+        }else if(target.x == -7 && target.y == -7){
+          do{
+            print_inventory(pcp->inventory());
+          }while(getch() != 27); /*ESC*/
+          target.x = pcp->getX();
+          target.y = pcp->getY();
+          render(chars, characters, item_map, items, start, 0);
         }else if (target.x == -10 && target.y == -10){
           target.x = p_curr->getX();
           target.y = p_curr->getY(); //TODO: this happens in case -3 and shuld prolly happen in every case, refactor?
@@ -409,6 +413,11 @@ int main(int argc, char *argv[]){
       /*NOTE: this assumes that you killed the person and moved*/
       if (item_map[target.y][target.x] != -1/*&& you can pick/destroy*/){ /*item here, you can pick/destroy, you moved*/
         /*TODO: add item to inventory or destroy*/
+        if(p_curr == pcp/*&& added to invent*/) {
+          static_cast<Player*>(pcp)->pick(items[item_map[target.y][target.x]]);
+          log_message((std::string("You just picked ") + items[item_map[target.y][target.x]]->getName()).c_str());
+        }
+        
         items[item_map[target.y][target.x]]->unstack(item_map[target.y][target.x]);
       }
       if (map[target.y][target.x].value != '.' && map[target.y][target.x].value != '<' && map[target.y][target.x].value != '>') map[target.y][target.x].value = '#';
@@ -489,3 +498,4 @@ void delete_Characters(Character* characters[], int num_characters){
 //1491422112 stairs
 //1491429247  stairs
 //1491608195 new stairs
+//1491689514 generates monsters in room 1

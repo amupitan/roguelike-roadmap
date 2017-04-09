@@ -1,6 +1,7 @@
 #ifndef PLAYER_H
 #define PLAYER_H
 #include "Character.h"
+#include "Item.h"
 
 #ifndef __cplusplus
 typedef void Player;
@@ -15,9 +16,14 @@ class Player : public Character{
     Player& operator=(Player const&);
     static Player* player;
     int** sight;
+    Item* carry[10];
+    Item* equip[14];
+    int item_no;
   public:
     static Player* getPlayer();
+    Item ** inventory();
     int** setSight(int height, int width);
+    void pick(Item* item);
     // void updateSight(int height, int width, char map[][width]);
     void freeSight(int height);
     static void deletePlayer();

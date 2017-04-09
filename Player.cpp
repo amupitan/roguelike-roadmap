@@ -10,15 +10,14 @@ Player* Player::getPlayer(){
   return player;
 }
 
-Player::Player() : sight(0) {
+Player::Player() : sight(0), carry(), equip(), item_no(0) {
   symbol = '@';
   color = 2;//GREEN
+  damage = "0+1d4";
+  hp = 100;
 }
 
-Player::Player(Player const& player_copy){
-  // player_copy = player;
-}
-    // Player& operator=(Player const&);
+Player::Player(Player const& player_copy){}//TODO why?
 
 int** Player::setSight(int height, int width){
   if (width < 1 || height < 1 || sight){
@@ -47,6 +46,14 @@ int** Player::setSight(int height, int width){
 //   }
   
 // }
+Item ** Player::inventory(){ //TODO: player drops inventory when using the stairs
+  return carry;
+}
+
+void Player::pick(Item* item){
+  if (item_no < 10)
+    carry[item_no++] = item;
+}
 
 void Player::freeSight(int height){
   if (sight){
