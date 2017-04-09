@@ -17,6 +17,11 @@ Player::Player() : sight(0), carry(), equip(), item_no(0) {
   hp = 100;
 }
 
+Pair Player::getPos() const{
+  Pair position = {this->getX(), this->getY()};
+  return position;
+}
+
 Player::Player(Player const& player_copy){}//TODO why?
 
 int** Player::setSight(int height, int width){

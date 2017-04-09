@@ -2,6 +2,7 @@
 #define PLAYER_H
 #include "Character.h"
 #include "Item.h"
+#include "Cell_Pair.h"
 
 #ifndef __cplusplus
 typedef void Player;
@@ -21,6 +22,7 @@ class Player : public Character{
     int item_no;
   public:
     static Player* getPlayer();
+    Pair getPos() const;
     Item ** inventory();
     int** setSight(int height, int width);
     bool pick(Item* item);

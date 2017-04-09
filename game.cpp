@@ -291,13 +291,11 @@ int main(int argc, char *argv[]){
           do{
             print_inventory(pcp->inventory());
           }while(getch() != 27); /*ESC*/
-          target.x = pcp->getX();
-          target.y = pcp->getY();
+          target = pcp->getPos();
           render(chars, characters, item_map, items, start, 0);
         }else if(target.x == -8 && target.y == -8){
           int drop = drop_from_inventory(pcp->inventory());
-          target.x = pcp->getX();
-          target.y = pcp->getY();
+          target = pcp->getPos();
           if (drop >= 0){
             int itm_id = pcp->drop(drop);
             if (item_map[target.y][target.x] != -1){
@@ -310,8 +308,9 @@ int main(int argc, char *argv[]){
           render(chars, characters, item_map, items, start, 0);
           continue;
         }else if (target.x == -10 && target.y == -10){
-          target.x = p_curr->getX();
-          target.y = p_curr->getY(); //TODO: this happens in case -3 and shuld prolly happen in every case, refactor?
+          target = pcp->getPos();//TODO: this happens in case -3 and shuld prolly happen in every case, refactor?
+          // target.x = p_curr->getX();
+          // target.y = p_curr->getY();
           continue;
         }
         else if (map[target.y][target.x].hardness == 0) break;
@@ -405,7 +404,7 @@ int main(int argc, char *argv[]){
       recalculate = 1;
     }
     if (map[target.y][target.x].hardness == 0){
-      chars[cgetY(p_curr)][cgetX(p_curr)] = -1;
+      chars[cgetY(p_curr)][cgetX(p_curr)] = -1;//TODO: do not do this until fight is over
       /*If PC is killed*/
       if ((cgetId(p_curr) != 0)&&(pcp->getX() == target.x && cgetY(pcp) == target.y)){
         /*Move and make final render*/
@@ -422,6 +421,10 @@ int main(int argc, char *argv[]){
       if ((chars[target.y][target.x] != -1) && (chars[target.y][target.x] != cgetId(p_curr))){ //TODO: change from kill to fighr
         /*FIGHT HERE*/
         ckillCharacter(characters[chars[target.y][target.x]]);
+        if (p_curr == pcp){
+          /*PC is the one killing*/
+          log_message((std::string("You just killed ") + static_cast<Monster*>(characters[chars[target.y][target.x]])->getName()).c_str());
+        }
         if(!(--l_monsters)) break;
       }
       chars[target.y][target.x] = cgetId(p_curr);
@@ -436,8 +439,9 @@ int main(int argc, char *argv[]){
         }
       }
       if (map[target.y][target.x].value != '.' && map[target.y][target.x].value != '<' && map[target.y][target.x].value != '>') map[target.y][target.x].value = '#';
-      csetPos(p_curr,  &(target.x), NULL);
-      csetPos(p_curr, NULL,  &(target.y));
+      p_curr->setPos(&target.x, &target.y);
+      // csetPos(p_curr,  &(target.x), NULL);
+      // csetPos(p_curr, NULL,  &(target.y));
     }
     recalculate = (cgetId(p_curr) == 0) ? 1 : 0;
     pace[cgetId(p_curr)] +=  1000/cgetSpeed(p_curr);
