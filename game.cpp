@@ -227,6 +227,7 @@ int main(int argc, char *argv[]){
       updateSight(pcp, map, item_map);
       Pair start = {cgetX(p_curr) - 40, cgetY(p_curr) - 10};
       render(chars, characters, item_map, items, start, 0); //TODO!!!
+      // render_partial(map, chars, characters, start, 0);
       do{/*handle input*/
         target = *(Pair *)getInputC(&target);
         if (target.x == -1 && target.y == -1){
@@ -404,10 +405,11 @@ int main(int argc, char *argv[]){
       recalculate = 1;
     }
     if (map[target.y][target.x].hardness == 0){
-      chars[cgetY(p_curr)][cgetX(p_curr)] = -1;//TODO: do not do this until fight is over
+      // chars[cgetY(p_curr)][cgetX(p_curr)] = -1;//TODO: do not do this until fight is over
       /*If PC is killed*/
-      if ((cgetId(p_curr) != 0)&&(pcp->getX() == target.x && cgetY(pcp) == target.y)){
+      if ((p_curr != pcp)&&(pcp->getX() == target.x && cgetY(pcp) == target.y)){
         /*Move and make final render*/
+        chars[cgetY(p_curr)][cgetX(p_curr)] = -1;
         csetPos(p_curr,  &(target.x), NULL);
         csetPos(p_curr, NULL,  &(target.y));
         chars[target.y][target.x] = cgetId(p_curr);
@@ -418,15 +420,56 @@ int main(int argc, char *argv[]){
         delete_Characters(characters, nummon + 1);
         endgame(&dungeon, &evt, "The PC is dead :(");return 0;
       }
-      if ((chars[target.y][target.x] != -1) && (chars[target.y][target.x] != cgetId(p_curr))){ //TODO: change from kill to fighr
-        /*FIGHT HERE*/
+      
+      if (chars[target.y][target.x] != -1){
+        if (chars[target.y][target.x] != p_curr->getId()){
+          // ckillCharacter(characters[chars[target.y][target.x]]);
+          if (p_curr == pcp){
+            //PC is the one killing
+            // characters[chars[target.y][target.x]]->killCharacter();
+            chars[cgetY(p_curr)][cgetX(p_curr)] = -1; //Change PC's position
+            ckillCharacter(characters[chars[target.y][target.x]]);
+            log_message((std::string("You just killed ") + static_cast<Monster*>(characters[chars[target.y][target.x]])->getName()).c_str());
+            /*Killed al monsters. Final render*/
+            if(!(--l_monsters)) {
+              Pair start = {cgetX(p_curr) - 40, cgetY(p_curr) - 10};
+              chars[target.y][target.x] = pcp->getId();
+              render(chars, characters, item_map, items, start, 0); //TODO!!!
+              break;
+            }
+          }else{
+            //Monster swap
+            log_message((std::string(static_cast<Monster*>(p_curr)->getName()) + " kicked out " + static_cast<Monster*>(characters[chars[target.y][target.x]])->getName()).c_str());
+            bool swap = true;
+            for (int p = target.y - 1; p <= target.y + 1 && swap; p++){
+              for (int q = target.x - 1; q <= target.x + 1; q++){
+		            if (p == 0 || q == 0 || p == (nRows - 1) || q == (nCols - 1) || chars[p][q] != -1 || map[p][q].hardness != 0) continue;
+		            chars[p][q] = characters[chars[target.y][target.x]]->getId();
+		            characters[chars[p][q]]->setPos(&q, &p);
+		            chars[cgetY(p_curr)][cgetX(p_curr)] = -1;
+		            swap = false;
+		            break;
+              }
+            }
+            if (swap){
+              int swap_x = p_curr->getX();
+              int swap_y = p_curr->getY();
+              chars[swap_y][swap_x] = characters[chars[target.y][target.x]]->getId();
+		          characters[chars[p_curr->getY()][p_curr->getX()]]->setPos(&swap_x, &swap_y);
+            }
+          }
+          
+        }
+      }else chars[cgetY(p_curr)][cgetX(p_curr)] = -1; //spot is empty
+      /*if ((chars[target.y][target.x] != -1) && (chars[target.y][target.x] != cgetId(p_curr))){ //TODO: change from kill to fighr
+        //FIGHT HERE
         ckillCharacter(characters[chars[target.y][target.x]]);
         if (p_curr == pcp){
-          /*PC is the one killing*/
+          //PC is the one killing
           log_message((std::string("You just killed ") + static_cast<Monster*>(characters[chars[target.y][target.x]])->getName()).c_str());
         }
         if(!(--l_monsters)) break;
-      }
+      }*/
       chars[target.y][target.x] = cgetId(p_curr);
       /*NOTE: this assumes that you killed the person and moved*/
       if (item_map[target.y][target.x] != -1/*&& you can pick/destroy*/){ /*item here, you can pick/destroy, you moved*/
@@ -439,9 +482,7 @@ int main(int argc, char *argv[]){
         }
       }
       if (map[target.y][target.x].value != '.' && map[target.y][target.x].value != '<' && map[target.y][target.x].value != '>') map[target.y][target.x].value = '#';
-      p_curr->setPos(&target.x, &target.y);
-      // csetPos(p_curr,  &(target.x), NULL);
-      // csetPos(p_curr, NULL,  &(target.y));
+      p_curr->setPos(&target.x, &target.y); //TODO: only if fight is won
     }
     recalculate = (cgetId(p_curr) == 0) ? 1 : 0;
     pace[cgetId(p_curr)] +=  1000/cgetSpeed(p_curr);
@@ -482,7 +523,6 @@ void print_Character(void* character){
   printf("id: %d => %c speed is %d\n",cgetId((Character *)character), cgetSymbol((Character *)character), cgetSpeed((Character *)character));
 }
 
-
 void endgame(Dungeon* dungeon, Queue* game_queue, const char* endmessage){
   free(dungeon->rooms);
   empty_queue(game_queue);
@@ -518,3 +558,5 @@ void delete_Characters(Character* characters[], int num_characters){
 //1491429247  stairs
 //1491608195 new stairs
 //1491689514 generates monsters in room 1
+//149176584 an invisible nerf dagger on your way up
+//1491769640 --numitem=300 -nummon=2 test 2 monsters kicking each other out
