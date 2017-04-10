@@ -2,7 +2,7 @@
 #include <iostream>
 #include <cstring>
 #include <sstream>
-#include <map>
+#include <unordered_map>
 
 #include <cstdlib>
 
@@ -171,7 +171,8 @@ namespace object_parser{
     std::vector<item_stub*> itemstubs;
     const char* colors[] = {"BLACK", "RED", "GREEN", "YELLOW", "BLUE", "MAGENTA", "CYAN", "WHITE"};
     const char* abilities[] = {"SMART", "TELE", "TUNNEL", "ERRATIC"}; //Todo: add other monster types (will need new equation)
-    std::map<std::string, char> item_symbols = {
+    char symbols[] = {'|', ')', '}', '[', ']', '(', '{', '\\', '=', '\"', '_', '~', '?', '!', '$', '/', ',', '-', '%'};
+    std::unordered_map<std::string, char> item_symbols = {
       {"WEAPON", '|'},
       {"OFFHAND", ')'},
       {"RANGED", '}'},
@@ -224,26 +225,19 @@ namespace object_parser{
     }
     */
     int parse_dice(std::string dice_str){
-      // int pos;
-      // if ((pos = dice.find("+") ) != -1){
-      //   int pos_d;
-      //   if ((pos_d = dice.find("d")) != -1){
-      //     int first = atoi(dice.substr(0, pos).c_str());
-      //     int second = atoi(dice.substr(pos + 1, pos_d).c_str());
-      //     int third = atoi(dice.substr(pos_d + 1, dice.length()).c_str());
-      //     for (int j = 0; j < second; j++)
-      //       first += (rand() % third) + 1;
-      //     return first;
-      //   }
-      // }
-      // return -1;
       dice d(dice_str);
       return d.roll();
+    }
+    
+    int item_number(char symbol){
+      for (unsigned int i = 0; i < sizeof(symbols)/sizeof(symbols[0]); i++)
+        if (symbols[i] == symbol) return i;
+      return -1;
     }
     char symbolize(std::string name){
       auto search = item_symbols.find(name);
       if (search != item_symbols.end()) return search->second;
-      return '*'; //defualt symbol for not found
+      return '*'; //default symbol for not found
     }
     stub* getMonsterStub(){
       return new monster_stub();
@@ -261,17 +255,14 @@ namespace object_parser{
     }
     
     void delete_objects(){
-      // if (private_wrapper::current == 'm'){
         for (std::vector<int>::size_type i = 0; i < private_wrapper::monstubs.size(); i++){
           delete private_wrapper::monstubs[i];
           private_wrapper::monstubs[i] = 0;
         }
-      // }else if (private_wrapper::current == 'i') {
         for (std::vector<int>::size_type i = 0; i < private_wrapper::itemstubs.size(); i++){
           delete private_wrapper::itemstubs[i];
           private_wrapper::itemstubs[i] = 0;
         }
-      // }
       private_wrapper::current = 0;
       clear_parser();
     }

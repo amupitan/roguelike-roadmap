@@ -18,15 +18,17 @@ class Player : public Character{
     static Player* player;
     int** sight;
     Item* carry[10];
-    Item* equip[14];
-    int item_no;
+    Item* equip[12];
   public:
     static Player* getPlayer();
     Pair getPos() const;
     Item ** inventory();
+    Item ** equipment();
     int** setSight(int height, int width);
     bool pick(Item* item);
     int drop(int itm_idx);
+    void wear(int itm_idx);
+    bool take_off(char itm_idx);
     // void updateSight(int height, int width, char map[][width]);
     void freeSight(int height);
     static void deletePlayer();

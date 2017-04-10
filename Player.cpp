@@ -10,7 +10,7 @@ Player* Player::getPlayer(){
   return player;
 }
 
-Player::Player() : sight(0), carry(), equip(), item_no(0) {
+Player::Player() : sight(0), carry(), equip() {
   symbol = '@';
   color = 2;//GREEN
   damage = "0+1d4";
@@ -55,6 +55,10 @@ Item ** Player::inventory(){ //TODO: player drops inventory when using the stair
   return carry;
 }
 
+Item ** Player::equipment(){
+  return equip;
+}
+
 bool Player::pick(Item* item){
   for (int i = 0; i < 10; i++){
       if (!carry[i]){
@@ -71,6 +75,30 @@ int Player::drop(int itm_idx){
   carry[itm_idx] = 0;
   return itm_id;
 }
+
+void Player::wear(int itm_idx){
+  if (!carry[itm_idx]) return;
+  Item* add = carry[itm_idx];
+  int slot = object_parser::private_wrapper::item_number(add->getSymbol());
+  Item* current = equip[slot];
+  if (slot != -1 && slot <= 10){
+    if (slot == 8){
+      slot = equip[slot] ? 11 : 8;
+    }
+    equip[slot] = add;
+    carry[itm_idx] = current;
+  }
+}
+
+bool Player::take_off(char itm_idx){
+  int index = itm_idx - 97;
+  if (pick(equip[index])){
+    equip[index] = 0;
+    return true;
+  }
+  return false;
+}
+
 
 void Player::freeSight(int height){
   if (sight){

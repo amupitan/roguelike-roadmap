@@ -104,12 +104,24 @@ Pair* getInputC(Pair* target){ /*TODO: make void?*/
       target->x = target->y = -7;
       break;
     case 'd':
-      /*display inventory*/
+      /*drop item from inventory*/
       target->x = target->y = -8;
       break;
     case 'T':
       /*toggle fullscreen*/
       target->x = target->y = -11;
+      break;
+    case 'w':
+      /*wear an item*/
+      target->x = target->y = -12;
+      break;
+    case 'e':
+      /*display equipment*/
+      target->x = target->y = -13;
+      break;
+    case 't':
+      /*take off equipment*/
+      target->x = target->y = -13;
       break;
     default:
       target->x = target->y = -10;
@@ -157,26 +169,38 @@ Pair* look_mode(Pair *target, int* control_mode){ //TODO: uses hardcoded width/h
   return target;
 }
 
-void log_message(const char* message){
-  int row, col;
-  move(0, 0);
+void log_message(std::string message, int row){
+  int col, temp;
+  move(row, 0);
   clrtoeol();
-  getmaxyx(stdscr, row, col);
-  mvprintw(0/row, (col - strlen(message))/2, message); //0/row is to avoid unused var warning b row
+  getmaxyx(stdscr, temp, col);
+  mvprintw(row + (temp * 0), (col - message.length())/2, message.c_str()); //0/row is to avoid unused var warning b row
   /*TODO: call refresh()?*/
 }
 
-void print_inventory(Item ** items){
+void log_message(const char* message){
+  log_message(message, 0);
+}
+
+void item_printer(Item ** items, int size, const char* format, int ascii_offset, const char* message){
   clear();
-  int itm_idx, col, num = (22 - 10)/2, i;
-  log_message("PC Inventory");
+  int i, itm_idx, col, num = (22 - 10)/2;
+  log_message(message);
   getmaxyx(stdscr, itm_idx, col);
-  for (i = num, itm_idx = 0; i < num + 10; i++, itm_idx++){//10 vs sizeof(items)/sizeof(items[0])?
-    std::string str = "%d) ";
+  for (i = num, itm_idx = 0; i < num + size; i++, itm_idx++){
+    std::string str = std::string("%") + format + ") ";
     if (items[itm_idx]) str += items[itm_idx]->getName();
-    mvprintw(i, (80- 15)/2, str.c_str(), i - num);
+    mvprintw(i, (80- 15)/2, str.c_str(), (i - num + ascii_offset));
   }
   refresh();
+}
+
+void print_inventory(Item ** items){
+  item_printer(items, 10, "d", 0, "PC Inventory");
+}
+
+void display_equipment(Item ** items){
+  item_printer(items, 12, "c", 97, "PC Equipment");
 }
 
 int drop_from_inventory(Item ** items){
@@ -189,6 +213,24 @@ int drop_from_inventory(Item ** items){
     
     if (select >=0 && select < 10 && items[select]){
       log_message((std::to_string(select) + std::string(") ") + std::string(items[select]->getName()) + std::string("has been removed")).c_str());
+      return select;
+    }else{
+      log_message((std::to_string(select) + std::string(" is invalid. Select a valid number or press ESC to quit")).c_str());
+    }
+  }while(1);
+  return -1;
+}
+
+int wear_equipment(Item ** items){
+  print_inventory(items);
+  log_message("PC Inventory: type the number of the item to be worn or press ESC to go back", 0);
+  do{
+    int select = getch();
+    if (select == 27) break; //ESC
+    select -= 48;
+    
+    if (select >=0 && select < 10 && items[select]){
+      log_message((std::to_string(select) + std::string(") ") + std::string(items[select]->getName()) + std::string(" has been worn")).c_str());
       return select;
     }else{
       log_message((std::to_string(select) + std::string(" is invalid. Select a valid number or press ESC to quit")).c_str());

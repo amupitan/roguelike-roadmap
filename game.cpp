@@ -322,15 +322,27 @@ int main(int argc, char *argv[]){
           generic_render(map, chars, characters, item_map, items, start, 0, fullscreen = !fullscreen);
           log_message((std::string("Switched to ") + (fullscreen ? "complete" : "partial") + " dungeon display").c_str());
           continue;
-        }
-        else if (map[target.y][target.x].hardness == 0) break;
+        }else if (target.x == -12 && target.y == -12){ /*Wear equipment*/
+          int wear = wear_equipment(pcp->inventory());
+          target = pcp->getPos();
+          if (wear >= 0){
+            pcp->wear(wear);
+          }else log_message("No new equipment was worn", 0);
+          generic_render(map, chars, characters, item_map, items, start, 0, fullscreen);
+          continue;
+        }else if (target.x == -13 && target.y == -13){
+          do{
+            display_equipment(pcp->equipment());
+          }while(getch() != 27); /*ESC*/
+          target = pcp->getPos();
+          generic_render(map, chars, characters, item_map, items, start, 0, fullscreen);
+          log_message((std::string("PC is at ") + std::to_string(pcp->getX()) + ", " + std::to_string(pcp->getY())).c_str()); //TODO: log some useful stats
+        }else if (map[target.y][target.x].hardness == 0) break;
         target.x = cgetX(p_curr);
         target.y = cgetY(p_curr);
       }while(1);
       if (new_dungeon) continue;
-      char mon_log[20];
-      sprintf(mon_log, "Monsters alive: %d", l_monsters);
-      log_message(mon_log);
+      log_message((std::string("Monsters left: ") + std::to_string(l_monsters)).c_str());
     }else{
       
       /*Telephathy*/

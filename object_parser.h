@@ -19,10 +19,6 @@ namespace object_parser{
   	    std::string name;
       	std::string desc;
       	std::string color; //make enum? use array
-      // 	int speed;
-      // 	std::vector<std::string> abilities; //enum?
-      // 	int hp;
-      // 	int damage;
       	std::string speed;
       	std::string abilities; //enum?
       	std::string hp;
@@ -78,6 +74,7 @@ namespace object_parser{
   	bool startsWith(const char* str, const char* start);
   	void delete_objects();
   	int parse_dice(std::string dice);
+  	int item_number(char symbol);
   	char symbolize(std::string name);
   	
   	bool assign_attrbute(std::string& attr, const char* value, int offset);
