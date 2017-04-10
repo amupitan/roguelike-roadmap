@@ -90,8 +90,7 @@ void Player::wear(int itm_idx){
   }
 }
 
-bool Player::take_off(char itm_idx){
-  int index = itm_idx - 97;
+bool Player::take_off(int index){
   if (pick(equip[index])){
     equip[index] = 0;
     return true;

@@ -337,6 +337,13 @@ int main(int argc, char *argv[]){
           target = pcp->getPos();
           generic_render(map, chars, characters, item_map, items, start, 0, fullscreen);
           log_message((std::string("PC is at ") + std::to_string(pcp->getX()) + ", " + std::to_string(pcp->getY())).c_str()); //TODO: log some useful stats
+        }else if(target.x == -14 && target.y == -14){
+          target = pcp->getPos();
+          int takeoff = take_off_equipment(pcp->equipment());
+          if (takeoff >= 0){
+            if(!pcp->take_off(takeoff)) log_message("The PC's inventory is full. Drop items using 'd' and try again" ,0);
+          }
+          generic_render(map, chars, characters, item_map, items, start, 0, fullscreen);
         }else if (map[target.y][target.x].hardness == 0) break;
         target.x = cgetX(p_curr);
         target.y = cgetY(p_curr);

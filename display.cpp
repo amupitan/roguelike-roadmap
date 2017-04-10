@@ -121,7 +121,7 @@ Pair* getInputC(Pair* target){ /*TODO: make void?*/
       break;
     case 't':
       /*take off equipment*/
-      target->x = target->y = -13;
+      target->x = target->y = -14;
       break;
     default:
       target->x = target->y = -10;
@@ -231,6 +231,23 @@ int wear_equipment(Item ** items){
     
     if (select >=0 && select < 10 && items[select]){
       log_message((std::to_string(select) + std::string(") ") + std::string(items[select]->getName()) + std::string(" has been worn")).c_str());
+      return select;
+    }else{
+      log_message((std::to_string(select) + std::string(" is invalid. Select a valid number or press ESC to quit")).c_str());
+    }
+  }while(1);
+  return -1;
+}
+
+int take_off_equipment(Item ** items){
+  display_equipment(items);
+  log_message("PC Inventory: type the letter of the item to be taken off or press ESC to go back");
+  do{
+    int select = getch();
+    if (select == 27) break; //ESC
+    select -= 97;
+    if (select >= 0 && select < 12 && items[select]){
+      log_message((std::to_string(select) + std::string(") ") + std::string(items[select]->getName()) + std::string(" has been taken off")).c_str());
       return select;
     }else{
       log_message((std::to_string(select) + std::string(" is invalid. Select a valid number or press ESC to quit")).c_str());
