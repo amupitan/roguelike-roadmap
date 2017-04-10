@@ -341,8 +341,16 @@ int main(int argc, char *argv[]){
           target = pcp->getPos();
           int takeoff = take_off_equipment(pcp->equipment());
           if (takeoff >= 0){
-            if(!pcp->take_off(takeoff)) log_message("The PC's inventory is full. Drop items using 'd' and try again" ,0);
-          }
+            if(!pcp->take_off(takeoff)) log_message("The PC's inventory is full. Drop item(s) using 'd' or expunge item(s) using 'x' and try again" ,0);
+          }else log_message("No equipment was removed"); //TODO: check all messages in this block
+          generic_render(map, chars, characters, item_map, items, start, 0, fullscreen);
+        }else if (target.x == -15 && target.y == -15){
+          /*Expunge item*/
+          int expunge = expunge_from_inventory(pcp->inventory());
+          target = pcp->getPos();
+          if (expunge >= 0){
+            pcp->drop(expunge);
+          }else log_message("No item was expunged");
           generic_render(map, chars, characters, item_map, items, start, 0, fullscreen);
         }else if (map[target.y][target.x].hardness == 0) break;
         target.x = cgetX(p_curr);

@@ -27,7 +27,7 @@ class Player : public Character{
     int** setSight(int height, int width);
     bool pick(Item* item);
     int drop(int itm_idx);
-    // bool expunge(int itm_idx);
+    void expunge(int itm_idx);
     void wear(int itm_idx);
     bool take_off(int index);
     // void updateSight(int height, int width, char map[][width]);

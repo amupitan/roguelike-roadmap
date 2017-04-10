@@ -18,6 +18,7 @@ void display_equipment(Item ** items);
 int drop_from_inventory(Item ** items);
 int wear_equipment(Item ** items);
 int take_off_equipment(Item ** items);
+int expunge_from_inventory(Item ** items);
 
 # ifdef __cplusplus
 }

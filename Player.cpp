@@ -76,6 +76,10 @@ int Player::drop(int itm_idx){
   return itm_id;
 }
 
+void Player::expunge(int itm_idx){
+  carry[itm_idx] = 0;
+}
+
 void Player::wear(int itm_idx){
   if (!carry[itm_idx]) return;
   Item* add = carry[itm_idx];
