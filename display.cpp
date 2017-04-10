@@ -107,6 +107,10 @@ Pair* getInputC(Pair* target){ /*TODO: make void?*/
       /*display inventory*/
       target->x = target->y = -8;
       break;
+    case 'T':
+      /*toggle fullscreen*/
+      target->x = target->y = -11;
+      break;
     default:
       target->x = target->y = -10;
       break;

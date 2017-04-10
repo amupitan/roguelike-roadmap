@@ -172,6 +172,7 @@ int main(int argc, char *argv[]){
   
   /*Ncurses start*/
   int col = 0;
+  bool fullscreen = false;
   ncurses_init();
   
   /*Monster magic and initialize random pc if no valid command line argument was entered*/
@@ -226,8 +227,7 @@ int main(int argc, char *argv[]){
       // }
       updateSight(pcp, map, item_map);
       Pair start = {cgetX(p_curr) - 40, cgetY(p_curr) - 10};
-      render(chars, characters, item_map, items, start, 0); //TODO!!!
-      // render_partial(map, chars, characters, start, 0);
+      generic_render(map, chars, characters, item_map, items, start, 0, fullscreen);
       do{/*handle input*/
         target = *(Pair *)getInputC(&target);
         if (target.x == -1 && target.y == -1){
@@ -243,11 +243,13 @@ int main(int argc, char *argv[]){
             int ctrl = 0; /*1- end look mode*/
             look = *(look_mode(&look, &ctrl));
             if (ctrl == 1){
-              render(chars, characters, item_map, items, start, NULL);
+              // render(chars, characters, item_map, items, start, NULL);
+              generic_render(map, chars, characters, item_map, items, start, 0, fullscreen);
               break;
             }
             // pc_render_partial(map, chars, characters, look, &look);
-            render(chars, characters, item_map, items, look, &look);
+            // render(chars, characters, item_map, items, look, &look);
+            generic_render(map, chars, characters, item_map, items, look, &look, fullscreen);
           }while(true);
         }
         else if ((target.x == -3 && target.y == -3) || (target.x == -4 && target.y == -4)){
@@ -293,25 +295,32 @@ int main(int argc, char *argv[]){
             print_inventory(pcp->inventory());
           }while(getch() != 27); /*ESC*/
           target = pcp->getPos();
-          render(chars, characters, item_map, items, start, 0);
+          // render(chars, characters, item_map, items, start, 0);
+          generic_render(map, chars, characters, item_map, items, start, 0, fullscreen);
+          log_message((std::string("PC is at ") + std::to_string(pcp->getX()) + ", " + std::to_string(pcp->getY())).c_str()); //TODO: log some useful stats
         }else if(target.x == -8 && target.y == -8){
           int drop = drop_from_inventory(pcp->inventory());
           target = pcp->getPos();
+          log_message("Your inventory is unchanged"); //TODO: change to you did not drop an item?
           if (drop >= 0){
             int itm_id = pcp->drop(drop);
             if (item_map[target.y][target.x] != -1){
               items[itm_id]->stack(items[item_map[target.y][target.x]]);
             }
             item_map[target.y][target.x] = itm_id;
+            log_message((std::string("You dropped ") + items[itm_id]->getName()).c_str());
           }
-          log_message("Welcome back to the dungeon!");
           updateSight(pcp, map, item_map);
-          render(chars, characters, item_map, items, start, 0);
+          // render(chars, characters, item_map, items, start, 0);
+          generic_render(map, chars, characters, item_map, items, start, 0, fullscreen);
           continue;
         }else if (target.x == -10 && target.y == -10){
           target = pcp->getPos();//TODO: this happens in case -3 and shuld prolly happen in every case, refactor?
-          // target.x = p_curr->getX();
-          // target.y = p_curr->getY();
+          continue;
+        }else if (target.x == -11 && target.y == -11){
+          target = pcp->getPos();
+          generic_render(map, chars, characters, item_map, items, start, 0, fullscreen = !fullscreen);
+          log_message((std::string("Switched to ") + (fullscreen ? "complete" : "partial") + " dungeon display").c_str());
           continue;
         }
         else if (map[target.y][target.x].hardness == 0) break;
@@ -407,22 +416,23 @@ int main(int argc, char *argv[]){
     if (map[target.y][target.x].hardness == 0){
       // chars[cgetY(p_curr)][cgetX(p_curr)] = -1;//TODO: do not do this until fight is over
       /*If PC is killed*/
-      if ((p_curr != pcp)&&(pcp->getX() == target.x && cgetY(pcp) == target.y)){
+      if ((p_curr != pcp) && (pcp->getX() == target.x && cgetY(pcp) == target.y)){
         /*Move and make final render*/
         chars[cgetY(p_curr)][cgetX(p_curr)] = -1;
-        csetPos(p_curr,  &(target.x), NULL);
-        csetPos(p_curr, NULL,  &(target.y));
+        p_curr->setPos(&(target.x), &(target.y));
         chars[target.y][target.x] = cgetId(p_curr);
 
         Pair start = {cgetX(p_curr) - 40, cgetY(p_curr) - 10};
-        render(chars, characters, item_map, items, start, NULL); //TODO, fix start position!!!
+        // render(chars, characters, item_map, items, start, NULL); //TODO, fix start position!!!
+        generic_render(map, chars, characters, item_map, items, start, 0, fullscreen);
         items = (Item**)delete_items(items, numitem);
         delete_Characters(characters, nummon + 1);
         endgame(&dungeon, &evt, "The PC is dead :(");return 0;
       }
       
+      /*There is someone on the space to move to*/
       if (chars[target.y][target.x] != -1){
-        if (chars[target.y][target.x] != p_curr->getId()){
+        if (chars[target.y][target.x] != p_curr->getId()){ //Checking if a character is staying on the same spot
           // ckillCharacter(characters[chars[target.y][target.x]]);
           if (p_curr == pcp){
             //PC is the one killing
@@ -434,14 +444,22 @@ int main(int argc, char *argv[]){
             if(!(--l_monsters)) {
               Pair start = {cgetX(p_curr) - 40, cgetY(p_curr) - 10};
               chars[target.y][target.x] = pcp->getId();
-              render(chars, characters, item_map, items, start, 0); //TODO!!!
+              // render(chars, characters, item_map, items, start, 0); //TODO!!!
+              generic_render(map, chars, characters, item_map, items, start, 0, fullscreen);
               break;
             }
           }else{
             //Monster swap
+            /*TODO: remove!! used to test monster swaps*/
+            // log_message("Monster about to swap");
+            // Pair start = {cgetX(p_curr) - 40, cgetY(p_curr) - 10};
+            // render_partial(map, chars, characters, start, 0);
+            // getch();
+            /*End remove*/
             log_message((std::string(static_cast<Monster*>(p_curr)->getName()) + " kicked out " + static_cast<Monster*>(characters[chars[target.y][target.x]])->getName()).c_str());
+            //TODO: make kick position random
             bool swap = true;
-            for (int p = target.y - 1; p <= target.y + 1 && swap; p++){
+            for (int p = target.y - 1; (p <= target.y + 1) && swap; p++){
               for (int q = target.x - 1; q <= target.x + 1; q++){
 		            if (p == 0 || q == 0 || p == (nRows - 1) || q == (nCols - 1) || chars[p][q] != -1 || map[p][q].hardness != 0) continue;
 		            chars[p][q] = characters[chars[target.y][target.x]]->getId();
@@ -457,6 +475,12 @@ int main(int argc, char *argv[]){
               chars[swap_y][swap_x] = characters[chars[target.y][target.x]]->getId();
 		          characters[chars[p_curr->getY()][p_curr->getX()]]->setPos(&swap_x, &swap_y);
             }
+            /*TODO: remove!! used to test monster swaps*/
+            // chars[target.y][target.x] = cgetId(p_curr);
+            // start = {cgetX(p_curr) - 40, cgetY(p_curr) - 10};
+            // render_partial(map, chars, characters, start, 0);
+            // getch();
+            /*End remove*/
           }
           
         }
@@ -472,7 +496,7 @@ int main(int argc, char *argv[]){
       }*/
       chars[target.y][target.x] = cgetId(p_curr);
       /*NOTE: this assumes that you killed the person and moved*/
-      if (item_map[target.y][target.x] != -1/*&& you can pick/destroy*/){ /*item here, you can pick/destroy, you moved*/
+      if (item_map[target.y][target.x] != -1/*&& you can pick/destroy && the person chose to move*/){ /*item here, you can pick/destroy, you moved*/
         /*TODO: add item to inventory or destroy*/
         if(p_curr == pcp && pcp->pick(items[item_map[target.y][target.x]])) {
           log_message((std::string("You just picked ") + items[item_map[target.y][target.x]]->getName()).c_str());
@@ -481,7 +505,7 @@ int main(int argc, char *argv[]){
           items[item_map[target.y][target.x]]->unstack(item_map[target.y][target.x]);
         }
       }
-      if (map[target.y][target.x].value != '.' && map[target.y][target.x].value != '<' && map[target.y][target.x].value != '>') map[target.y][target.x].value = '#';
+      if (map[target.y][target.x].value != '.' && map[target.y][target.x].value != '<' && map[target.y][target.x].value != '>') map[target.y][target.x].value = '#'; //TODO add condition to check if it was a wall passing monster
       p_curr->setPos(&target.x, &target.y); //TODO: only if fight is won
     }
     recalculate = (cgetId(p_curr) == 0) ? 1 : 0;

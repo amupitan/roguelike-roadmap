@@ -10,13 +10,14 @@
 #include "Cell_Pair.h"
 #include <queue>
 
-# ifdef __cplusplus
-template <class T> void printmon(T* object);//TODO: remove C Linkage so this function can join the rest of them
-extern "C" {
-# endif
-
 #define nRows 105
 #define nCols 160
+
+# ifdef __cplusplus
+template <class T> void printmon(T* object);//TODO: remove C Linkage so this function can join the rest of them
+void render_partial(Cell map[][nCols], int chars[][nCols], Character* monsts[], Pair start, Pair* newPos);
+extern "C" {
+# endif
 
 typedef struct Room{
   int x;
@@ -52,7 +53,6 @@ int char_equals(void* c1, void* c2);
 Character* pc_init(Character* pc, Room room);
 
 Pair* getInputC(Pair* target);
-void render_partial(Cell map[][nCols], int chars[][nCols], Character* monsts[], Pair start, Pair* newPos);
 Pair* look_mode(Pair *target, int* control_mode);
 // void addCharcters(Dungeon* dungeon, std::priority_queue<Character, std::vector<Character> >* evt, int nummon, Character* characters[], int chars[][nCols], unsigned int pace[]);
 // void delete_dungeon(Dungeon* dungeon, std::priority_queue<Character, std::vector<Character> >* evt, Cell map[][nCols]);
@@ -74,6 +74,8 @@ void nrender_dungeon(Cell map[][nCols], int chars[][nCols], Character* monsts[])
 void pc_render_partial(Cell map[][nCols], int chars[][nCols], Character* monsts[], Pair start, Pair* newPos);
 // void render(int chars[][nCols], Character* monsts[], Pair start, Pair* newPos);
 void render(int chars[][nCols], Character* monsts[], int item_map[][nCols], Item** items, Pair start, Pair* newPos);
+void render_partial(Cell map[][nCols], int chars[][nCols], Character* monsts[], int item_map[][nCols], Item** items, Pair start, Pair* newPos);
+void generic_render(Cell map[][nCols], int chars[][nCols], Character* monsts[], int item_map[][nCols], Item** items, Pair start, Pair* newPos, bool complete);
 // void endgame(Dungeon* dungeon, Queue* game_queue, const char* endmessage);
 
 // void clear_queue(std::priority_queue<Character*, std::vector<Character*>, CharacterComparator>* q); //TODO remove
