@@ -107,6 +107,10 @@ Pair* getInputC(Pair* target){ /*TODO: make void?*/
       /*drop item from inventory*/
       target->x = target->y = -8;
       break;
+    case 'P':
+      /*view PC stats*/
+      target->x = target->y = -9;
+      break;
     case 'T':
       /*toggle fullscreen*/
       target->x = target->y = -11;
@@ -127,6 +131,10 @@ Pair* getInputC(Pair* target){ /*TODO: make void?*/
       /*expunge inventory item*/
       target->x = target->y = -15;
       break;
+    case 'I':
+      /*display item descriptiom*/
+      target->x = target->y = -16;
+      break;
     default:
       target->x = target->y = -10;
       break;
@@ -136,7 +144,7 @@ Pair* getInputC(Pair* target){ /*TODO: make void?*/
 
 int generic_prompt(Item** items, const char* prompt, int offset, int max, void (*printer)(Item ** items)){
   printer(items);
-  log_message(std::string("PC Inventory: type the index of the item to be ") + prompt + "or press ESC to go back", 0);
+  log_message(std::string("PC Inventory: type the index of the item to be ") + prompt + " or press ESC to go back", 0);
   do{
     int select = getch();
     if (select == 27) break; //ESC
@@ -224,4 +232,28 @@ void print_inventory(Item ** items){
 
 void display_equipment(Item ** items){
   item_printer(items, 12, "c", 97, "PC Equipment");
+}
+
+bool item_info(Item* item){
+  clear();
+  int x_offset = 10, x_initial = x_offset;
+  int y_offset = 10;
+  mvprintw(y_offset++, x_offset, (std::string("") + "NAME: " + item->getName()).c_str());
+  mvprintw(y_offset++, x_offset, "DESCRIPTION:");
+  x_offset = ++x_initial;
+  const char* desc = item->getDesc();
+  for (unsigned int i = 0; i < strlen(desc); i++){
+    if (desc[i] == '\n') {
+      y_offset++;
+      x_offset = x_initial;
+      if (!desc[++i]) break;
+    }
+    mvaddch(y_offset, x_offset++, desc[i]);
+  }
+  x_offset = --x_initial;
+  std::string symb = std::string("SYMBOL: ");
+  symb.push_back(item->getSymbol());
+  mvprintw(y_offset++, x_offset, symb.c_str());
+  log_message("Press any key to go back or ESC to go back to the dungeon", 0);
+  return (getch() != 27);/*true if ESC is not pressed*/
 }

@@ -307,7 +307,7 @@ int main(int argc, char *argv[]){
           generic_render(map, chars, characters, item_map, items, start, 0, fullscreen);
           log_message((std::string("PC is at ") + std::to_string(pcp->getX()) + ", " + std::to_string(pcp->getY())).c_str()); //TODO: log some useful stats
         }else if(target.x == -8 && target.y == -8){
-          int drop = generic_prompt(pcp->inventory(), "removed ", 48, 10, print_inventory);;//drop_from_inventory(pcp->inventory());
+          int drop = generic_prompt(pcp->inventory(), "removed", 48, 10, print_inventory);;//drop_from_inventory(pcp->inventory());
           target = pcp->getPos();
           log_message("Your inventory is unchanged"); //TODO: change to you did not drop an item?
           if (drop >= 0){
@@ -330,7 +330,7 @@ int main(int argc, char *argv[]){
           log_message((std::string("Switched to ") + (fullscreen ? "complete" : "partial") + " dungeon display").c_str());
           continue;
         }else if (target.x == -12 && target.y == -12){ /*Wear equipment*/
-          int wear = generic_prompt(pcp->inventory(), "worn ", 48, 10, print_inventory);
+          int wear = generic_prompt(pcp->inventory(), "worn", 48, 10, print_inventory);
           target = pcp->getPos();
           if (wear >= 0){
             pcp->wear(wear);
@@ -346,18 +346,31 @@ int main(int argc, char *argv[]){
           log_message((std::string("PC is at ") + std::to_string(pcp->getX()) + ", " + std::to_string(pcp->getY())).c_str()); //TODO: log some useful stats
         }else if (target.x == -14 && target.y == -14){
           target = pcp->getPos();
-          int takeoff = generic_prompt(pcp->equipment(), "taken off ", 97, 12, display_equipment);
+          int takeoff = generic_prompt(pcp->equipment(), "taken off", 97, 12, display_equipment);
           if (takeoff >= 0){
             if(!pcp->take_off(takeoff)) log_message("The PC's inventory is full. Drop item(s) using 'd' or expunge item(s) using 'x' and try again" ,0);
           }else log_message("No equipment was removed"); //TODO: check all messages in this block
           generic_render(map, chars, characters, item_map, items, start, 0, fullscreen);
         }else if (target.x == -15 && target.y == -15){
           /*Expunge item*/
-          int expunge = generic_prompt(pcp->inventory(), "expunged ", 48, 10, print_inventory);
+          int expunge = generic_prompt(pcp->inventory(), "expunged", 48, 10, print_inventory);
           target = pcp->getPos();
           if (expunge >= 0){
             pcp->drop(expunge);
           }else log_message("No item was expunged");
+          generic_render(map, chars, characters, item_map, items, start, 0, fullscreen);
+        }else if (target.x == -16 && target.y == -16){
+          /*Display item description*/
+          target = pcp->getPos();
+          bool describing;
+          do{
+            int display = generic_prompt(pcp->inventory(), "displayed", 48, 10, print_inventory);
+            if (display >= 0){
+              describing = item_info(pcp->inventory()[display]);
+            }
+          }while(describing);
+          
+          log_message("Welcome back to the dungeon!");
           generic_render(map, chars, characters, item_map, items, start, 0, fullscreen);
         }
         else if (map[target.y][target.x].hardness == 0) break;
