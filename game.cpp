@@ -443,26 +443,9 @@ int main(int argc, char *argv[]){
       recalculate = 1;
     }
     if (map[target.y][target.x].hardness == 0){
-      // chars[cgetY(curr)][cgetX(curr)] = -1;//TODO: do not do this until fight is over
-      /*If PC is killed*/
-      /*if ((curr != pcp) && (pcp->getX() == target.x && cgetY(pcp) == target.y)){
-        //Move and make final render
-        chars[cgetY(curr)][cgetX(curr)] = -1;
-        curr->setPos(&(target.x), &(target.y));
-        chars[target.y][target.x] = cgetId(curr);
-
-        Pair start = {cgetX(curr) - 40, cgetY(curr) - 10};
-        generic_render(map, chars, characters, item_map, items, start, 0, fullscreen);
-        items = (Item**)delete_items(items, numitem);
-        delete_Characters(characters, nummon + 1);
-        endgame(&dungeon, &evt, "The PC is dead :(");return 0;
-      }
-      */
       /*There is someone on the space to move to*/
       if (chars[target.y][target.x] != -1){
         if (chars[target.y][target.x] != curr->getId()){ //Checking if a character is staying on the same spot OR curr->getPos == target
-          // ckillCharacter(characters[chars[target.y][target.x]]);
-
             //PC is attacking or getting attacked
             if (curr == pcp || characters[chars[target.y][target.x]] == pcp){
               attack = curr->attack();
@@ -481,8 +464,6 @@ int main(int argc, char *argv[]){
                   /*Killed all monsters. Final render*/
                   if(!(--l_monsters)) {
                     Pair start = {cgetX(curr) - 40, cgetY(curr) - 10};
-                    // chars[target.y][target.x] = pcp->getId();
-                    moveCharacter(curr, target, chars);//TODO e no need for this, already done before this if block
                     generic_render(map, chars, characters, item_map, items, start, 0, fullscreen);
                     break;
                   }
@@ -504,9 +485,6 @@ int main(int argc, char *argv[]){
             for (int p = target.y - 1; (p <= target.y + 1) && swap; p++){
               for (int q = target.x - 1; q <= target.x + 1; q++){
 		            if (p == 0 || q == 0 || p == (nRows - 1) || q == (nCols - 1) || chars[p][q] != -1 || map[p][q].hardness != 0) continue;
-		            // chars[p][q] = chars[target.y][target.x];//get ID of monster characters[chars[target.y][target.x]]->getId();
-		            // characters[chars[p][q]]->setPos(&q, &p);
-		            // chars[cgetY(curr)][cgetX(curr)] = -1; //TODO e remove
 		            Pair kick_spot = {q, p};
 		            moveCharacter(characters[chars[target.y][target.x]], kick_spot, chars); //move the monster that's on the way
 		            moveCharacter(curr, target, chars); //move the monster to it's target position
@@ -525,21 +503,7 @@ int main(int argc, char *argv[]){
         }
       }else {
         moveCharacter(curr, target, chars);
-        // chars[cgetY(curr)][cgetX(curr)] = -1; //spot is empty TODO e
-        // curr->setPos(&target.x, &target.y);
-        // // characters[chars[target.y][target.x]]->setPos(&(target.x), &(target.y));
-        // chars[target.y][target.x] = curr->getId();
       }
-      /*if ((chars[target.y][target.x] != -1) && (chars[target.y][target.x] != cgetId(curr))){ //TODO: change from kill to fighr
-        //FIGHT HERE
-        ckillCharacter(characters[chars[target.y][target.x]]);
-        if (curr == pcp){
-          //PC is the one killing
-          log_message((std::string("You just killed ") + static_cast<Monster*>(characters[chars[target.y][target.x]])->getName()).c_str());
-        }
-        if(!(--l_monsters)) break;
-      }*/
-      // chars[target.y][target.x] = cgetId(curr); //TODO e only if person moves
       /*NOTE: this assumes that you killed the person and moved*/
       if (attack == -1 && item_map[target.y][target.x] != -1/*&& you can pick/destroy && the person chose to move*/){ /*item here, you can pick/destroy, you moved*/
         /*TODO: add item to inventory or destroy*/
@@ -551,9 +515,8 @@ int main(int argc, char *argv[]){
         }
       }
       if (map[target.y][target.x].value != '.' && map[target.y][target.x].value != '<' && map[target.y][target.x].value != '>') map[target.y][target.x].value = '#'; //TODO add condition to check if it was a wall passing monster
-      // curr->setPos(&target.x, &target.y); //TODO e: only if fight is won
     }
-    recalculate = (cgetId(curr) == 0) ? 1 : 0;
+    recalculate = (cgetId(curr) == 0) ? 1 : 0; //TODO: don not recalculate if no move was made
     pace[cgetId(curr)] +=  1000/cgetSpeed(curr);
     change_priority(&evt, curr, pace[cgetId(curr)]);
   }while(l_monsters || solo);
