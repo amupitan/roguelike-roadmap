@@ -116,9 +116,7 @@ int main(int argc, char *argv[]){
 		}
 	}
   
-  object_parser::parser_init("monster");
-  object_parser::start_parser(strcat(strcpy(load_file, getenv("HOME")), "/.rlg327/monster_desc.txt"));
-  object_parser::complete_parse();
+
 
   if (load){
     if (!(dungeon_file = fopen(load_file, "r"))){
@@ -169,6 +167,10 @@ int main(int argc, char *argv[]){
       fclose(dungeon_file_l);
     }
   }
+  
+  object_parser::parser_init("monster");
+  object_parser::start_parser(strcat(strcpy(load_file, getenv("HOME")), "/.rlg327/monster_desc.txt"));
+  object_parser::complete_parse();
   
   /*Ncurses start*/
   int col = 0;
