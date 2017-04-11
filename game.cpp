@@ -50,6 +50,9 @@ int main(int argc, char *argv[]){
   int longindex; //TODO remove this and set the args part to NULL
   int option, load = 0, save = 0, seed = (unsigned) time(NULL), nummon = 0, solo = 0, numitem = 0;
   char load_file[100];
+  
+  static char monster_file[100];
+  strcat(strcpy(monster_file, getenv("HOME")), "/.rlg327/monster_desc.txt");
   struct option longopts[] = {
     {"load", optional_argument, NULL, 'l'},
     {"save", no_argument, &save, 1},
@@ -57,6 +60,7 @@ int main(int argc, char *argv[]){
     {"pc", optional_argument, NULL, 'p'},
     {"nummon", optional_argument, NULL, 'm'},
     {"numitem", optional_argument, NULL, 'i'},
+    {"npcload", optional_argument, NULL, 'n'},
     {"solo", no_argument, &solo, 1},
     {0,0,0,0}
   };
@@ -67,6 +71,9 @@ int main(int argc, char *argv[]){
         if (optarg) strcpy(load_file, optarg);
         else
           strcat(strcpy(load_file, getenv("HOME")), "/.rlg327/dungeon");
+        break;
+      case 'n':
+        if (optarg) strcpy(monster_file, optarg);
         break;
       case 'e':
         if (optarg) seed = atoi(optarg);
@@ -169,7 +176,7 @@ int main(int argc, char *argv[]){
   }
   
   object_parser::parser_init("monster");
-  object_parser::start_parser(strcat(strcpy(load_file, getenv("HOME")), "/.rlg327/monster_desc.txt"));
+  object_parser::start_parser(monster_file);
   object_parser::complete_parse();
   
   /*Ncurses start*/
