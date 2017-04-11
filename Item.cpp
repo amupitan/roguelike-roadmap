@@ -30,6 +30,10 @@ int Item::getId() const{
   return id;
 }
 
+const char* Item::getDamage() const{
+  return damage.to_string();
+}
+
 int Item::getDamageBonus() const{
   return damage.roll();
 }

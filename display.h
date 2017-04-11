@@ -17,6 +17,7 @@ void print_inventory(Item **items);
 void display_equipment(Item ** items);
 bool item_info(Item* item);
 int generic_prompt(Item** items, const char* prompt, int offset, int max, void (*printer)(Item ** items));
+void display_stats();
 
 # ifdef __cplusplus
 }

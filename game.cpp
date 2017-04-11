@@ -321,6 +321,14 @@ int main(int argc, char *argv[]){
           updateSight(pcp, map, item_map);
           generic_render(map, chars, characters, item_map, items, start, 0, fullscreen);
           continue;
+        }else if(target.x == -9 && target.y == -9){
+          target = pcp->getPos();
+          display_stats();
+          log_message("Press any key to continue", 0);
+          getch();
+          log_message("Welcome to the dungeon", 0);
+          generic_render(map, chars, characters, item_map, items, start, 0, fullscreen);
+          continue;
         }else if (target.x == -10 && target.y == -10){
           target = pcp->getPos();//TODO: this happens in case -3 and shuld prolly happen in every case, refactor?
           continue;
@@ -367,7 +375,7 @@ int main(int argc, char *argv[]){
             int display = generic_prompt(pcp->inventory(), "displayed", 48, 10, print_inventory);
             if (display >= 0){
               describing = item_info(pcp->inventory()[display]);
-            }
+            }else break;
           }while(describing);
           
           log_message("Welcome back to the dungeon!");

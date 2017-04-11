@@ -61,6 +61,7 @@ namespace object_parser{
   	    dice(const char* probabbility);
   	    dice(std::string probability);
   	    int roll() const;
+  	    const char* to_string() const;
   	};
   	/*global varaibles and helper functions*/
   	extern std::vector<stub*> objects;

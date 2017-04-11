@@ -238,7 +238,7 @@ bool item_info(Item* item){
   clear();
   int x_offset = 10, x_initial = x_offset;
   int y_offset = 10;
-  mvprintw(y_offset++, x_offset, (std::string("") + "NAME: " + item->getName()).c_str());
+  mvprintw(y_offset++, x_offset, (std::string("NAME: ") + item->getName()).c_str());
   mvprintw(y_offset++, x_offset, "DESCRIPTION:");
   x_offset = ++x_initial;
   const char* desc = item->getDesc();
@@ -251,9 +251,25 @@ bool item_info(Item* item){
     mvaddch(y_offset, x_offset++, desc[i]);
   }
   x_offset = --x_initial;
-  std::string symb = std::string("SYMBOL: ");
-  symb.push_back(item->getSymbol());
-  mvprintw(y_offset++, x_offset, symb.c_str());
+  mvprintw(y_offset, x_offset, "SYMBOL: ");
+  x_offset += 8;
+  attron(COLOR_PAIR(item->getColor()));
+  mvaddch(y_offset++, x_offset, item->getSymbol());
+  attroff(COLOR_PAIR(item->getColor()));
+  x_offset = x_initial;
+  mvprintw(y_offset++, x_offset, (std::string("DAMAGE: ") + item->getDamage()).c_str());
+  mvprintw(y_offset++, x_offset, (std::string("DEFENSE: ") + std::to_string(item->getDefenseBonus())).c_str());
+  mvprintw(y_offset++, x_offset, (std::string("SPEED: ") + std::to_string(item->getSpeedBonus())).c_str());
   log_message("Press any key to go back or ESC to go back to the dungeon", 0);
   return (getch() != 27);/*true if ESC is not pressed*/
+}
+
+void display_stats(){
+  clear();
+  int y_offset = 10;
+  log_message("PC", y_offset++);
+  log_message("Bio: Managed to survive CS 327. Now a master of C++. In quest in a dungeon to find the Software Bug, destroy the Hardware bug and save the C++ Program", y_offset++);
+  log_message(std::string("HP: ") + std::to_string(Player::getPlayer()->getHp()), y_offset++);
+  log_message(std::string("Speed: ") + std::to_string(Player::getPlayer()->getSpeed()), y_offset++);
+  log_message(std::string("Possible damage: ") + std::to_string(Player::getPlayer()->attack()), y_offset++);
 }

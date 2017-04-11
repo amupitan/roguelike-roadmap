@@ -158,6 +158,12 @@ namespace object_parser{
         first += (rand() % third) + 1;
       return first;
     }
+    
+    const char* dice::to_string() const{
+      std::string str = (std::to_string(base) + "+" + std::to_string(times) + "d" + std::to_string(sides)).c_str();
+      return str.c_str();
+    }
+    
     /*member variables*/
     std::vector<stub*> objects;
     std::ifstream object_file;

@@ -30,6 +30,7 @@ class Item {
     const char* getName() const;
     const char* getDesc() const;
     int getId() const;
+    const char* getDamage() const;
     int getDamageBonus() const;
     int getDefenseBonus() const;
     int getSpeedBonus() const;
