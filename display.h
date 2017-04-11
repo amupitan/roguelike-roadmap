@@ -15,10 +15,7 @@ Pair* look_mode(Pair *target, int* control_mode);
 void log_message(const char* message);
 void print_inventory(Item **items);
 void display_equipment(Item ** items);
-int drop_from_inventory(Item ** items);
-int wear_equipment(Item ** items);
-int take_off_equipment(Item ** items);
-int expunge_from_inventory(Item ** items);
+int generic_prompt(Item** items, const char* prompt, int offset, int max, void (*printer)(Item ** items));
 
 # ifdef __cplusplus
 }

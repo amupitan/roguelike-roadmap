@@ -134,6 +134,25 @@ Pair* getInputC(Pair* target){ /*TODO: make void?*/
   return target;
 }
 
+int generic_prompt(Item** items, const char* prompt, int offset, int max, void (*printer)(Item ** items)){
+  printer(items);
+  log_message(std::string("PC Inventory: type the index of the item to be ") + prompt + "or press ESC to go back", 0);
+  do{
+    int select = getch();
+    if (select == 27) break; //ESC
+    select -= offset;
+    if (select >=0 && select < max && items[select]){
+      log_message((std::to_string(select) + std::string(") ") + std::string(items[select]->getName()) + std::string(" has been ") + prompt).c_str(), 0);
+      return select;
+    }else{
+      std::string pick;
+      pick.push_back(select + offset);
+      log_message(pick + std::string(" is invalid. Select a valid number or press ESC to quit"), 0);
+    }
+  }while(1);
+  return -1;
+}
+
 Pair* look_mode(Pair *target, int* control_mode){ //TODO: uses hardcoded width/height
   switch(getch()){
     case 'k':
@@ -205,76 +224,4 @@ void print_inventory(Item ** items){
 
 void display_equipment(Item ** items){
   item_printer(items, 12, "c", 97, "PC Equipment");
-}
-
-int drop_from_inventory(Item ** items){
-  print_inventory(items);
-  log_message("PC Inventory: type the number of the item to be removed or press ESC to go back");
-  do{
-    int select = getch();
-    if (select == 27) break; //ESC
-    select -= 48;
-    
-    if (select >=0 && select < 10 && items[select]){
-      log_message((std::to_string(select) + std::string(") ") + std::string(items[select]->getName()) + std::string(" has been removed")).c_str());
-      return select;
-    }else{
-      log_message((std::to_string(select) + std::string(" is invalid. Select a valid number or press ESC to quit")).c_str());
-    }
-  }while(1);
-  return -1;
-}
-
-int wear_equipment(Item ** items){
-  print_inventory(items);
-  log_message("PC Inventory: type the number of the item to be worn or press ESC to go back", 0);
-  do{
-    int select = getch();
-    if (select == 27) break; //ESC
-    select -= 48;
-    
-    if (select >=0 && select < 10 && items[select]){
-      log_message((std::to_string(select) + std::string(") ") + std::string(items[select]->getName()) + std::string(" has been worn")).c_str());
-      return select;
-    }else{
-      log_message((std::to_string(select) + std::string(" is invalid. Select a valid number or press ESC to quit")).c_str());
-    }
-  }while(1);
-  return -1;
-}
-
-int take_off_equipment(Item ** items){
-  display_equipment(items);
-  log_message("PC Inventory: type the letter of the item to be taken off or press ESC to go back");
-  do{
-    int select = getch();
-    if (select == 27) break; //ESC
-    select -= 97;
-    if (select >= 0 && select < 12 && items[select]){
-      log_message((std::to_string(select) + std::string(") ") + std::string(items[select]->getName()) + std::string(" has been taken off")).c_str());
-      return select;
-    }else{
-      std::string pick;
-      pick.push_back(select + 97);
-      log_message(pick + std::string(" is invalid. Select a valid number or press ESC to quit"), 0);
-    }
-  }while(1);
-  return -1;
-}
-
-int expunge_from_inventory(Item ** items){
-  print_inventory(items);
-  log_message("PC Inventory: type the number of the item to be expunged or press ESC to go back");
-  do{
-    int select = getch();
-    if (select == 27) break; //ESC
-    select -= 48;
-    if (select >=0 && select < 10 && items[select]){
-      log_message((std::to_string(select) + std::string(") ") + std::string(items[select]->getName()) + std::string(" has been eXpunged!")).c_str());
-      return select;
-    }else{
-      log_message((std::to_string(select) + std::string(" is invalid. Select a valid number or press ESC to quit")).c_str());
-    }
-  }while(1);
-  return -1;
 }
