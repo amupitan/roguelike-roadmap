@@ -11,10 +11,8 @@ Player* Player::getPlayer(){
 }
 
 Player::Player() : sight(0), carry(), equip() {
-  symbol = '@';
-  color = 2;//GREEN
   damage = "0+1d4";
-  hp = 1000;
+  hp = 500;
 }
 
 Pair Player::getPos() const{
@@ -90,18 +88,35 @@ void Player::wear(int itm_idx){
       slot = equip[slot] ? 11 : 8;
     }
     equip[slot] = add;
+    speed += add->getSpeedBonus();
     carry[itm_idx] = current;
   }
 }
 
 bool Player::take_off(int index){
   if (pick(equip[index])){
+    speed -= equip[index]->getSpeedBonus();
     equip[index] = 0;
     return true;
   }
   return false;
 }
 
+int Player::attack() const{
+  int dam = Character::attack();
+  for (unsigned int i = 0; i < sizeof(equip)/sizeof(equip[0]); i++){
+    if (equip[i]) dam += equip[i]->getDamageBonus();
+  }
+  return dam;
+}
+
+bool Player::takeDamage(int damage_in){
+  int temp = damage_in;
+  for (unsigned int i = 0; i < sizeof(equip)/sizeof(equip[0]); i++, temp += 0){
+    if (equip[i]) damage_in -= equip[i]->getDefenseBonus();
+  }
+  return (damage_in < 0) ? false : Character::takeDamage(damage_in);
+}
 
 void Player::freeSight(int height){
   if (sight){
@@ -121,10 +136,6 @@ void Player::deletePlayer(){ //TODO: is it standard to have such a member?
 int** csetSight(Character* p, int height, int width){
   return static_cast<Player*>(p)->setSight(height, width);//TODO: check if type is player
 }
-
-// void cupdateSight(Player* p, int height, int width, char map[][width]){
-//   p->updateSight(height, width, map);
-// }
 
 void cfreeSight(Character* p, int height){
   return static_cast<Player*>(p)->freeSight(height);

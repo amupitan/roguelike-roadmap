@@ -30,6 +30,9 @@ class Item {
     const char* getName() const;
     const char* getDesc() const;
     int getId() const;
+    int getDamageBonus() const;
+    int getDefenseBonus() const;
+    int getSpeedBonus() const;
     void stack(Item* next);
     void unstack(int& nextId);/*gets picked up by a charcter, unstacks from other items if stacked*/
 };

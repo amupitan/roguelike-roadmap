@@ -17,12 +17,12 @@ class Character{
     int y;
     uint8_t type:4;
     int: 4;
-    uint8_t speed; //can use :5?
     uint8_t id; //int?
     uint32_t pace;
 
   protected:
     Character();
+    uint8_t speed;
     char symbol;
     int color;
     int hp;
@@ -46,19 +46,19 @@ class Character{
     int getHp() const;
     bool checkType(uint8_t type) const;
     void killCharacter();
-    int attack() const;
+    virtual int attack() const;
     
     /**
      * Reduces the characters hp by @damage and returns true
      * if character dies after damage else false
      * @damage amount of damage dealt to the character
      */
-    bool takeDamage(int damage);
+    virtual bool takeDamage(int damage);
     
     bool operator<(const Character& rhs) const;
     bool operator>(const Character& rhs) const;
     bool operator==(const Character& rhs) const;
-    ~Character();
+    virtual ~Character();
 };
 
 

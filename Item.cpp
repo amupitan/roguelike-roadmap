@@ -30,6 +30,18 @@ int Item::getId() const{
   return id;
 }
 
+int Item::getDamageBonus() const{
+  return damage.roll();
+}
+
+int Item::getDefenseBonus() const{
+  return defense;
+}
+
+int Item::getSpeedBonus() const{
+  return speed;
+}
+
 void Item::stack(Item* nextItem){
   if (next) {
     /*TODO: remove. There should never already be a next*/

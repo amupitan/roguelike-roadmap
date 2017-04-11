@@ -455,9 +455,10 @@ int main(int argc, char *argv[]){
         if (chars[target.y][target.x] != curr->getId()){ //Checking if a character is staying on the same spot OR curr->getPos == target
             //PC is attacking or getting attacked
             if (curr == pcp || characters[chars[target.y][target.x]] == pcp){
+              int prevPC_HP = pcp->getHp();
               attack = curr->attack();
               if (curr == pcp)
-                log_message(std::string("You dealt ") + std::to_string(attack) + " damage to " + static_cast<Monster*>(characters[chars[target.y][target.x]])->getName(), 24);
+                log_message(std::string("You dealt ") + std::to_string(attack) + " damage to " + static_cast<Monster*>(characters[chars[target.y][target.x]])->getName(), 24);//TODO: chnage to 23
               else {
                 log_message(std::string(static_cast<Monster*>(curr)->getName()) + " dealt "  + std::to_string(attack) + " damage to you", 22);
                 log_message(std::string("Current HP:") + std::to_string(pcp->getHp()) + " --> " + std::to_string(pcp->getHp() - attack), 23);
@@ -484,6 +485,7 @@ int main(int argc, char *argv[]){
                   delete_Characters(characters, nummon + 1);
                   endgame(&dungeon, &evt, "The PC is dead :(");return 0;
                 }
+                if (curr != pcp) log_message(std::string("Current HP:") + std::to_string(prevPC_HP) + " --> " + std::to_string(pcp->getHp()), 23);
               }
             }else{/*Monster push/swap monster*/
             log_message((std::string(static_cast<Monster*>(curr)->getName()) + " kicked out " + static_cast<Monster*>(characters[chars[target.y][target.x]])->getName()).c_str());

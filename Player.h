@@ -30,6 +30,8 @@ class Player : public Character{
     void expunge(int itm_idx);
     void wear(int itm_idx);
     bool take_off(int index);
+    virtual int attack() const;
+    virtual bool takeDamage(int damage);
     // void updateSight(int height, int width, char map[][width]);
     void freeSight(int height);
     static void deletePlayer();

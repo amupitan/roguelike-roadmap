@@ -2,7 +2,7 @@
 #include <cstdlib>
 #include "Character.h"
 
-Character::Character(uint8_t id, int x, int y) : speed(0), pace(0){
+Character::Character(uint8_t id, int x, int y) :pace(0), speed(0){
   this->id = id;
   this->x = x;
   this->y = y;
@@ -24,7 +24,7 @@ Character::Character(uint8_t id, int x, int y, int speed, uint8_t type){
  *This initializes to PC and should only be called by PC
  *
  **/
-Character::Character() :  speed(10), id(0), symbol('@') {}//TODO: add functionality that only PC type can call this
+Character::Character() :  id(0), speed(10), symbol('@'), color(2) {}//TODO: add functionality that only PC type can call this
 
 void Character::setPos(const void* x, const void* y){
   if (x)
@@ -81,9 +81,9 @@ int Character::attack() const{
   return damage.roll();
 }
 
-bool Character::takeDamage(int damage){
+bool Character::takeDamage(int damage_in){
   // if (hp -= damage > 0) return false;
-  hp = hp - damage;
+  hp = hp - damage_in;
   if (hp > 0) return false;
   symbol = -1;
   return true;
