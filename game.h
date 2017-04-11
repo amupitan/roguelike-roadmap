@@ -28,7 +28,7 @@ int char_equals(void* c1, void* c2);
 // void delete_dungeon(Dungeon* dungeon, Queue* evt, Cell map[][nCols]);
 
 void delete_Characters(Character* characters[], int num_characters);
-
+Pair moveCharacter(Character* curr, const Pair& target, int chars[][nCols]);
 // void endgame(Dungeon* dungeon, std::priority_queue<Character, std::vector<Character> >* game_queue, const char* endmessage);
 // void endgame(Dungeon* dungeon, std::priority_queue<Character, std::vector<Character> >* game_queue, const char* endmessage);
 void endgame(Dungeon* dungeon, Queue* game_queue, const char* endmessage);

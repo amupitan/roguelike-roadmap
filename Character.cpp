@@ -26,7 +26,7 @@ Character::Character(uint8_t id, int x, int y, int speed, uint8_t type){
  **/
 Character::Character() :  speed(10), id(0), symbol('@') {}//TODO: add functionality that only PC type can call this
 
-void Character::setPos(void* x, void* y){
+void Character::setPos(const void* x, const void* y){
   if (x)
     this->x = *(int *)x;
   if (y)
@@ -65,12 +65,28 @@ int Character::getColor() const{
   return color;
 }
 
+int Character::getHp() const{
+  return hp;
+}
+
 void Character::killCharacter(){
   symbol = -1;
 }
 
 bool Character::checkType(uint8_t type) const{
   return (type & this->type) != 0;
+}
+
+int Character::attack() const{
+  return damage.roll();
+}
+
+bool Character::takeDamage(int damage){
+  // if (hp -= damage > 0) return false;
+  hp = hp - damage;
+  if (hp > 0) return false;
+  symbol = -1;
+  return true;
 }
 
 Character::~Character(){}

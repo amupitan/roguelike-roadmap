@@ -15,7 +15,6 @@ class Character{
   private:
     int x;
     int y;
-    
     uint8_t type:4;
     int: 4;
     uint8_t speed; //can use :5?
@@ -32,7 +31,7 @@ class Character{
   public:
     Character(uint8_t id, int x, int y);
     Character(uint8_t id, int x, int y, int speed, uint8_t type);
-    void setPos(void* x, void* y);
+    void setPos(const void* x, const void* y);
     void setType(uint8_t type);
 
     void updatePace();
@@ -44,8 +43,17 @@ class Character{
     char getSymbol() const;
     uint8_t getSpeed() const;
     int getColor() const;
+    int getHp() const;
     bool checkType(uint8_t type) const;
     void killCharacter();
+    int attack() const;
+    
+    /**
+     * Reduces the characters hp by @damage and returns true
+     * if character dies after damage else false
+     * @damage amount of damage dealt to the character
+     */
+    bool takeDamage(int damage);
     
     bool operator<(const Character& rhs) const;
     bool operator>(const Character& rhs) const;

@@ -211,22 +211,22 @@ int main(int argc, char *argv[]){
   Player* pcp = static_cast<Player*>(characters[0]);
   do{
     pcp = static_cast<Player*>(characters[0]);
-    Character* p_curr;
-    p_curr = (Character *)peek(&evt, &p_curr);
-    Pair target = {cgetX(p_curr), cgetY(p_curr)};// {cgetX(p_curr), cgetY(p_curr)};
-    if (cgetSymbol(p_curr) == -1){ //it was killed
+    Character* curr;
+    curr = (Character *)peek(&evt, &curr);
+    Pair target = {cgetX(curr), cgetY(curr)};// {cgetX(curr), cgetY(curr)};
+    if (cgetSymbol(curr) == -1){ //it was killed
       dequeue(&evt);
       continue;
     }
     int new_dungeon = 0;
     /*Determine next position of character*/
-    if (p_curr == pcp){/* PC stuff */
-      // while (target.x < 1 || (target.x > nCols - 1) || target.y < 1 || target.y > nRows - 1 || (target.x == cgetX(p_curr) && target.y == cgetY(p_curr))){ //Reverse psych lol :) and the PC must move, cannot stay in the same spot, just because it's lame to stay in the same place
-      //   target.x = rand_gen(cgetX(p_curr) - 1, cgetX(p_curr) + 1);
-      //   target.y = rand_gen(cgetY(p_curr) - 1, cgetY(p_curr) + 1);
+    if (curr == pcp){/* PC stuff */
+      // while (target.x < 1 || (target.x > nCols - 1) || target.y < 1 || target.y > nRows - 1 || (target.x == cgetX(curr) && target.y == cgetY(curr))){ //Reverse psych lol :) and the PC must move, cannot stay in the same spot, just because it's lame to stay in the same place
+      //   target.x = rand_gen(cgetX(curr) - 1, cgetX(curr) + 1);
+      //   target.y = rand_gen(cgetY(curr) - 1, cgetY(curr) + 1);
       // }
       updateSight(pcp, map, item_map);
-      Pair start = {cgetX(p_curr) - 40, cgetY(p_curr) - 10};
+      Pair start = {cgetX(curr) - 40, cgetY(curr) - 10};
       generic_render(map, chars, characters, item_map, items, start, 0, fullscreen);
       do{/*handle input*/
         target = *(Pair *)getInputC(&target);
@@ -243,7 +243,6 @@ int main(int argc, char *argv[]){
             int ctrl = 0; /*1- end look mode*/
             look = *(look_mode(&look, &ctrl));
             if (ctrl == 1){
-              // render(chars, characters, item_map, items, start, NULL);
               generic_render(map, chars, characters, item_map, items, start, 0, fullscreen);
               break;
             }
@@ -254,9 +253,9 @@ int main(int argc, char *argv[]){
         }
         else if ((target.x == -3 && target.y == -3) || (target.x == -4 && target.y == -4)){
           /*use stairs: if not stair continue*/
-          if ((target.x == -3 && map[cgetY(p_curr)][cgetX(p_curr)].value != '>') || (target.x == -4 && map[cgetY(p_curr)][cgetX(p_curr)].value != '<')) {/*check up/down stairs*/
-            target.x = cgetX(p_curr);
-            target.y = cgetY(p_curr); /*set target to original position*/
+          if ((target.x == -3 && map[cgetY(curr)][cgetX(curr)].value != '>') || (target.x == -4 && map[cgetY(curr)][cgetX(curr)].value != '<')) {/*check up/down stairs*/
+            target.x = cgetX(curr);
+            target.y = cgetY(curr); /*set target to original position*/
             continue;
           }
           // csetType(pcp, 0);
@@ -287,7 +286,7 @@ int main(int argc, char *argv[]){
           free(seed_msg);
         }else if (target.x == -6 && target.y == -6){
           char* stat_msg = (char* )malloc(40);/*cpp watch*/
-          sprintf(stat_msg, "PC is at %d, %d. Number of rooms: %d", cgetX(p_curr), cgetY(p_curr), dungeon.num_rooms);
+          sprintf(stat_msg, "PC is at %d, %d. Number of rooms: %d", cgetX(curr), cgetY(curr), dungeon.num_rooms);
           log_message(stat_msg);
           free(stat_msg);
         }else if(target.x == -7 && target.y == -7){
@@ -311,7 +310,6 @@ int main(int argc, char *argv[]){
             log_message((std::string("You dropped ") + items[itm_id]->getName()).c_str());
           }
           updateSight(pcp, map, item_map);
-          // render(chars, characters, item_map, items, start, 0);
           generic_render(map, chars, characters, item_map, items, start, 0, fullscreen);
           continue;
         }else if (target.x == -10 && target.y == -10){
@@ -354,24 +352,24 @@ int main(int argc, char *argv[]){
           generic_render(map, chars, characters, item_map, items, start, 0, fullscreen);
         }
         else if (map[target.y][target.x].hardness == 0) break;
-        target.x = cgetX(p_curr);
-        target.y = cgetY(p_curr);
+        target.x = cgetX(curr);
+        target.y = cgetY(curr);
       }while(1);
       if (new_dungeon) continue;
-      log_message((std::string("Monsters left: ") + std::to_string(l_monsters)).c_str());
+      log_message(std::string("Monsters left: ") + std::to_string(l_monsters), 0);
     }else{
       
       /*Telephathy*/
-      int curr_room_no = getRoom(dungeon, cgetX(p_curr), cgetY(p_curr));
-      if (ccheckType(p_curr, 0x2) || (curr_room_no == getRoom(dungeon, cgetX(pcp), cgetY(pcp)))){ //smart or line of sight //TODO might want to check corridor, this makes the PC visible to all monsters on a corridor when it's on the corridor because getRoom for both will return -1
+      int curr_room_no = getRoom(dungeon, cgetX(curr), cgetY(curr));
+      if (ccheckType(curr, 0x2) || (curr_room_no == getRoom(dungeon, cgetX(pcp), cgetY(pcp)))){ //smart or line of sight //TODO might want to check corridor, this makes the PC visible to all monsters on a corridor when it's on the corridor because getRoom for both will return -1
         target.x = cgetX(pcp);
         target.y = cgetY(pcp);
-        last_seen[cgetId(p_curr) - 1] = target;
-        recalculate = recalculate && ccheckType(p_curr, 0x1);
+        last_seen[cgetId(curr) - 1] = target;
+        recalculate = recalculate && ccheckType(curr, 0x1);
       }else{ //change to its own if
-        if(ccheckType(p_curr, 0x1) && last_seen[cgetId(p_curr) - 1].x != -1){
-          target = last_seen[cgetId(p_curr) - 1];
-          recalculate = recalculate && ccheckType(p_curr, 0x1);
+        if(ccheckType(curr, 0x1) && last_seen[cgetId(curr) - 1].x != -1){
+          target = last_seen[cgetId(curr) - 1];
+          recalculate = recalculate && ccheckType(curr, 0x1);
         }else{
           /*if the Character is not in a room, it's target is a random posotion in room 0*/
           curr_room_no = (curr_room_no == -1) ? /*rand_gen(0, dungeon.num_rooms)*/0 : curr_room_no;
@@ -397,12 +395,12 @@ int main(int argc, char *argv[]){
       }
       
       /*Intelligent*/
-      if (ccheckType(p_curr, 0x1)){
+      if (ccheckType(curr, 0x1)){
           int curr_dist = INT_MAX;
-          for (i = cgetY(p_curr) - 1; i <= cgetY(p_curr)+1; i++){
-            for (j = cgetX(p_curr) - 1; j <= cgetX(p_curr)+1; j++){
-              if (!(i== cgetY(p_curr) && j == cgetX(p_curr)) && (i > 0 && j > 0 && i < nRows - 1 && j < nCols - 1)){ //TODO nRows-1 vs nRows check the whole code
-                int es_dist = (ccheckType(p_curr, 0x4)) ? t_dist[i][j] : dist[i][j]; //if tunnelling
+          for (i = cgetY(curr) - 1; i <= cgetY(curr)+1; i++){
+            for (j = cgetX(curr) - 1; j <= cgetX(curr)+1; j++){
+              if (!(i== cgetY(curr) && j == cgetX(curr)) && (i > 0 && j > 0 && i < nRows - 1 && j < nCols - 1)){ //TODO nRows-1 vs nRows check the whole code
+                int es_dist = (ccheckType(curr, 0x4)) ? t_dist[i][j] : dist[i][j]; //if tunnelling
                 if (es_dist < curr_dist){
                   curr_dist = es_dist;
                   target.x = j;
@@ -412,133 +410,150 @@ int main(int argc, char *argv[]){
             }
           }
       }else{/*Determine monster's next position*/
-          if (cgetX(p_curr) < target.x){
-            target.x = (((cgetX(p_curr) + 1) < nCols-1) && ((ccheckType(p_curr, 0x4)) || map[cgetY(p_curr)][cgetX(p_curr) + 1].hardness == 0) ) ? cgetX(p_curr) + 1 : cgetX(p_curr); //can move and/or tunnel
-          }else if (cgetX(p_curr) > target.x){
-            target.x = (((cgetX(p_curr) - 1) > 0) && ((ccheckType(p_curr, 0x4)) || map[cgetY(p_curr)][cgetX(p_curr) - 1].hardness == 0)) ? cgetX(p_curr) - 1 : cgetX(p_curr);
+          if (cgetX(curr) < target.x){
+            target.x = (((cgetX(curr) + 1) < nCols-1) && ((ccheckType(curr, 0x4)) || map[cgetY(curr)][cgetX(curr) + 1].hardness == 0) ) ? cgetX(curr) + 1 : cgetX(curr); //can move and/or tunnel
+          }else if (cgetX(curr) > target.x){
+            target.x = (((cgetX(curr) - 1) > 0) && ((ccheckType(curr, 0x4)) || map[cgetY(curr)][cgetX(curr) - 1].hardness == 0)) ? cgetX(curr) - 1 : cgetX(curr);
           }
-          if (cgetY(p_curr) < target.y){
-            target.y = (((cgetY(p_curr) + 1) < nRows-1) && ((ccheckType(p_curr, 0x4)) || map[cgetY(p_curr) + 1][cgetX(p_curr)].hardness == 0)) ? cgetY(p_curr) + 1 : cgetY(p_curr);
-          }else if (cgetY(p_curr) > target.y){
-            target.y = (((cgetY(p_curr) - 1) > 0) && ((ccheckType(p_curr, 0x4)) || map[cgetY(p_curr) - 1][cgetX(p_curr)].hardness == 0)) ? cgetY(p_curr) - 1 : cgetY(p_curr);
+          if (cgetY(curr) < target.y){
+            target.y = (((cgetY(curr) + 1) < nRows-1) && ((ccheckType(curr, 0x4)) || map[cgetY(curr) + 1][cgetX(curr)].hardness == 0)) ? cgetY(curr) + 1 : cgetY(curr);
+          }else if (cgetY(curr) > target.y){
+            target.y = (((cgetY(curr) - 1) > 0) && ((ccheckType(curr, 0x4)) || map[cgetY(curr) - 1][cgetX(curr)].hardness == 0)) ? cgetY(curr) - 1 : cgetY(curr);
           }
       }
       
       /*Erratic*/
-      if ((ccheckType(p_curr, 0x8)) && rand_gen(0,1)){
+      if ((ccheckType(curr, 0x8)) && rand_gen(0,1)){
         char found = 0;
         while(!found){
-          target.x = rand_gen(cgetX(p_curr) - 1,cgetX(p_curr) + 1);
-          target.y = rand_gen(cgetY(p_curr) - 1, cgetY(p_curr) + 1);
-          found = ((!(target.y == cgetY(p_curr) && target.x == cgetX(p_curr)) && (target.x > 0 && target.y > 0 && target.y < nRows-1 && target.x < nCols-1)) && (ccheckType(p_curr, 0x4) || map[target.y][target.x].hardness == 0));
+          target.x = rand_gen(cgetX(curr) - 1,cgetX(curr) + 1);
+          target.y = rand_gen(cgetY(curr) - 1, cgetY(curr) + 1);
+          found = ((!(target.y == cgetY(curr) && target.x == cgetX(curr)) && (target.x > 0 && target.y > 0 && target.y < nRows-1 && target.x < nCols-1)) && (ccheckType(curr, 0x4) || map[target.y][target.x].hardness == 0));
         }
       }
       
     }
     
     /*Attempt to move*/
+    int attack = -1;
     if (map[target.y][target.x].hardness != 0){
       map[target.y][target.x].hardness = ((map[target.y][target.x].hardness - 85) < 0) ? 0 : map[target.y][target.x].hardness - 85;
       recalculate = 1;
     }
     if (map[target.y][target.x].hardness == 0){
-      // chars[cgetY(p_curr)][cgetX(p_curr)] = -1;//TODO: do not do this until fight is over
+      // chars[cgetY(curr)][cgetX(curr)] = -1;//TODO: do not do this until fight is over
       /*If PC is killed*/
-      if ((p_curr != pcp) && (pcp->getX() == target.x && cgetY(pcp) == target.y)){
-        /*Move and make final render*/
-        chars[cgetY(p_curr)][cgetX(p_curr)] = -1;
-        p_curr->setPos(&(target.x), &(target.y));
-        chars[target.y][target.x] = cgetId(p_curr);
+      /*if ((curr != pcp) && (pcp->getX() == target.x && cgetY(pcp) == target.y)){
+        //Move and make final render
+        chars[cgetY(curr)][cgetX(curr)] = -1;
+        curr->setPos(&(target.x), &(target.y));
+        chars[target.y][target.x] = cgetId(curr);
 
-        Pair start = {cgetX(p_curr) - 40, cgetY(p_curr) - 10};
-        // render(chars, characters, item_map, items, start, NULL); //TODO, fix start position!!!
+        Pair start = {cgetX(curr) - 40, cgetY(curr) - 10};
         generic_render(map, chars, characters, item_map, items, start, 0, fullscreen);
         items = (Item**)delete_items(items, numitem);
         delete_Characters(characters, nummon + 1);
         endgame(&dungeon, &evt, "The PC is dead :(");return 0;
       }
-      
+      */
       /*There is someone on the space to move to*/
       if (chars[target.y][target.x] != -1){
-        if (chars[target.y][target.x] != p_curr->getId()){ //Checking if a character is staying on the same spot
+        if (chars[target.y][target.x] != curr->getId()){ //Checking if a character is staying on the same spot OR curr->getPos == target
           // ckillCharacter(characters[chars[target.y][target.x]]);
-          if (p_curr == pcp){
-            //PC is the one killing
-            // characters[chars[target.y][target.x]]->killCharacter();
-            chars[cgetY(p_curr)][cgetX(p_curr)] = -1; //Change PC's position
-            ckillCharacter(characters[chars[target.y][target.x]]);
-            log_message((std::string("You just killed ") + static_cast<Monster*>(characters[chars[target.y][target.x]])->getName()).c_str());
-            /*Killed al monsters. Final render*/
-            if(!(--l_monsters)) {
-              Pair start = {cgetX(p_curr) - 40, cgetY(p_curr) - 10};
-              chars[target.y][target.x] = pcp->getId();
-              // render(chars, characters, item_map, items, start, 0); //TODO!!!
-              generic_render(map, chars, characters, item_map, items, start, 0, fullscreen);
-              break;
-            }
-          }else{
-            //Monster swap
-            /*TODO: remove!! used to test monster swaps*/
-            // log_message("Monster about to swap");
-            // Pair start = {cgetX(p_curr) - 40, cgetY(p_curr) - 10};
-            // render_partial(map, chars, characters, start, 0);
-            // getch();
-            /*End remove*/
-            log_message((std::string(static_cast<Monster*>(p_curr)->getName()) + " kicked out " + static_cast<Monster*>(characters[chars[target.y][target.x]])->getName()).c_str());
+
+            //PC is attacking or getting attacked
+            if (curr == pcp || characters[chars[target.y][target.x]] == pcp){
+              attack = curr->attack();
+              if (curr == pcp)
+                log_message(std::string("You dealt ") + std::to_string(attack) + " damage to " + static_cast<Monster*>(characters[chars[target.y][target.x]])->getName(), 24);
+              else {
+                log_message(std::string(static_cast<Monster*>(curr)->getName()) + " dealt "  + std::to_string(attack) + " damage to you", 22);
+                log_message(std::string("Current HP:") + std::to_string(pcp->getHp()) + " --> " + std::to_string(pcp->getHp() - attack), 23);
+              }
+              if (characters[chars[target.y][target.x]]->takeDamage(attack)){
+                if (curr == pcp){
+                  log_message(std::string("You just killed ") + static_cast<Monster*>(characters[chars[target.y][target.x]])->getName(), 0);
+                  chars[curr->getY()][curr->getX()] = -1;
+                  curr->setPos(&target.x, &target.y);
+                  chars[curr->getY()][curr->getX()] = curr->getId();
+                  /*Killed all monsters. Final render*/
+                  if(!(--l_monsters)) {
+                    Pair start = {cgetX(curr) - 40, cgetY(curr) - 10};
+                    // chars[target.y][target.x] = pcp->getId();
+                    moveCharacter(curr, target, chars);//TODO e no need for this, already done before this if block
+                    generic_render(map, chars, characters, item_map, items, start, 0, fullscreen);
+                    break;
+                  }
+                }else {
+                  log_message(std::string("You got killed by ") + static_cast<Monster*>(characters[chars[target.y][target.x]])->getName(), 0);
+                  //TODO: just break?
+                  moveCharacter(curr, target, chars);
+                  Pair start = {curr->getX() - 40, curr->getY() - 10};
+                  generic_render(map, chars, characters, item_map, items, start, 0, fullscreen);
+                  items = (Item**)delete_items(items, numitem);
+                  delete_Characters(characters, nummon + 1);
+                  endgame(&dungeon, &evt, "The PC is dead :(");return 0;
+                }
+              }
+            }else{/*Monster push/swap monster*/
+            log_message((std::string(static_cast<Monster*>(curr)->getName()) + " kicked out " + static_cast<Monster*>(characters[chars[target.y][target.x]])->getName()).c_str());
             //TODO: make kick position random
             bool swap = true;
             for (int p = target.y - 1; (p <= target.y + 1) && swap; p++){
               for (int q = target.x - 1; q <= target.x + 1; q++){
 		            if (p == 0 || q == 0 || p == (nRows - 1) || q == (nCols - 1) || chars[p][q] != -1 || map[p][q].hardness != 0) continue;
-		            chars[p][q] = characters[chars[target.y][target.x]]->getId();
-		            characters[chars[p][q]]->setPos(&q, &p);
-		            chars[cgetY(p_curr)][cgetX(p_curr)] = -1;
+		            // chars[p][q] = chars[target.y][target.x];//get ID of monster characters[chars[target.y][target.x]]->getId();
+		            // characters[chars[p][q]]->setPos(&q, &p);
+		            // chars[cgetY(curr)][cgetX(curr)] = -1; //TODO e remove
+		            Pair kick_spot = {q, p};
+		            moveCharacter(characters[chars[target.y][target.x]], kick_spot, chars); //move the monster that's on the way
+		            moveCharacter(curr, target, chars); //move the monster to it's target position
 		            swap = false;
 		            break;
               }
             }
             if (swap){
-              int swap_x = p_curr->getX();
-              int swap_y = p_curr->getY();
-              chars[swap_y][swap_x] = characters[chars[target.y][target.x]]->getId();
-		          characters[chars[p_curr->getY()][p_curr->getX()]]->setPos(&swap_x, &swap_y);
+              Pair prev = {curr->getX(), curr->getY()};
+              moveCharacter(characters[chars[target.y][target.x]], prev, chars);
+              chars[target.y][target.x] = curr->getId();
+              curr->setPos(&target.x, &target.y);
             }
-            /*TODO: remove!! used to test monster swaps*/
-            // chars[target.y][target.x] = cgetId(p_curr);
-            // start = {cgetX(p_curr) - 40, cgetY(p_curr) - 10};
-            // render_partial(map, chars, characters, start, 0);
-            // getch();
-            /*End remove*/
           }
           
         }
-      }else chars[cgetY(p_curr)][cgetX(p_curr)] = -1; //spot is empty
-      /*if ((chars[target.y][target.x] != -1) && (chars[target.y][target.x] != cgetId(p_curr))){ //TODO: change from kill to fighr
+      }else {
+        moveCharacter(curr, target, chars);
+        // chars[cgetY(curr)][cgetX(curr)] = -1; //spot is empty TODO e
+        // curr->setPos(&target.x, &target.y);
+        // // characters[chars[target.y][target.x]]->setPos(&(target.x), &(target.y));
+        // chars[target.y][target.x] = curr->getId();
+      }
+      /*if ((chars[target.y][target.x] != -1) && (chars[target.y][target.x] != cgetId(curr))){ //TODO: change from kill to fighr
         //FIGHT HERE
         ckillCharacter(characters[chars[target.y][target.x]]);
-        if (p_curr == pcp){
+        if (curr == pcp){
           //PC is the one killing
           log_message((std::string("You just killed ") + static_cast<Monster*>(characters[chars[target.y][target.x]])->getName()).c_str());
         }
         if(!(--l_monsters)) break;
       }*/
-      chars[target.y][target.x] = cgetId(p_curr);
+      // chars[target.y][target.x] = cgetId(curr); //TODO e only if person moves
       /*NOTE: this assumes that you killed the person and moved*/
-      if (item_map[target.y][target.x] != -1/*&& you can pick/destroy && the person chose to move*/){ /*item here, you can pick/destroy, you moved*/
+      if (attack == -1 && item_map[target.y][target.x] != -1/*&& you can pick/destroy && the person chose to move*/){ /*item here, you can pick/destroy, you moved*/
         /*TODO: add item to inventory or destroy*/
-        if(p_curr == pcp && pcp->pick(items[item_map[target.y][target.x]])) {
+        if(curr == pcp && pcp->pick(items[item_map[target.y][target.x]])) {
           log_message((std::string("You just picked ") + items[item_map[target.y][target.x]]->getName()).c_str());
           items[item_map[target.y][target.x]]->unstack(item_map[target.y][target.x]);
-        }else if (p_curr != pcp/* && check for destroy*/){
+        }else if (curr != pcp/* && check for destroy*/){
           items[item_map[target.y][target.x]]->unstack(item_map[target.y][target.x]);
         }
       }
       if (map[target.y][target.x].value != '.' && map[target.y][target.x].value != '<' && map[target.y][target.x].value != '>') map[target.y][target.x].value = '#'; //TODO add condition to check if it was a wall passing monster
-      p_curr->setPos(&target.x, &target.y); //TODO: only if fight is won
+      // curr->setPos(&target.x, &target.y); //TODO e: only if fight is won
     }
-    recalculate = (cgetId(p_curr) == 0) ? 1 : 0;
-    pace[cgetId(p_curr)] +=  1000/cgetSpeed(p_curr);
-    change_priority(&evt, p_curr, pace[cgetId(p_curr)]);
+    recalculate = (cgetId(curr) == 0) ? 1 : 0;
+    pace[cgetId(curr)] +=  1000/cgetSpeed(curr);
+    change_priority(&evt, curr, pace[cgetId(curr)]);
   }while(l_monsters || solo);
   
   /*Print win message*/
@@ -548,7 +563,7 @@ int main(int argc, char *argv[]){
     endgame(&dungeon, &evt, "PC killed em all"); return 0;
   }
   
-  empty_queue(&evt);
+  empty_queue(&evt); //This queue is emptied in end_game
   
   /*Free all mallocs before exiting*/
   free(dungeon.rooms);
@@ -602,6 +617,13 @@ void delete_Characters(Character* characters[], int num_characters){
   }
 }
 
+Pair moveCharacter(Character* curr, const Pair& target, int chars[][nCols]){
+	Pair oldPos = {curr->getX(), curr->getY()};
+	chars[curr->getY()][curr->getX()] = -1;
+	curr->setPos(&target.x, &target.y);
+	chars[curr->getY()][curr->getX()] = curr->getId();
+	return oldPos;
+}
 //1490045401 --nummon=10
 //1490063401 visible monster
 //1490647963 stairs

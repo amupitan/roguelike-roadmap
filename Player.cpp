@@ -14,7 +14,7 @@ Player::Player() : sight(0), carry(), equip() {
   symbol = '@';
   color = 2;//GREEN
   damage = "0+1d4";
-  hp = 100;
+  hp = 1000;
 }
 
 Pair Player::getPos() const{

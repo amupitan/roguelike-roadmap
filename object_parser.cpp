@@ -152,7 +152,7 @@ namespace object_parser{
         }
       }
     }
-    int dice::roll(){
+    int dice::roll() const{
       int first = base, second = times, third = sides;
       for (int j = 0; j < second; j++)
         first += (rand() % third) + 1;
