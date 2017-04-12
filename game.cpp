@@ -484,7 +484,7 @@ int main(int argc, char *argv[]){
                     break;
                   }
                 }else {
-                  log_message(std::string("You got killed by ") + static_cast<Monster*>(curr)->getName(), 22, true);
+                  log_message(std::string("You got killed by ") + static_cast<Monster*>(curr)->getName(), 23);
                   //TODO: just break?
                   moveCharacter(curr, target, chars);
                   Pair start = {curr->getX() - 40, curr->getY() - 10};
