@@ -541,7 +541,7 @@ int main(int argc, char *argv[]){
       if (map[target.y][target.x].value != '.' && map[target.y][target.x].value != '<' && map[target.y][target.x].value != '>') map[target.y][target.x].value = '#'; //TODO add condition to check if it was a wall passing monster
     }
     recalculate = (cgetId(curr) == 0) ? 1 : 0; //TODO: don not recalculate if no move was made
-    pace[cgetId(curr)] +=  1000/cgetSpeed(curr);
+    pace[cgetId(curr)] +=  1000/(curr->getSpeed() ? curr->getSpeed() : 1);
     change_priority(&evt, curr, pace[cgetId(curr)]);
   }while(l_monsters || solo);
   
