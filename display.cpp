@@ -272,4 +272,20 @@ void display_stats(){
   log_message(std::string("HP: ") + std::to_string(Player::getPlayer()->getHp()), y_offset++);
   log_message(std::string("Speed: ") + std::to_string(Player::getPlayer()->getSpeed()), y_offset++);
   log_message(std::string("Possible damage: ") + std::to_string(Player::getPlayer()->attack()), y_offset++);
+  Item** items = Player::getPlayer()->equipment();
+  int def = 0;
+  for (int i = 0; i < 12; i++){
+    if (items[i]) def += items[i]->getDefenseBonus();
+  }
+  log_message(std::string("Defense: ") + std::to_string(def), y_offset++);
+}
+
+void log_message(std::string message, int row, bool left){
+  int col, max_row;
+  move(row, 0);
+  clrtoeol();
+  getmaxyx(stdscr, max_row, col);
+  // int start  = left ? 0 : col - message.length();
+  mvprintw(row + 0/max_row, left ? 0 : col - message.length(), message.c_str()); //max_row is only used because getmaxyx requires all three variables
+  /*TODO: call refresh()?*/
 }

@@ -9,17 +9,14 @@
 #include <limits.h>
 #include <unistd.h>
 #include <ncurses.h>
-
 #include <iostream>
 
 #include "display.h"
 #include "queue.h"
-// #include "Character.h"
 
 #include "Monster.h"
-#include "game.h" //TODO: forwatd declration problems when this is the first include
+#include "game.h"
 #include "dungeon.h"
-// #include "object_parser.h"
 #include "Item.h"
 #include "Player.h"
 int main(int argc, char *argv[]){
@@ -122,16 +119,13 @@ int main(int argc, char *argv[]){
 			map[i][j].hardness = (i == 0 || j == 0 || i == nRows - 1 || j == nCols - 1) ? 255 : rand_gen(1,254);
 		}
 	}
-  
-
-
+	
   if (load){
     if (!(dungeon_file = fopen(load_file, "r"))){
       fprintf(stderr, "The file: %s couldn't be opened\n", load_file);
       return -1;
     }else load_dungeon(dungeon_file, &dungeon, map, dungeon_title, &version, &size_dungeon_file);
   }else create_dungeon(&dungeon, map, room_cells);
-  
   if (save) {
     char path[100];
     mkdir(strcat(strcpy(path, getenv("HOME")), "/.rlg327"),0766);
@@ -178,7 +172,6 @@ int main(int argc, char *argv[]){
   object_parser::parser_init("monster");
   object_parser::start_parser(monster_file);
   object_parser::complete_parse();
-  
   /*Ncurses start*/
   int col = 0;
   bool fullscreen = false;
@@ -209,7 +202,6 @@ int main(int argc, char *argv[]){
   object_parser::parser_init("item");
   object_parser::start_parser(strcat(strcpy(load_file, getenv("HOME")), "/.rlg327/object_desc.txt"));
   object_parser::complete_parse();
-  // int numitem = 20; /*Will be changed in add items TODO: change initializer to declaration*/
   int item_map[nRows][nCols];
   Item** items = 0;
   items = addItems(&dungeon, items, item_map, &numitem);
@@ -478,12 +470,7 @@ int main(int argc, char *argv[]){
             if (curr == pcp || characters[chars[target.y][target.x]] == pcp){
               int prevPC_HP = pcp->getHp();
               attack = curr->attack();
-              if (curr == pcp)
-                log_message(std::string("You dealt ") + std::to_string(attack) + " damage to " + static_cast<Monster*>(characters[chars[target.y][target.x]])->getName(), 24);//TODO: chnage to 23
-              else {
-                log_message(std::string(static_cast<Monster*>(curr)->getName()) + " dealt "  + std::to_string(attack) + " damage to you", 22);
-                log_message(std::string("Current HP:") + std::to_string(pcp->getHp()) + " --> " + std::to_string(pcp->getHp() - attack), 23);
-              }
+              std::string char_name = (curr == pcp) ? static_cast<Monster*>(characters[chars[target.y][target.x]])->getName() : "";
               if (characters[chars[target.y][target.x]]->takeDamage(attack)){
                 if (curr == pcp){
                   log_message(std::string("You just killed ") + static_cast<Monster*>(characters[chars[target.y][target.x]])->getName(), 0);
@@ -497,19 +484,26 @@ int main(int argc, char *argv[]){
                     break;
                   }
                 }else {
-                  log_message(std::string("You got killed by ") + static_cast<Monster*>(characters[chars[target.y][target.x]])->getName(), 0);
+                  log_message(std::string("You got killed by ") + static_cast<Monster*>(curr)->getName(), 22, true);
                   //TODO: just break?
                   moveCharacter(curr, target, chars);
                   Pair start = {curr->getX() - 40, curr->getY() - 10};
                   generic_render(map, chars, characters, item_map, items, start, 0, fullscreen);
                   items = (Item**)delete_items(items, numitem);
                   delete_Characters(characters, nummon + 1);
-                  endgame(&dungeon, &evt, "The PC is dead :(");return 0;
+                  endgame(&dungeon, &evt, "The PC is dead :(");
+                  return 0;
                 }
-                if (curr != pcp) log_message(std::string("Current HP:") + std::to_string(prevPC_HP) + " --> " + std::to_string(pcp->getHp()), 23);
+                if (curr != pcp) log_message(std::string("Current HP:") + std::to_string(prevPC_HP) + " --> " + std::to_string(pcp->getHp()), 22);
+              }
+              /*Log messages*/
+              if (curr == pcp)
+                log_message(std::string("You dealt ") + std::to_string(attack) + " damage to " + char_name, 22);
+              else {
+                log_message(std::string(static_cast<Monster*>(curr)->getName()) + " dealt "  + std::to_string(attack) + " damage to you. (HP: " + std::to_string(prevPC_HP) + "-->" + std::to_string(pcp->getHp()) + ")", 23);
               }
             }else{/*Monster push/swap monster*/
-            log_message((std::string(static_cast<Monster*>(curr)->getName()) + " kicked out " + static_cast<Monster*>(characters[chars[target.y][target.x]])->getName()).c_str());
+            // log_message((std::string(static_cast<Monster*>(curr)->getName()) + " kicked out " + static_cast<Monster*>(characters[chars[target.y][target.x]])->getName()).c_str(), 23, false);
             //TODO: make kick position random
             bool swap = true;
             for (int p = target.y - 1; (p <= target.y + 1) && swap; p++){
@@ -534,8 +528,8 @@ int main(int argc, char *argv[]){
       }else {
         moveCharacter(curr, target, chars);
       }
-      /*NOTE: this assumes that you killed the person and moved*/
-      if (attack == -1 && item_map[target.y][target.x] != -1/*&& you can pick/destroy && the person chose to move*/){ /*item here, you can pick/destroy, you moved*/
+      /*Pick/Destroy/walk over items*/
+      if (attack == -1 && item_map[target.y][target.x] != -1 && (curr == pcp/* || monster can destroy objects*/)){
         /*TODO: add item to inventory or destroy*/
         if(curr == pcp && pcp->pick(items[item_map[target.y][target.x]])) {
           log_message((std::string("You just picked ") + items[item_map[target.y][target.x]]->getName()).c_str());
@@ -555,7 +549,8 @@ int main(int argc, char *argv[]){
   if (nummon && !l_monsters) {
     delete_Characters(characters, nummon + 1);
     items = (Item**)delete_items(items, numitem);
-    endgame(&dungeon, &evt, "PC killed em all"); return 0;
+    endgame(&dungeon, &evt, "PC killed em all");
+    return 0;
   }
   
   empty_queue(&evt); //This queue is emptied in end_game

@@ -5,7 +5,8 @@
 #include "Cell_Pair.h"
 #include "Player.h"
 # ifdef __cplusplus
-void log_message(std::string message, int row); //TODO: remove extern C
+void log_message(std::string message, int row); //TODO: remove extern
+void log_message(std::string message, int row, bool left);
 extern "C" {
 # endif
 
