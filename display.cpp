@@ -275,7 +275,7 @@ void display_stats(){
   clear();
   int y_offset = 10;
   log_message("PC", y_offset++);
-  log_message("Bio: Managed to survive CS 327. Now a master of C++. In quest in a dungeon to find the Software Bug, destroy the Hardware bug and save the C++ Program", y_offset++);
+  log_message("Bio: Managed to survive CS 327. Now a master of C++. Currently in a dungeon quest to find the Software Bug, destroy the Hardware bug and save the C++ Program", y_offset++);
   log_message(std::string("HP: ") + std::to_string(Player::getPlayer()->getHp()), y_offset++);
   log_message(std::string("Speed: ") + std::to_string(Player::getPlayer()->getSpeed()), y_offset++);
   log_message(std::string("Possible damage: ") + std::to_string(Player::getPlayer()->attack()), y_offset++);
