@@ -82,11 +82,11 @@ void Player::wear(int itm_idx){
   if (!carry[itm_idx]) return;
   Item* add = carry[itm_idx];
   int slot = object_parser::private_wrapper::item_number(add->getSymbol());
-  Item* current = equip[slot];
   if (slot != -1 && slot <= 10){
-    if (slot == 8){
+    if (slot == 8){ /*TODO: item 8 is never swapped out except if there's nothing there*/
       slot = equip[slot] ? 11 : 8;
     }
+    Item* current = equip[slot];
     equip[slot] = add;
     speed += add->getSpeedBonus();
     carry[itm_idx] = current;
