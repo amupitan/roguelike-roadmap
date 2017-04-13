@@ -529,7 +529,7 @@ int main(int argc, char *argv[]){
         moveCharacter(curr, target, chars);
       }
       /*Pick/Destroy/walk over items*/
-      if (attack == -1 && item_map[target.y][target.x] != -1 && (curr == pcp/* || monster can destroy objects*/)){
+      if (/*attack == -1 && */item_map[target.y][target.x] != -1 && (curr == pcp/* || monster can destroy objects*/)){
         /*TODO: add item to inventory or destroy*/
         if(curr == pcp && pcp->pick(items[item_map[target.y][target.x]])) {
           log_message((std::string("You just picked ") + items[item_map[target.y][target.x]]->getName()).c_str());
