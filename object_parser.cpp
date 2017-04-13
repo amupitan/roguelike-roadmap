@@ -177,7 +177,9 @@ namespace object_parser{
     std::vector<item_stub*> itemstubs;
     const char* colors[] = {"BLACK", "RED", "GREEN", "YELLOW", "BLUE", "MAGENTA", "CYAN", "WHITE"};
     const char* abilities[] = {"SMART", "TELE", "TUNNEL", "ERRATIC"}; //Todo: add other monster types (will need new equation)
-    char symbols[] = {'|', ')', '}', '[', ']', '(', '{', '\\', '=', '\"', '_', '~', '?', '!', '$', '/', ',', '-', '%'};
+    // char symbols[] = {'|', ')', '}', '[', ']', '(', '{', '\\', '=', '\"', '_', '~', '?', '!', '$', '/', ',', '-', '%'};
+    const char* symbol_names[] = {"WEAPON", "OFFHAND", "RANGED", "ARMOR", "HELMET", "CLOAK", "GLOVES", "BOOTS", "RING", "AMULET",
+    "LIGHT", "SCROLL", "BOOK", "FLASK", "GOLD", "AMMUNITION", "FOOD", "WAND", "CONTAINER"};
     std::unordered_map<std::string, char> item_symbols = {
       {"WEAPON", '|'},
       {"OFFHAND", ')'},
@@ -230,16 +232,27 @@ namespace object_parser{
       
     }
     */
-    int parse_dice(std::string dice_str){
+    int parse_dice(const std::string& dice_str){
       dice d(dice_str);
       return d.roll();
     }
     
     int item_number(char symbol){
-      for (unsigned int i = 0; i < sizeof(symbols)/sizeof(symbols[0]); i++)
-        if (symbols[i] == symbol) return i;
+      for (unsigned int i = 0; i < sizeof(symbol_names)/sizeof(symbol_names[0]); i++)
+        if (item_symbols[symbol_names[i]] == symbol) return i;
       return -1;
     }
+    
+    const char* item_type(char symbol){
+      for (unsigned int i = 0; i < sizeof(symbol_names)/sizeof(symbol_names[0]); i++)
+        if (item_symbols[symbol_names[i]] == symbol) return symbol_names[i];
+      return 0;
+    }
+    
+    const char* get_item_type(int index){
+      return symbol_names[index];
+    }
+    
     char symbolize(std::string name){
       auto search = item_symbols.find(name);
       if (search != item_symbols.end()) return search->second;

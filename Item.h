@@ -25,12 +25,13 @@ class Item {
   public:
     Item(int id, int x, int y, const object_parser::private_wrapper::item_stub* stub);
     char getSymbol() const;
-    char getValue() const;
+    int getValue() const;
     int getColor() const;
     const char* getName() const;
     const char* getDesc() const;
     int getId() const;
     const char* getDamage() const;
+    const char* getType() const;
     int getDamageBonus() const;
     int getDefenseBonus() const;
     int getSpeedBonus() const;

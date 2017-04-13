@@ -14,7 +14,7 @@ int Item::getColor() const{
   return color;
 }
 
-char Item::getValue() const{
+int Item::getValue() const{
   return value;
 }
 
@@ -32,6 +32,10 @@ int Item::getId() const{
 
 const char* Item::getDamage() const{
   return damage.to_string();
+}
+
+const char* Item::getType() const{
+  return item_stub::item_type(symbol);
 }
 
 int Item::getDamageBonus() const{

@@ -1,6 +1,7 @@
 #include <string.h>
 #include <ncurses.h>
 #include "display.h"
+#include "object_parser.h"
 
 void ncurses_init(){
   initscr();			/* Start curses mode 		*/
@@ -220,7 +221,10 @@ void item_printer(Item ** items, int size, const char* format, int ascii_offset,
   getmaxyx(stdscr, itm_idx, col);
   for (i = num, itm_idx = 0; i < num + size; i++, itm_idx++){
     std::string str = std::string("%") + format + ") ";
-    if (items[itm_idx]) str += items[itm_idx]->getName();
+    if (items[itm_idx]) {
+      str += std::string("(") + items[itm_idx]->getType() + std::string(") ") + std::string(items[itm_idx]->getName());
+    }else if (strncmp(message, "PC Equipment", strlen(message)) == 0) 
+      str += std::string("(") + object_parser::private_wrapper::get_item_type((itm_idx == 11) ? 8 : itm_idx) + ") ";
     mvprintw(i, (80- 15)/2, str.c_str(), (i - num + ascii_offset));
   }
   refresh();
@@ -257,9 +261,12 @@ bool item_info(Item* item){
   mvaddch(y_offset++, x_offset, item->getSymbol());
   attroff(COLOR_PAIR(item->getColor()));
   x_offset = x_initial;
+  mvprintw(y_offset++, x_offset, (std::string("TYPE: ") + item->getType()).c_str());
   mvprintw(y_offset++, x_offset, (std::string("DAMAGE: ") + item->getDamage()).c_str());
   mvprintw(y_offset++, x_offset, (std::string("DEFENSE: ") + std::to_string(item->getDefenseBonus())).c_str());
   mvprintw(y_offset++, x_offset, (std::string("SPEED: ") + std::to_string(item->getSpeedBonus())).c_str());
+  int x = item->getValue();
+  mvprintw(y_offset++, x_offset, (std::string("VALUE: ") + std::to_string(x)).c_str());
   log_message("Press any key to go back or ESC to go back to the dungeon", 0);
   return (getch() != 27);/*true if ESC is not pressed*/
 }

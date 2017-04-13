@@ -74,8 +74,10 @@ namespace object_parser{
   	stub* getItemStub();
   	bool startsWith(const char* str, const char* start);
   	void delete_objects();
-  	int parse_dice(std::string dice);
+  	int parse_dice(const std::string& dice);
   	int item_number(char symbol);
+  	const char* item_type(char symbol);
+  	const char* get_item_type(int index);
   	char symbolize(std::string name);
   	
   	bool assign_attrbute(std::string& attr, const char* value, int offset);

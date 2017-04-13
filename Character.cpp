@@ -129,9 +129,7 @@ void cprintCharacter(Character* p){
 }
 
 Character* c_construct(uint8_t id, int x, int y){
-  Character* temp = (Character *)malloc(sizeof(Character));
-  *temp = Character(id, x, y);
-  return temp;
+  return new Character(id, x, y);
 }
 
 Character* construct_Character(uint8_t id, int x, int y, int speed, uint8_t type){
