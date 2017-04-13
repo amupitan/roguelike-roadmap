@@ -1,8 +1,8 @@
-#include <iostream>
 #include "Player.h"
+#include <cstring>
 #include "display.h"
 
-Player* Player::player = 0;
+Player* Player::player = 0; /*TODO: not necessary since static objects are set to 0 by default*/
 
 Player* Player::getPlayer(){
   if (!player) //player has not been created
@@ -125,6 +125,14 @@ void Player::freeSight(int height){
     free(sight);
     sight = 0;
   }
+}
+
+void Player::clearSlots(bool inventory, bool equipment){
+  if (inventory) memset(carry, 0, sizeof(carry));
+  if (equipment){
+    speed = 10;
+    memset(equip, 0, sizeof(equip));
+  } 
 }
 
 void Player::deletePlayer(){ //TODO: is it standard to have such a member?

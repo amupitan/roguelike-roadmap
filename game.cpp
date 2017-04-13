@@ -581,14 +581,11 @@ void print_Character(void* character){
 }
 
 void endgame(Dungeon* dungeon, Queue* game_queue, const char* endmessage){
+  Player::deletePlayer();
   free(dungeon->rooms);
   empty_queue(game_queue);
   object_parser::private_wrapper::delete_objects();
-  int row,col;
-  getmaxyx(stdscr, row, col); /*Longindex is passed here but this macro function requires an argument*/
-  move(0, 0);
-  clrtoeol();
-  mvprintw(0/row, col/2 - (strlen(endmessage) + 22)/2, "%s %s",endmessage, "hit any button to quit"); /*variable row is only used to avoid variable-not-used-warning*/
+  log_message("Game ended. Hit any button to quit");
   getch();/*TODO, i don't call refersh but it works*/
   endwin();
   system("clear");
@@ -599,8 +596,8 @@ void endgame(Dungeon* dungeon, Queue* game_queue, const char* endmessage){
 
 void delete_Characters(Character* characters[], int num_characters){
   int i;
-  cfreeSight(characters[0], nRows);
-  Player::deletePlayer();
+  cfreeSight(characters[0], nRows); /*NOTE: PC's sight is freed here*/
+  Player::getPlayer()->clearSlots(true, true);
   for (i = 1; i < num_characters; i++){
     deleteCharacter(characters[i]);
     characters[i] = 0;
@@ -616,11 +613,11 @@ Pair moveCharacter(Character* curr, const Pair& target, int chars[][nCols]){
 }
 //1490045401 --nummon=10
 //1490063401 visible monster
-//1490647963 stairs
-//new stairs 1491369464
+//new stairs 1490647963, 1491369464, 1492046428
 //1491422112 stairs
 //1491429247  stairs
 //1491608195 new stairs
 //1491689514 generates monsters in room 1
 //149176584 an invisible nerf dagger on your way up
 //1491769640 --numitem=300 -nummon=2 test 2 monsters kicking each other out
+//1492046620 fast

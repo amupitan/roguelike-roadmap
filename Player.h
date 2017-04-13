@@ -34,6 +34,7 @@ class Player : public Character{
     virtual bool takeDamage(int damage);
     // void updateSight(int height, int width, char map[][width]);
     void freeSight(int height);
+    void clearSlots(bool inventory, bool equipment);
     static void deletePlayer();
 };
 
