@@ -182,6 +182,7 @@ int main(int argc, char *argv[]){
   queue_init(&evt, char_equals, print_Character);
   
   /*Initialize all Characters (PC and monster)*/
+  int chances[5] = {10/*item spawn*/, 0, 0, 0, 0};
   if (nummon_flag == 0) nummon = rand_gen(dungeon.num_rooms, dungeon.num_rooms*2);
   int l_monsters = nummon;
   Character* characters[nummon + 1];
@@ -487,6 +488,14 @@ int main(int argc, char *argv[]){
                     generic_render(map, chars, characters, item_map, items, start, 0, fullscreen);
                     break;
                   }
+                  /*Spawn item if you're lucky*/
+                  if (probability(chances[ITEM_SPAWN])){
+                    uint32_t spawn_id = addItem(items, item_map, target);
+                    if (item_map[target.y][target.x] != -1){
+                      items[spawn_id]->stack(items[item_map[target.y][target.x]]);
+                    }
+                    item_map[target.y][target.x] = spawn_id;
+                  }
                 }else {
                   log_message(std::string("You got killed by ") + static_cast<Monster*>(curr)->getName(), 23);
                   //TODO: just break?
@@ -620,8 +629,8 @@ Pair moveCharacter(Character* curr, const Pair& target, int chars[][nCols]){
 	return oldPos;
 }
 
-int probability(int chance, int min, int max){
-  return 0;
+bool probability(int chance){
+  return rand_gen(1, 100) <= chance;
 }
 //1490045401 --nummon=10
 //1490063401 visible monster

@@ -6,8 +6,8 @@
 class Item {
   private:
     int id;
-    int x;
-    int y;
+    // int x;
+    // int y;
   	uint8_t type;
   	int color;
   	int hit;
@@ -24,7 +24,7 @@ class Item {
   	Item* next;
   	bool equiped;
   public:
-    Item(int id, int x, int y, const object_parser::private_wrapper::item_stub* stub);
+    Item(int id, const object_parser::private_wrapper::item_stub* stub);
     char getSymbol() const;
     int getValue() const;
     int getColor() const;

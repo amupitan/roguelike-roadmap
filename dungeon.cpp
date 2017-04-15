@@ -543,8 +543,6 @@ Item** addItems(Dungeon* dungeon, Item** items, int item_map[][nCols], int* num_
     int jaja = rand_gen(0, object_parser::getNumItemstubs() - 1);
     items[i] = new Item(
       i,
-      co_ords.x,
-      co_ords.y,
       object_parser::getCompleteItemStub(jaja)
     );
     if (item_map[co_ords.y][co_ords.x] != -1){
@@ -565,8 +563,6 @@ void addItems(Dungeon* dungeon, std::vector<Item*>& items, int item_map[][nCols]
     Pair co_ords = determine_position(dungeon->rooms[rand_gen(0, dungeon->num_rooms - 1)]); /*get position from random room*/
     items.push_back(new Item( //TODO emplace?
       i,
-      co_ords.x,
-      co_ords.y,
       object_parser::getCompleteItemStub(rand_gen(0, object_parser::getNumItemstubs() - 1))
     ));
     if (item_map[co_ords.y][co_ords.x] != -1){
@@ -574,6 +570,15 @@ void addItems(Dungeon* dungeon, std::vector<Item*>& items, int item_map[][nCols]
     }
     item_map[co_ords.y][co_ords.x] = i;
   }
+}
+
+unsigned int addItem(std::vector<Item*>& items, int item_map[][nCols], const Pair& position){
+  unsigned int new_id = items.size();
+  items.push_back(new Item(
+    new_id,
+    object_parser::getCompleteItemStub(rand_gen(0, object_parser::getNumItemstubs() - 1))
+    ));
+    return new_id;
 }
 
 Character* pc_init(Character* pc, Room room){
