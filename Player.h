@@ -35,6 +35,7 @@ class Player : public Character{
     // void updateSight(int height, int width, char map[][width]);
     void freeSight(int height);
     void clearSlots(bool inventory, bool equipment);
+    void unequip_all();
     static void deletePlayer();
 };
 

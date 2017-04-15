@@ -22,6 +22,7 @@ class Item {
   	std::string name;
   	std::string desc;
   	Item* next;
+  	bool equiped;
   public:
     Item(int id, int x, int y, const object_parser::private_wrapper::item_stub* stub);
     char getSymbol() const;
@@ -30,12 +31,16 @@ class Item {
     const char* getName() const;
     const char* getDesc() const;
     int getId() const;
-    const char* getDamage() const;
+    std::string getDamage() const;
     const char* getType() const;
     int getDamageBonus() const;
     int getDefenseBonus() const;
     int getSpeedBonus() const;
+    bool isEquiped() const;
+    void equip();
+    void unequip();
     void stack(Item* next);
+    void resetId(int new_id);
     void unstack(int& nextId);/*gets picked up by a charcter, unstacks from other items if stacked*/
 };
 #endif

@@ -61,6 +61,7 @@ bool Player::pick(Item* item){
   for (int i = 0; i < 10; i++){
       if (!carry[i]){
         carry[i] = item;
+        carry[i]->equip();
         return true;
       }
   }
@@ -69,6 +70,7 @@ bool Player::pick(Item* item){
 
 int Player::drop(int itm_idx){
   if (!carry[itm_idx]) return -1; //NOTE: -1 not 0 swap maybe?
+  carry[itm_idx]->unequip();
   int itm_id = carry[itm_idx]->getId();
   carry[itm_idx] = 0;
   return itm_id;
@@ -133,6 +135,17 @@ void Player::clearSlots(bool inventory, bool equipment){
     speed = 10;
     memset(equip, 0, sizeof(equip));
   } 
+}
+
+void Player::unequip_all(){
+  for (auto item : carry){
+    if (item)
+      item->unequip();
+  }
+  for (auto item : equip){
+    if (item)
+      item->unequip();
+  }
 }
 
 void Player::deletePlayer(){ //TODO: is it standard to have such a member?

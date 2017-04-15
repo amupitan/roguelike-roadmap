@@ -103,8 +103,6 @@ bool Character::operator==(const Character& rhs) const{
 	return id < rhs.id;
 }
 
-
-
 void Character::updatePace(){
 	pace += 1000/speed;
 }

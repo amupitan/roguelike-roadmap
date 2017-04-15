@@ -7,6 +7,10 @@
 # ifdef __cplusplus
 void log_message(std::string message, int row); //TODO: remove extern
 void log_message(std::string message, int row, bool left);
+void print_inventory(std::vector<Item*>& items);
+void display_equipment(std::vector<Item*>& items);
+int generic_prompt(std::vector<Item*>& items, const char* prompt, int offset, int max, void (*printer)(std::vector<Item*>& items));
+void item_printer(std::vector<Item*>& items, int size, const char* format, int ascii_offset, const char* message);
 extern "C" {
 # endif
 

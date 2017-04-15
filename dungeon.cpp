@@ -298,6 +298,36 @@ void render_partial(Cell map[][nCols], int chars[][nCols], Character* monsts[], 
 }
 
 void render_partial(Cell map[][nCols], int chars[][nCols], Character* monsts[], int item_map[][nCols], Item** items, Pair start, Pair* newPos){
+  int i = 0, j = 0; //legacy
+  start.x = (start.x < 0) ? 0 : start.x;
+  start.y = (start.y < 0) ? 0 : start.y;
+  int endRow = start.y + 21, endCol = start.x + 80;
+  if (endCol > nCols - 1){
+    start.x = nCols - 1 - 80;
+    endCol = nCols - 1;
+  }
+  if (endRow > nRows - 1){
+    start.y = nRows - 1 - 21;
+    endRow = nRows - 1;
+  }
+  move(1, 0);
+  for (i = start.y; i < endRow; i++){
+		for (j = start.x; j < endCol; j++){
+		  if (i == 0 || j == 0 || i == (nRows - 1) || j == (nCols - 1)) addch(' ');
+		  else{
+  		  int temp = chars[i][j];
+  		  if (temp != -1) printmon(monsts[chars[i][j]]);
+  		  else if (item_map[i][j] != -1) printmon(items[item_map[i][j]]);
+  		  else addch(map[i][j].value);
+		  }
+		}
+		addch('\n');
+	}
+	if(newPos) *newPos = start;
+	refresh();
+}
+
+void render_partial(Cell map[][nCols], int chars[][nCols], Character* monsts[], int item_map[][nCols], std::vector<Item*>& items, Pair start, Pair* newPos){
   int i = 0, j = 0;
   start.x = (start.x < 0) ? 0 : start.x;
   start.y = (start.y < 0) ? 0 : start.y;
@@ -359,13 +389,20 @@ void pc_render_partial(Cell map[][nCols], int chars[][nCols], Character* monsts[
 }
 
 void generic_render(Cell map[][nCols], int chars[][nCols], Character* monsts[], int item_map[][nCols], Item** items, Pair start, Pair* newPos, bool complete){
+  if (complete) //legacy
+    render_partial(map, chars, monsts, item_map, items, start, newPos);
+  else
+    render(chars, monsts, item_map, items, start, newPos);
+}
+
+void generic_render(Cell map[][nCols], int chars[][nCols], Character* monsts[], int item_map[][nCols], std::vector<Item*>&  items, Pair start, Pair* newPos, bool complete){
   if (complete)
     render_partial(map, chars, monsts, item_map, items, start, newPos);
   else
     render(chars, monsts, item_map, items, start, newPos);
 }
 
-void render(int chars[][nCols], Character* monsts[], int item_map[][nCols], Item** items, Pair start, Pair* newPos){
+void render(int chars[][nCols], Character* monsts[], int item_map[][nCols], Item** items, Pair start, Pair* newPos){ //legacy
   int** sight = csetSight(monsts[0], nRows, nCols); /*TODO: check value of sight*/
   int i = 0, j = 0;
   start.x = (start.x < 0) ? 0 : start.x;
@@ -402,6 +439,45 @@ void render(int chars[][nCols], Character* monsts[], int item_map[][nCols], Item
 	if(newPos) *newPos = start;
 	refresh();
 }
+
+void render(int chars[][nCols], Character* monsts[], int item_map[][nCols], std::vector<Item*>& items, Pair start, Pair* newPos){
+  int** sight = csetSight(monsts[0], nRows, nCols); /*TODO: check value of sight*/
+  int i = 0, j = 0;
+  start.x = (start.x < 0) ? 0 : start.x;
+  start.y = (start.y < 0) ? 0 : start.y;
+  int endRow = start.y + 21, endCol = start.x + 80;
+  if (endCol > nCols - 1){
+    start.x = nCols - 1 - 80;
+    endCol = nCols - 1;
+  }
+  if (endRow > nRows - 1){
+    start.y = nRows - 1 - 21;
+    endRow = nRows - 1;
+  }
+  move(1, 0);
+  for (i = start.y; i < endRow; i++){
+		for (j = start.x; j < endCol; j++){
+		  if (i == 0 || j == 0 || i == (nRows - 1) || j == (nCols - 1)) addch(' ');
+		  else if (sight[i][j] != 0){ /*PC can see/has seen this spot*/
+  		  int temp = chars[i][j];
+  		  int in_range = (j <= cgetX(monsts[0]) + 5) && (j >= cgetX(monsts[0]) - 5) && (i <= cgetY(monsts[0]) + 5) && (i >= cgetY(monsts[0]) - 5);
+  		  if ((temp != -1) && (in_range)) printmon(monsts[chars[i][j]]); /*There is a monster on the terrain and the monster is within range*/
+  		  else {
+  		    //TODO: check for item
+  		    if (sight[i][j] < 0){ //TODO: use a function that checks
+  		    int fog_item = sight[i][j] * -1;
+  		      printmon(items[fog_item]);
+  		    }else
+  		      addch(sight[i][j]);
+  		  }
+		  }else addch(' ');
+		}
+		addch('\n');
+	}
+	if(newPos) *newPos = start;
+	refresh();
+}
+
 
 template <class T>
 void printmon(T* const object){
@@ -458,7 +534,7 @@ void addCharcters(Dungeon* dungeon, Queue* evt, int nummon, Character* character
   // characters[0].speed = 0xF; //not too sure why i do this, i know it blocks pc from getting assigned a value execpt this value is hanged by new dungeon generation
 }
 
-Item** addItems(Dungeon* dungeon, Item** items, int item_map[][nCols], int* num_items){
+Item** addItems(Dungeon* dungeon, Item** items, int item_map[][nCols], int* num_items){ //legacy
   memset(item_map, -1, sizeof(int)*nRows*nCols);
   *num_items = (*num_items < 0) ? *num_items * -1 : rand_gen(20, dungeon->num_rooms * 2);
   items = (Item**)malloc(sizeof(Item*) * *num_items);
@@ -477,6 +553,27 @@ Item** addItems(Dungeon* dungeon, Item** items, int item_map[][nCols], int* num_
     item_map[co_ords.y][co_ords.x] = i;
   }
   return items;
+}
+
+void addItems(Dungeon* dungeon, std::vector<Item*>& items, int item_map[][nCols], int& num_items){
+  memset(item_map, -1, sizeof(int)*nRows*nCols);
+  num_items = (num_items < 0) ? num_items * -1 : rand_gen(20, dungeon->num_rooms * 2);
+  // items = (Item**)malloc(sizeof(Item*) * num_items);
+  unsigned int prev_size = items.size();
+  for (std::vector<int>::size_type i = prev_size; i < prev_size + (unsigned int)num_items; i++){
+  // for (int i = 0; i < num_items; i++){
+    Pair co_ords = determine_position(dungeon->rooms[rand_gen(0, dungeon->num_rooms - 1)]); /*get position from random room*/
+    items.push_back(new Item( //TODO emplace?
+      i,
+      co_ords.x,
+      co_ords.y,
+      object_parser::getCompleteItemStub(rand_gen(0, object_parser::getNumItemstubs() - 1))
+    ));
+    if (item_map[co_ords.y][co_ords.x] != -1){
+      items[i]->stack(items[item_map[co_ords.y][co_ords.x]]);
+    }
+    item_map[co_ords.y][co_ords.x] = i;
+  }
 }
 
 Character* pc_init(Character* pc, Room room){
@@ -607,7 +704,7 @@ void delete_dungeon(Dungeon* dungeon, Queue* evt, Cell map[][nCols]){
 	
 }
 
-void* delete_items(Item** items, int& num_items){
+void* delete_items(Item** items, int& num_items){ //legacy
   if (!items) return 0;
   for (int i = 0; i < num_items; i++){
     delete items[i];
@@ -616,4 +713,24 @@ void* delete_items(Item** items, int& num_items){
   free(items);
   items = 0;
   return items;
+}
+
+void remove_items(std::vector<Item*>& items){
+  // if (!items) return 0;
+    /*for (std::vector<int>::size_type i = 0; i < items.size(); i++){
+      if (!items[i]->equiped()){ 
+        delete items[i];
+        items.erase(items.begin() + i);
+      }
+    }*/
+    std::vector<int>::size_type i = 0;
+    while(i != items.size()){
+      if (!items[i]->isEquiped()){
+        delete items[i];
+        items.erase(items.begin() + i);
+      }else i++;
+    }
+    for (std::vector<int>::size_type j = 0; j < items.size(); j++){
+      items[j]->resetId(j);
+    }
 }

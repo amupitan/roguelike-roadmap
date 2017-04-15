@@ -13,12 +13,6 @@
 #define nRows 105
 #define nCols 160
 
-# ifdef __cplusplus
-template <class T> void printmon(T* object);//TODO: remove C Linkage so this function can join the rest of them
-void render_partial(Cell map[][nCols], int chars[][nCols], Character* monsts[], Pair start, Pair* newPos);
-extern "C" {
-# endif
-
 typedef struct Room{
   int x;
   int y;
@@ -30,6 +24,20 @@ typedef struct Dungeon{
   Room* rooms;
   int num_rooms;
 }Dungeon;
+
+# ifdef __cplusplus
+template <class T> void printmon(T* object);//TODO: remove C Linkage so this function can join the rest of them
+void render_partial(Cell map[][nCols], int chars[][nCols], Character* monsts[], Pair start, Pair* newPos);
+/*new stuff*/
+void remove_items(std::vector<Item*>& items);
+void addItems(Dungeon* dungeon, std::vector<Item*>&  items, int item_map[][nCols], int& num_items);
+void render(int chars[][nCols], Character* monsts[], int item_map[][nCols], std::vector<Item*>& items, Pair start, Pair* newPos);
+void generic_render(Cell map[][nCols], int chars[][nCols], Character* monsts[], int item_map[][nCols], std::vector<Item*>&  items, Pair start, Pair* newPos, bool complete);
+void render_partial(Cell map[][nCols], int chars[][nCols], Character* monsts[], int item_map[][nCols], std::vector<Item*>& items, Pair start, Pair* newPos);
+extern "C" {
+# endif
+
+
 
 int create_room(Cell map[][nCols], int x, int y, uint8_t* width, uint8_t* height);
 int rand_gen(int min, int max);

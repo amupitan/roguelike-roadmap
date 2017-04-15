@@ -188,7 +188,7 @@ int main(int argc, char *argv[]){
   Pair last_seen[nummon];
   memset(last_seen, - 1, sizeof(Pair)*nummon);
 
-  /*Dungeon monster setup*/
+  /*Dungeon monsters setup*/
   unsigned int pace[nummon+1];
   addCharcters(&dungeon, &evt, nummon, characters, chars, pace);
   /*Change PC position to user's choice if available*/
@@ -203,8 +203,8 @@ int main(int argc, char *argv[]){
   object_parser::start_parser(strcat(strcpy(load_file, getenv("HOME")), "/.rlg327/object_desc.txt"));
   object_parser::complete_parse();
   int item_map[nRows][nCols];
-  Item** items = 0;
-  items = addItems(&dungeon, items, item_map, &numitem);
+  std::vector<Item*> items;
+  addItems(&dungeon, items, item_map, numitem);
 
   add_stairs(&dungeon, map);
   char recalculate = 1;
@@ -232,8 +232,10 @@ int main(int argc, char *argv[]){
       do{/*handle input*/
         target = *(Pair *)getInputC(&target);
         if (target.x == -1 && target.y == -1){
-          items = (Item**)delete_items(items, numitem);
+          // items = (Item**)delete_items(items, numitem);
+          pcp->unequip_all();
           delete_Characters(characters, nummon + 1);
+          remove_items(items);
           endgame(&dungeon, &evt, "Game ended");
           return 0;
         }
@@ -261,14 +263,16 @@ int main(int argc, char *argv[]){
           }
           // csetType(pcp, 0);
           l_monsters = nummon;
-          items = (Item**)delete_items(items, numitem);
+          // items = (Item**)delete_items(items, numitem);
+          remove_items(items);
           delete_dungeon(&dungeon, &evt, map);
           delete_Characters(characters, nummon + 1);
           
           create_dungeon(&dungeon, map, room_cells);
           add_stairs(&dungeon, map);
           addCharcters(&dungeon, &evt, nummon, characters, chars, pace);
-          items = addItems(&dungeon, items, item_map, &numitem); //TODO
+          // items = addItems(&dungeon, items, item_map, &numitem); //TODO
+          addItems(&dungeon, items, item_map, numitem);
           recalculate = 1;
 
           /*START get rid of*/
@@ -489,8 +493,10 @@ int main(int argc, char *argv[]){
                   moveCharacter(curr, target, chars);
                   Pair start = {curr->getX() - 40, curr->getY() - 10};
                   generic_render(map, chars, characters, item_map, items, start, 0, fullscreen);
-                  items = (Item**)delete_items(items, numitem);
+                  // items = (Item**)delete_items(items, numitem);
+                  pcp->unequip_all();
                   delete_Characters(characters, nummon + 1);
+                  remove_items(items);
                   endgame(&dungeon, &evt, "The PC is dead :(");
                   return 0;
                 }
@@ -548,7 +554,9 @@ int main(int argc, char *argv[]){
   /*Print win message*/
   if (nummon && !l_monsters) {
     delete_Characters(characters, nummon + 1);
-    items = (Item**)delete_items(items, numitem);
+    // items = (Item**)delete_items(items, numitem);
+    pcp->unequip_all();
+    remove_items(items);
     endgame(&dungeon, &evt, "PC killed em all");
     return 0;
   }
@@ -597,7 +605,7 @@ void endgame(Dungeon* dungeon, Queue* game_queue, const char* endmessage){
 void delete_Characters(Character* characters[], int num_characters){
   int i;
   cfreeSight(characters[0], nRows); /*NOTE: PC's sight is freed here*/
-  Player::getPlayer()->clearSlots(true, true);
+  // Player::getPlayer()->clearSlots(true, true);
   for (i = 1; i < num_characters; i++){
     deleteCharacter(characters[i]);
     characters[i] = 0;
@@ -610,6 +618,10 @@ Pair moveCharacter(Character* curr, const Pair& target, int chars[][nCols]){
 	curr->setPos(&target.x, &target.y);
 	chars[curr->getY()][curr->getX()] = curr->getId();
 	return oldPos;
+}
+
+int probability(int chance, int min, int max){
+  return 0;
 }
 //1490045401 --nummon=10
 //1490063401 visible monster

@@ -60,8 +60,9 @@ namespace object_parser{
   	    dice();
   	    dice(const char* probabbility);
   	    dice(std::string probability);
+  	    dice(int base, int times, int sides);
   	    int roll() const;
-  	    const char* to_string() const;
+  	    std::string to_string() const;
   	};
   	/*global varaibles and helper functions*/
   	extern std::vector<stub*> objects;
@@ -72,13 +73,15 @@ namespace object_parser{
   	extern stub* (*getStub)();
   	stub* getMonsterStub();
   	stub* getItemStub();
-  	bool startsWith(const char* str, const char* start);
   	void delete_objects();
   	int parse_dice(const std::string& dice);
   	int item_number(char symbol);
   	const char* item_type(char symbol);
   	const char* get_item_type(int index);
   	char symbolize(std::string name);
+  	
+  	/*static helpers*/
+  // 	static bool startsWith(const char* str, const char* start);
   	
   	bool assign_attrbute(std::string& attr, const char* value, int offset);
   // 	monster_stub* getMonsterStubs(monster_stub* monsters);

@@ -8,6 +8,11 @@
 
 namespace object_parser{
   namespace private_wrapper{
+    /*helper functions*/
+    static bool startsWith(const char* str, const char* start){
+      size_t str_len = strlen(str), start_len = strlen(start);
+      return str_len < start_len ? false : strncmp(str, start, start_len) == 0;
+    }
     /*class methods*/
     bool monster_stub::complete(){
       return (name != "") && (desc != "") && (color != "") && (speed != "") && (abilities != "") && (hp != "") && (damage != "");
@@ -128,19 +133,9 @@ namespace object_parser{
     bool item_stub::complete(){
       return (name != "") && (desc != "") && (color != "") && (speed != "") && (special != "") && (type != "") && (damage != "") && (dodge != "") && (defense != "") && (weight != "") && (value != "") && (hit != "");
     }
-    dice::dice() : base(0), times(0), sides(0){}
-    dice::dice(const char* probability) : dice(){
-      int pos;
-      std::string dice_str = probability;
-      if ((pos = dice_str.find("+") ) != -1){
-        int pos_d;
-        if ((pos_d = dice_str.find("d")) != -1){
-          base = atoi(dice_str.substr(0, pos).c_str());
-          times = atoi(dice_str.substr(pos + 1, pos_d).c_str());
-          sides = atoi(dice_str.substr(pos_d + 1, dice_str.length()).c_str());
-        }
-      }
-    }
+    dice::dice() : base(0), times(0), sides(1){}
+    dice::dice(int base, int times, int sides) : base(base), times(times), sides(sides){}
+    dice::dice(const char* probability) : dice(std::string(probability)){}
     dice::dice(std::string dice_str) : dice(){
       int pos;
       if ((pos = dice_str.find("+") ) != -1){
@@ -159,9 +154,9 @@ namespace object_parser{
       return first;
     }
     
-    const char* dice::to_string() const{
+    std::string dice::to_string() const{
       std::string str = (std::to_string(base) + "+" + std::to_string(times) + "d" + std::to_string(sides)).c_str();
-      return str.c_str();
+      return str;
     }
     
     /*member variables*/
@@ -202,11 +197,7 @@ namespace object_parser{
       {"CONTAINER", '%'}
       // {"STACK", '&'}
     };
-    /*helper functions*/
-    bool startsWith(const char* str, const char* start){
-      size_t str_len = strlen(str), start_len = strlen(start);
-      return str_len < start_len ? false : strncmp(str, start, start_len) == 0;
-    }
+
     std::ostream& operator<< (std::ostream& stream, const monster_stub& monster){
       return std::cout << monster.name << "\n"
                 << monster.desc << monster.symb << "\n"
@@ -215,7 +206,7 @@ namespace object_parser{
                 << monster.abilities << "\n"
                 << monster.hp << "\n"
                 << monster.damage << std::endl;
-    }
+    } //TODO remove
     bool assign_attrbute(std::string& attr, const char* value, int offset){
           attr = value + offset + 1; //+1 for the space
           return true;

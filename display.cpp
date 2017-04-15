@@ -214,7 +214,7 @@ void log_message(const char* message){
   log_message(message, 0);
 }
 
-void item_printer(Item ** items, int size, const char* format, int ascii_offset, const char* message){
+void item_printer(Item ** items, int size, const char* format, int ascii_offset, const char* message){ //legacy
   clear();
   int i, itm_idx, col, num = (22 - 10)/2;
   log_message(message);
@@ -295,4 +295,45 @@ void log_message(std::string message, int row, bool left){
   // int start  = left ? 0 : col - message.length();
   mvprintw(row + 0/max_row, left ? 0 : col - message.length(), message.c_str()); //max_row is only used because getmaxyx requires all three variables
   /*TODO: call refresh()?*/
+}
+
+/*Conversion*/
+void print_inventory(std::vector<Item*>& items){
+  item_printer(items, 10, "d", 0, "PC Inventory");
+}
+void display_equipment(std::vector<Item*>& items){
+  item_printer(items, 12, "c", 97, "PC Equipment");
+}
+int generic_prompt(std::vector<Item*>& items, const char* prompt, int offset, int max, void (*printer)(std::vector<Item*>& items)){
+  printer(items);
+  log_message(std::string("PC Inventory: type the index of the item to be ") + prompt + " or press ESC to go back", 0);
+  do{
+    int select = getch();
+    if (select == 27) break; //ESC
+    select -= offset;
+    if (select >=0 && select < max && items[select]){
+      log_message((std::to_string(select) + std::string(") ") + std::string(items[select]->getName()) + std::string(" has been ") + prompt).c_str(), 0);
+      return select;
+    }else{
+      std::string pick;
+      pick.push_back(select + offset);
+      log_message(pick + std::string(" is invalid. Select a valid number or press ESC to quit"), 0);
+    }
+  }while(1);
+  return -1;
+}
+void item_printer(std::vector<Item*>& items, int size, const char* format, int ascii_offset, const char* message){ //legacy
+  clear();
+  int i, itm_idx, col, num = (22 - 10)/2;
+  log_message(message);
+  getmaxyx(stdscr, itm_idx, col);
+  for (i = num, itm_idx = 0; i < num + size; i++, itm_idx++){
+    std::string str = std::string("%") + format + ") ";
+    if (items[itm_idx]) {
+      str += std::string("(") + items[itm_idx]->getType() + std::string(") ") + std::string(items[itm_idx]->getName());
+    }else if (strncmp(message, "PC Equipment", strlen(message)) == 0) 
+      str += std::string("(") + object_parser::private_wrapper::get_item_type((itm_idx == 11) ? 8 : itm_idx) + ") ";
+    mvprintw(i, (80- 15)/2, str.c_str(), (i - num + ascii_offset));
+  }
+  refresh();
 }
