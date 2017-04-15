@@ -10,7 +10,7 @@ Player* Player::getPlayer(){
   return player;
 }
 
-Player::Player() : sight(0), carry(), equip() {
+Player::Player() : sight(0), carry(), equip(), weight(0), max_weight(75) {
   damage = "0+1d4";
   hp = 500;
 }
@@ -18,6 +18,14 @@ Player::Player() : sight(0), carry(), equip() {
 Pair Player::getPos() const{
   Pair position = {this->getX(), this->getY()};
   return position;
+}
+
+int Player::getWeight() const{
+  return weight;
+}
+
+int Player::getMaxWeight() const{
+  return max_weight;
 }
 
 Player::Player(Player const& player_copy){}//TODO why?
@@ -60,8 +68,10 @@ Item ** Player::equipment(){
 bool Player::pick(Item* item){
   for (int i = 0; i < 10; i++){
       if (!carry[i]){
+        if (item->getWeight() + weight > max_weight) break;
         carry[i] = item;
         carry[i]->equip();
+        weight += item->getWeight();
         return true;
       }
   }
@@ -72,11 +82,16 @@ int Player::drop(int itm_idx){
   if (!carry[itm_idx]) return -1; //NOTE: -1 not 0 swap maybe?
   carry[itm_idx]->unequip();
   int itm_id = carry[itm_idx]->getId();
+  weight -= carry[itm_idx]->getWeight();
   carry[itm_idx] = 0;
   return itm_id;
 }
 
 void Player::expunge(int itm_idx){
+  if (carry[itm_idx]){
+    carry[itm_idx]->unequip();
+    weight -= carry[itm_idx]->getWeight();
+  }
   carry[itm_idx] = 0;
 }
 
@@ -97,6 +112,7 @@ void Player::wear(int itm_idx){
 
 bool Player::take_off(int index){
   if (pick(equip[index])){
+    weight -= equip[index]->getWeight();
     speed -= equip[index]->getSpeedBonus();
     equip[index] = 0;
     return true;

@@ -37,6 +37,7 @@ class Item {
     int getDefenseBonus() const;
     int getSpeedBonus() const;
     bool isEquiped() const;
+    int getWeight() const;
     void equip();
     void unequip();
     void stack(Item* next);

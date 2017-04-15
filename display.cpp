@@ -265,6 +265,7 @@ bool item_info(Item* item){
   mvprintw(y_offset++, x_offset, (std::string("DAMAGE: ") + item->getDamage()).c_str());
   mvprintw(y_offset++, x_offset, (std::string("DEFENSE: ") + std::to_string(item->getDefenseBonus())).c_str());
   mvprintw(y_offset++, x_offset, (std::string("SPEED: ") + std::to_string(item->getSpeedBonus())).c_str());
+  mvprintw(y_offset++, x_offset, (std::string("WEIGHT: ") + std::to_string(item->getWeight())).c_str());
   int x = item->getValue();
   mvprintw(y_offset++, x_offset, (std::string("VALUE: ") + std::to_string(x)).c_str());
   log_message("Press any key to go back or ESC to go back to the dungeon", 0);
@@ -285,6 +286,7 @@ void display_stats(){
     if (items[i]) def += items[i]->getDefenseBonus();
   }
   log_message(std::string("Defense: ") + std::to_string(def), y_offset++);
+  log_message(std::string("Weight: ") + std::to_string(Player::getPlayer()->getWeight()) + "/" + std::to_string(Player::getPlayer()->getMaxWeight()), y_offset++);
 }
 
 void log_message(std::string message, int row, bool left){

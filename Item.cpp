@@ -54,6 +54,10 @@ bool Item::isEquiped() const{
   return equiped;
 }
 
+int Item::getWeight() const{
+  return weight;
+}
+
 void Item::equip(){
   equiped = true;
 }

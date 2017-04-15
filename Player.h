@@ -19,9 +19,13 @@ class Player : public Character{
     int** sight;
     Item* carry[10];
     Item* equip[12];
+    int weight;
+    int max_weight;
   public:
     static Player* getPlayer();
     Pair getPos() const;
+    int getWeight() const;
+    int getMaxWeight() const;
     Item ** inventory();
     Item ** equipment();
     int** setSight(int height, int width);
