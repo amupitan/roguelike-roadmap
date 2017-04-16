@@ -122,16 +122,21 @@ bool Player::take_off(int index){
 
 int Player::attack() const{
   int dam = Character::attack();
+  double hit_bonus = 0;
   for (unsigned int i = 0; i < sizeof(equip)/sizeof(equip[0]); i++){
-    if (equip[i]) dam += equip[i]->getDamageBonus();
+    if (equip[i]) {
+      dam += equip[i]->getDamageBonus();
+      hit_bonus += equip[i]->getHit();
+    }
   }
-  return dam;
+  return dam * ((100 + hit_bonus)/100.0);
 }
 
 bool Player::takeDamage(int damage_in){
-  int temp = damage_in;
-  for (unsigned int i = 0; i < sizeof(equip)/sizeof(equip[0]); i++, temp += 0){
-    if (equip[i]) damage_in -= equip[i]->getDefenseBonus();
+  for (unsigned int i = 0; i < sizeof(equip)/sizeof(equip[0]); i++){
+    if (equip[i]) {
+      damage_in -= (equip[i]->getDefenseBonus() * ((equip[i]->getDodge() + 100.0)/100.0));
+    }
   }
   return (damage_in < 0) ? false : Character::takeDamage(damage_in);
 }

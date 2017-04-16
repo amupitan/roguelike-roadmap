@@ -265,6 +265,8 @@ bool item_info(Item* item){
   mvprintw(y_offset++, x_offset, (std::string("DAMAGE: ") + item->getDamage()).c_str());
   mvprintw(y_offset++, x_offset, (std::string("DEFENSE: ") + std::to_string(item->getDefenseBonus())).c_str());
   mvprintw(y_offset++, x_offset, (std::string("SPEED: ") + std::to_string(item->getSpeedBonus())).c_str());
+  mvprintw(y_offset++, x_offset, (std::string("HIT: ") + std::to_string(item->getHit())).c_str());
+  mvprintw(y_offset++, x_offset, (std::string("DODGE: ") + std::to_string(item->getDodge())).c_str());
   mvprintw(y_offset++, x_offset, (std::string("WEIGHT: ") + std::to_string(item->getWeight())).c_str());
   int x = item->getValue();
   mvprintw(y_offset++, x_offset, (std::string("VALUE: ") + std::to_string(x)).c_str());

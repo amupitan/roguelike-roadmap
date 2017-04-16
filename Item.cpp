@@ -58,6 +58,14 @@ int Item::getWeight() const{
   return weight;
 }
 
+int Item::getDodge() const{
+  return dodge;
+}
+
+int Item::getHit() const{
+  return hit;
+}
+
 void Item::equip(){
   equiped = true;
 }

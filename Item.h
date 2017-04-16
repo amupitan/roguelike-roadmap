@@ -38,6 +38,8 @@ class Item {
     int getSpeedBonus() const;
     bool isEquiped() const;
     int getWeight() const;
+    int getDodge() const;
+    int getHit() const;
     void equip();
     void unequip();
     void stack(Item* next);
