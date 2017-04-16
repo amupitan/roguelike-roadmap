@@ -348,7 +348,14 @@ void render_partial(Cell map[][nCols], int chars[][nCols], Character* monsts[], 
   		  int temp = chars[i][j];
   		  if (temp != -1) printmon(monsts[chars[i][j]]);
   		  else if (item_map[i][j] != -1) printmon(items[item_map[i][j]]);
-  		  else addch(map[i][j].value);
+  		  else {
+  		    if (map[i][j].value == '$'){
+  		      attron(COLOR_PAIR(COLOR_GREEN));
+            addch(map[i][j].value);
+            attroff(COLOR_PAIR(COLOR_GREEN));
+  		    }else
+  		      addch(map[i][j].value);
+  		  }
 		  }
 		}
 		addch('\n');
@@ -692,6 +699,19 @@ void add_stairs(Dungeon* dungeon, Cell map[][nCols]){
 	}
 }
 
+void add_shops(Dungeon* dungeon, Cell map[][nCols]){
+  int i;
+	int n_stairs = rand_gen(2,4);
+	for(i = 0; i < n_stairs; i++){
+	  /*create upstair in random room then downstair in the next room */
+	  int room_no = rand_gen(0, dungeon->num_rooms - 2);
+	  Pair pos = determine_position(dungeon->rooms[room_no]);
+	  map[pos.y][pos.x].value = '$';
+	  pos = determine_position(dungeon->rooms[room_no + 1]);
+	  map[pos.y][pos.x].value = '$';
+	}
+}
+
 void delete_dungeon(Dungeon* dungeon, Queue* evt, Cell map[][nCols]){
   int i,j;
   /*free dungeon rooms*/
@@ -738,4 +758,10 @@ void remove_items(std::vector<Item*>& items){
     for (std::vector<int>::size_type j = 0; j < items.size(); j++){
       items[j]->resetId(j);
     }
+}
+
+void clearShop(std::vector<Item*>& wShop){
+  for (auto item_p : wShop)
+    delete item_p;
+  wShop.clear();
 }

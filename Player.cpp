@@ -10,7 +10,7 @@ Player* Player::getPlayer(){
   return player;
 }
 
-Player::Player() : sight(0), carry(), equip(), weight(0), max_weight(75) {
+Player::Player() : sight(0), carry(), equip(), weight(0), max_weight(75), pesos(1000000) {
   damage = "0+1d4";
   hp = 500;
 }
@@ -28,6 +28,10 @@ int Player::getMaxWeight() const{
   return max_weight;
 }
 
+int Player::getPesos() const{
+  return pesos;
+}
+
 Player::Player(Player const& player_copy){}//TODO why?
 
 int** Player::setSight(int height, int width){
@@ -40,6 +44,17 @@ int** Player::setSight(int height, int width){
       *(sight + i) = (int* )malloc(sizeof(int) * width);
   }
   return sight;
+}
+
+Item* Player::buy(int idx, Item* item){
+  Item* new_item = new Item(idx, *item);
+  if (pick(new_item)){
+    pesos -= item->getValue();
+    new_item->equip();
+    return new_item;
+  }
+  delete new_item;
+  return 0;
 }
 
 // void Character::updateSight(int height, int width, char map[][width]){

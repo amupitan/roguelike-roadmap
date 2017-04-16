@@ -182,7 +182,7 @@ int main(int argc, char *argv[]){
   queue_init(&evt, char_equals, print_Character);
   
   /*Initialize all Characters (PC and monster)*/
-  int chances[5] = {10/*item spawn*/, 0, 0, 0, 0};
+  int chances[5] = {10/*item spawn*/, 80/*item revalue*/, 0, 0, 0};
   if (nummon_flag == 0) nummon = rand_gen(dungeon.num_rooms, dungeon.num_rooms*2);
   int l_monsters = nummon;
   Character* characters[nummon + 1];
@@ -208,6 +208,7 @@ int main(int argc, char *argv[]){
   addItems(&dungeon, items, item_map, numitem);
 
   add_stairs(&dungeon, map);
+  add_shops(&dungeon, map);
   char recalculate = 1;
   // Character* pcp = characters[0];
   Player* pcp = static_cast<Player*>(characters[0]);
@@ -237,6 +238,7 @@ int main(int argc, char *argv[]){
           pcp->unequip_all();
           delete_Characters(characters, nummon + 1);
           remove_items(items);
+          // clearShop(w);
           endgame(&dungeon, &evt, "Game ended");
           return 0;
         }
@@ -271,6 +273,7 @@ int main(int argc, char *argv[]){
           
           create_dungeon(&dungeon, map, room_cells);
           add_stairs(&dungeon, map);
+          add_shops(&dungeon, map);
           addCharcters(&dungeon, &evt, nummon, characters, chars, pace);
           // items = addItems(&dungeon, items, item_map, &numitem); //TODO
           addItems(&dungeon, items, item_map, numitem);
@@ -371,10 +374,52 @@ int main(int argc, char *argv[]){
           do{
             int display = generic_prompt(pcp->inventory(), "displayed", 48, 10, print_inventory);
             if (display >= 0){
-              describing = item_info(pcp->inventory()[display]);
+              describing = (item_info(pcp->inventory()[display], "Press any key to go back or ESC to go back to the dungeon") != 27);
             }else break;
           }while(describing);
           
+          log_message("Welcome back to the dungeon!");
+          generic_render(map, chars, characters, item_map, items, start, 0, fullscreen);
+        
+        }else if (target.x == -17 && target.y == -17){
+          /*visit merchant*/
+          target = pcp->getPos();
+          if (map[pcp->getY()][pcp->getX()].value != '$') continue;
+          std::vector<Item*> wShop;
+          wShop.push_back(new Item(
+            items.size(),
+            object_parser::getCompleteItemStub(rand_gen(0, object_parser::getNumItemstubs() - 1))
+            ));
+          
+          // bool describing = true;
+          int response = 0;
+          do{
+            int item_choice = generic_prompt(wShop, "bought", 48, wShop.size(), print_store);
+            if (item_choice >= 0){
+              log_message("Press 'y' to buy the item, ESC to go to the dungeon or any other button to quit");
+              response = item_info(wShop[item_choice], "Press y to accept and buy, ESC to go to the dungeon or any other key to go back");
+              if (response == 'y'){
+                /*process transaction and break*/
+                if (pcp->getPesos() >= wShop[item_choice]->getValue()){
+                  Item* new_item = pcp->buy(items.size(), wShop[item_choice]);
+                  if (new_item){
+                    items.push_back(new_item);
+                    log_message(std::string("You just bought ") + new_item->getName() + " for $" + std::to_string(new_item->getValue()) + ", You have $" + std::to_string(pcp->getPesos()) + " left. Hit any key to go back", 0);
+                    new_item->revalue(chances[ITEM_REVALUE]);
+                    getch();
+                    break;
+                  }else {
+                    log_message(std::string("You dont't have space resources to buy ") + wShop[item_choice]->getName() + " hit any key to continue or ESC to quit", 0);
+                    if(getch() == 27) break;
+                  } 
+                }else {
+                  log_message(std::string("You dont't have enough resources to buy ") + wShop[item_choice]->getName() + " hit any key to continue or ESC to quit", 0);
+                  if(getch() == 27) break;
+                }
+              }
+            }else break;
+          }while(response != 27);
+          clearShop(wShop);
           log_message("Welcome back to the dungeon!");
           generic_render(map, chars, characters, item_map, items, start, 0, fullscreen);
         }
@@ -553,7 +598,7 @@ int main(int argc, char *argv[]){
           items[item_map[target.y][target.x]]->unstack(item_map[target.y][target.x]);
         }
       }
-      if (map[target.y][target.x].value != '.' && map[target.y][target.x].value != '<' && map[target.y][target.x].value != '>') map[target.y][target.x].value = '#'; //TODO add condition to check if it was a wall passing monster
+      if (map[target.y][target.x].value != '.' && map[target.y][target.x].value != '<' && map[target.y][target.x].value != '>' && map[target.y][target.x].value != '$') map[target.y][target.x].value = '#'; //TODO add condition to check if it was a wall passing monster
     }
     recalculate = (cgetId(curr) == 0) ? 1 : 0; //TODO: don not recalculate if no move was made
     pace[cgetId(curr)] +=  1000/(curr->getSpeed() ? curr->getSpeed() : 1);
@@ -632,6 +677,8 @@ Pair moveCharacter(Character* curr, const Pair& target, int chars[][nCols]){
 bool probability(int chance){
   return rand_gen(1, 100) <= chance;
 }
+
+
 //1490045401 --nummon=10
 //1490063401 visible monster
 //new stairs 1490647963, 1491369464, 1492046428
@@ -642,3 +689,5 @@ bool probability(int chance){
 //149176584 an invisible nerf dagger on your way up
 //1491769640 --numitem=300 -nummon=2 test 2 monsters kicking each other out
 //1492046620 fast
+//1492365593 pc doesn't initially show up
+//1492375222 close shop

@@ -6,6 +6,10 @@ Item::Item(int id, const item_stub::item_stub* stub) : id(id), color(item_stub::
                                                             speed(item_stub::parse_dice(stub->speed)), special(item_stub::parse_dice(stub->special)), value(item_stub::parse_dice(stub->value)),
                                                             symbol(item_stub::symbolize(stub->type)), name(stub->name), desc(stub->desc), next(0), equiped(false) {}
                                                             
+Item::Item(int id, const Item& item) : id(id), color(item.color), hit(item.hit), damage(item.damage), dodge(item.dodge), defense(item.defense), 
+                                       weight(item.weight), speed(item.speed), special(item.special), value(item.value), symbol(item.symbol), name(item.name), desc(item.desc),
+                                       next(0), equiped(false){}
+                                                            
 char Item::getSymbol() const{
   return next ? '&' : symbol;
 }
@@ -64,6 +68,10 @@ int Item::getDodge() const{
 
 int Item::getHit() const{
   return hit;
+}
+
+void Item::revalue(double rate){
+  value *= rate/100.0;
 }
 
 void Item::equip(){

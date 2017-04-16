@@ -21,14 +21,17 @@ class Player : public Character{
     Item* equip[12];
     int weight;
     int max_weight;
+    int pesos;
   public:
     static Player* getPlayer();
     Pair getPos() const;
     int getWeight() const;
     int getMaxWeight() const;
+    int getPesos() const;
     Item ** inventory();
     Item ** equipment();
     int** setSight(int height, int width);
+    Item* buy(int index, Item* item);
     bool pick(Item* item);
     int drop(int itm_idx);
     void expunge(int itm_idx);

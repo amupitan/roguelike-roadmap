@@ -27,6 +27,7 @@ typedef struct Dungeon{
 
 enum chances {
   ITEM_SPAWN,
+  ITEM_REVALUE,
   NOTHING
 };
 
@@ -76,7 +77,8 @@ Item** addItems(Dungeon* dungeon, Item** items, int item_map[][nCols], int* num_
 void addCharcters(Dungeon* dungeon, Queue* evt, int nummon, Character* characters[], int chars[][nCols], unsigned int pace[]);
 void* delete_items(Item** items, int& num_items);
 void delete_dungeon(Dungeon* dungeon, Queue* evt, Cell map[][nCols]);
-
+void add_shops(Dungeon* dungeon, Cell map[][nCols]);
+void clearShop(std::vector<Item*>& wShop);
 /*ncurses*/
 void ncurses_init();
 // void printmon(Character* Character);

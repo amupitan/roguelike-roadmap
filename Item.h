@@ -25,6 +25,7 @@ class Item {
   	bool equiped;
   public:
     Item(int id, const object_parser::private_wrapper::item_stub* stub);
+    Item(int id, const Item& item);
     char getSymbol() const;
     int getValue() const;
     int getColor() const;
@@ -40,6 +41,7 @@ class Item {
     int getWeight() const;
     int getDodge() const;
     int getHit() const;
+    void revalue(double rate);
     void equip();
     void unequip();
     void stack(Item* next);

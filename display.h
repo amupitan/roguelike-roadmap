@@ -9,6 +9,7 @@ void log_message(std::string message, int row); //TODO: remove extern
 void log_message(std::string message, int row, bool left);
 void print_inventory(std::vector<Item*>& items);
 void display_equipment(std::vector<Item*>& items);
+void print_store(std::vector<Item*>& items);
 int generic_prompt(std::vector<Item*>& items, const char* prompt, int offset, int max, void (*printer)(std::vector<Item*>& items));
 void item_printer(std::vector<Item*>& items, int size, const char* format, int ascii_offset, const char* message);
 extern "C" {
@@ -20,7 +21,7 @@ Pair* look_mode(Pair *target, int* control_mode);
 void log_message(const char* message);
 void print_inventory(Item **items);
 void display_equipment(Item ** items);
-bool item_info(Item* item);
+int item_info(Item* item, const char* exit_prompt);
 int generic_prompt(Item** items, const char* prompt, int offset, int max, void (*printer)(Item ** items));
 void display_stats();
 

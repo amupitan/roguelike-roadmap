@@ -136,6 +136,10 @@ Pair* getInputC(Pair* target){ /*TODO: make void?*/
       /*display item descriptiom*/
       target->x = target->y = -16;
       break;
+    case 'M':
+      /*Go to merchant*/
+      target->x = target->y = -17;
+      break;
     default:
       target->x = target->y = -10;
       break;
@@ -238,7 +242,7 @@ void display_equipment(Item ** items){
   item_printer(items, 12, "c", 97, "PC Equipment");
 }
 
-bool item_info(Item* item){
+int item_info(Item* item, const char* exit_prompt){
   clear();
   int x_offset = 10, x_initial = x_offset;
   int y_offset = 10;
@@ -269,26 +273,28 @@ bool item_info(Item* item){
   mvprintw(y_offset++, x_offset, (std::string("DODGE: ") + std::to_string(item->getDodge())).c_str());
   mvprintw(y_offset++, x_offset, (std::string("WEIGHT: ") + std::to_string(item->getWeight())).c_str());
   int x = item->getValue();
-  mvprintw(y_offset++, x_offset, (std::string("VALUE: ") + std::to_string(x)).c_str());
-  log_message("Press any key to go back or ESC to go back to the dungeon", 0);
-  return (getch() != 27);/*true if ESC is not pressed*/
+  mvprintw(y_offset++, x_offset, (std::string("VALUE: $") + std::to_string(x)).c_str());
+  log_message(exit_prompt, 0);
+  return getch();/*true if ESC is not pressed*/
 }
 
 void display_stats(){
   clear();
   int y_offset = 10;
   log_message("PC", y_offset++);
-  log_message("Bio: Managed to survive CS 327. Now a master of C++. Currently in a dungeon quest to find the Software Bug, destroy the Hardware bug and save the C++ Program", y_offset++);
+  log_message("Bio: Managed to survive CS 327. Now a master of C++ and in a quest to find the Software Bug, destroy the Hardware bug and save the C++ Program", y_offset++);
   log_message(std::string("HP: ") + std::to_string(Player::getPlayer()->getHp()), y_offset++);
   log_message(std::string("Speed: ") + std::to_string(Player::getPlayer()->getSpeed()), y_offset++);
   log_message(std::string("Possible damage: ") + std::to_string(Player::getPlayer()->attack()), y_offset++);
   Item** items = Player::getPlayer()->equipment();
   int def = 0;
   for (int i = 0; i < 12; i++){
-    if (items[i]) def += items[i]->getDefenseBonus();
+    // if (items[i]) def += items[i]->getDefenseBonus();
+    if (items[i]) def += (items[i]->getDefenseBonus() * ((items[i]->getDodge() + 100.0)/100.0));
   }
   log_message(std::string("Defense: ") + std::to_string(def), y_offset++);
   log_message(std::string("Weight: ") + std::to_string(Player::getPlayer()->getWeight()) + "/" + std::to_string(Player::getPlayer()->getMaxWeight()), y_offset++);
+  log_message(std::string("Pesos: ") + std::to_string(Player::getPlayer()->getPesos()), y_offset++);
 }
 
 void log_message(std::string message, int row, bool left){
@@ -341,3 +347,29 @@ void item_printer(std::vector<Item*>& items, int size, const char* format, int a
   }
   refresh();
 }
+
+/*void weapon_store(std::vector<Item*>& wShop){
+  int generic_prompt(items, "bought", "d", 48, o, print_store);
+}*/
+
+void print_store(std::vector<Item*>& items){
+  item_printer(items, items.size(), "d", 0, "Weapon shop");
+}
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
