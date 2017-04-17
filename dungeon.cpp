@@ -653,7 +653,7 @@ void addItems(Dungeon* dungeon, std::vector<Item*>& items, int item_map[][nCols]
   }
 }
 
-unsigned int addItem(std::vector<Item*>& items, int item_map[][nCols], const Pair& position){
+unsigned int addItem(std::vector<Item*>& items){
   unsigned int new_id = items.size();
   items.push_back(new Item(
     new_id,

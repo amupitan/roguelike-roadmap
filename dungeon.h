@@ -29,6 +29,7 @@ enum chances {
   ITEM_SPAWN,
   ITEM_REVALUE,
   PC_RAD,
+  SHOP_MAX,
   NOTHING
 };
 
@@ -96,7 +97,7 @@ void generic_render(Cell map[][nCols], int chars[][nCols], Character* monsts[], 
 void custom_render(int chars[][nCols], Character* monsts[], int item_map[][nCols], std::vector<Item*>& items, Pair start, Pair* newPos, char value, const Pair& curr);
 Pair select_position(Pair curr_pos, const Room& boundary, int chars[][nCols], Character* characters[], int item_map[][nCols], std::vector<Item*>& items, Pair start, char value);
 // void endgame(Dungeon* dungeon, Queue* game_queue, const char* endmessage);
-unsigned int addItem(std::vector<Item*>& items, int item_map[][nCols], const Pair& position);
+unsigned int addItem(std::vector<Item*>& items);
 // void clear_queue(std::priority_queue<Character*, std::vector<Character*>, CharacterComparator>* q); //TODO remove
 
 

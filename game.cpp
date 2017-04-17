@@ -182,7 +182,7 @@ int main(int argc, char *argv[]){
   queue_init(&evt, char_equals, print_Character);
   
   /*Initialize all Characters (PC and monster)*/
-  int chances[5] = {10/*item spawn*/, 80/*item revalue*/, 5/*PC radius*/, 0, 0};
+  int chances[5] = {10/*item spawn*/, 80/*item revalue*/, 5/*PC radius*/, 5/*shop max*/, 0};
   if (nummon_flag == 0) nummon = rand_gen(dungeon.num_rooms, dungeon.num_rooms*2);
   int l_monsters = nummon;
   Character* characters[nummon + 1];
@@ -386,13 +386,11 @@ int main(int argc, char *argv[]){
           target = pcp->getPos();
           if (map[pcp->getY()][pcp->getX()].value != '$') continue;
           std::vector<Item*> wShop;
-          wShop.push_back(new Item(
-            items.size(),
-            object_parser::getCompleteItemStub(rand_gen(0, object_parser::getNumItemstubs() - 1))
-            ));
+          int i = chances[SHOP_MAX];
+          while (i-->0) addItem(wShop);
           int response = 0;
           do{
-            int item_choice = generic_prompt(wShop, "bought", 48, wShop.size(), print_store);
+            int item_choice = generic_prompt(wShop, "bought", 97, wShop.size(), print_store);
             if (item_choice >= 0){
               log_message("Press 'y' to buy the item, ESC to go to the dungeon or any other button to quit");
               response = item_info(wShop[item_choice], "Press y to accept and buy, ESC to go to the dungeon or any other key to go back");
@@ -584,7 +582,7 @@ int main(int argc, char *argv[]){
                   }
                   /*Spawn item if you're lucky*/
                   if (probability(chances[ITEM_SPAWN])){
-                    uint32_t spawn_id = addItem(items, item_map, target);
+                    uint32_t spawn_id = addItem(items);
                     if (item_map[target.y][target.x] != -1){
                       items[spawn_id]->stack(items[item_map[target.y][target.x]]);
                     }

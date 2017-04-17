@@ -455,7 +455,7 @@ void item_printer(std::vector<Item*>& items, int size, const char* format, int a
 }*/
 
 void print_store(std::vector<Item*>& items){
-  item_printer(items, items.size(), "d", 0, "Weapon shop");
+  item_printer(items, items.size(), "c", 97, "Weapon shop");
 }
 
 
