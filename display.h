@@ -24,6 +24,8 @@ void display_equipment(Item ** items);
 int item_info(Item* item, const char* exit_prompt);
 int generic_prompt(Item** items, const char* prompt, int offset, int max, void (*printer)(Item ** items));
 void display_stats();
+void character_info(Character* character);
+Pair& getInputS(Pair* target);
 
 # ifdef __cplusplus
 }

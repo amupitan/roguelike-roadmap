@@ -11,5 +11,6 @@ class Monster : public Character{
     Monster(uint8_t id, int x, int y, const object_parser::private_wrapper::monster_stub* stub);
     Monster(uint8_t id, int x, int y, int speed, uint8_t type);
     const char* getName() const;
+    const char* getDesc() const;
 };
 #endif

@@ -2,6 +2,7 @@
 #include <ncurses.h>
 #include "display.h"
 #include "object_parser.h"
+#include "Monster.h"
 
 void ncurses_init(){
   initscr();			/* Start curses mode 		*/
@@ -19,6 +20,74 @@ void ncurses_init(){
 	init_pair(7, COLOR_WHITE, COLOR_BLACK);
 }
 
+
+Pair& getInputS(Pair* target){
+  switch(getch()){
+    case 'y':
+    case '7':
+      /*upper-left*/
+      target->y--;
+      target->x--;
+      break;
+    case 'k':
+    case '8':
+    case KEY_UP: /*TODO remove?*/
+      /*up*/
+      target->y--;
+      break;
+    case 'u':
+    case '9':
+      /*upper-right*/
+      target->y--;
+      target->x++;
+      break;
+    case 'l':
+    case '6':
+    case KEY_RIGHT: /*TODO remove?*/
+      /*right*/
+      target->x++;
+      break;
+    case 'n':
+    case '3':
+      /*lower-right*/
+      target->y++;
+      target->x++;
+      break;
+    case 'j':
+    case '2':
+    case KEY_DOWN: /*TODO remove?*/
+      /*down*/
+      target->y++;
+      break;
+    case 'b':
+    case '1':
+      /*lower-left*/
+      target->x--;
+      target->y++;
+      break;
+    case 'h':
+    case '4':
+    case KEY_LEFT: /*TODO remove?*/
+      /*left*/
+      target->x--;
+      break;
+    case ' ':
+    case '5':
+      /*select*/
+      target->x = target->y = -10;
+      break;
+        case 27:
+        case 'Q':
+        case 'q':
+      /*Escape*/
+      target->x = target->y = -11;
+      break;
+    default:
+      target->x = target->y = -12;
+      break;
+  }
+  return *target;
+}
 
 /*Get input in control mode*/
 Pair* getInputC(Pair* target){ /*TODO: make void?*/
@@ -139,6 +208,10 @@ Pair* getInputC(Pair* target){ /*TODO: make void?*/
     case 'M':
       /*Go to merchant*/
       target->x = target->y = -17;
+      break;
+    case '^':
+      /*Shoot ranged weapon*/
+      target->x = target->y = -18;
       break;
     default:
       target->x = target->y = -10;
@@ -275,6 +348,7 @@ int item_info(Item* item, const char* exit_prompt){
   int x = item->getValue();
   mvprintw(y_offset++, x_offset, (std::string("VALUE: $") + std::to_string(x)).c_str());
   log_message(exit_prompt, 0);
+  refresh();
   return getch();/*true if ESC is not pressed*/
 }
 
@@ -295,6 +369,34 @@ void display_stats(){
   log_message(std::string("Defense: ") + std::to_string(def), y_offset++);
   log_message(std::string("Weight: ") + std::to_string(Player::getPlayer()->getWeight()) + "/" + std::to_string(Player::getPlayer()->getMaxWeight()), y_offset++);
   log_message(std::string("Pesos: ") + std::to_string(Player::getPlayer()->getPesos()), y_offset++);
+}
+
+void character_info(Character* character){
+  if (character->getId() != 0){
+    Monster* monst = static_cast<Monster*>(character);
+    clear();
+    int y_offset = 10;
+    log_message(monst->getName(), y_offset++);
+    /*mvprintw(y_offset, x_offset, "SYMBOL: ");
+    x_offset += 8;
+    attron(COLOR_PAIR(item->getColor()));
+    mvaddch(y_offset++, x_offset, item->getSymbol());
+    attroff(COLOR_PAIR(item->getColor()));*/
+    log_message(monst->getDesc(), y_offset++);
+    log_message(std::string("HP: ") + std::to_string(monst->getHp()), y_offset++);
+    log_message(std::string("Speed: ") + std::to_string(monst->getSpeed()), y_offset++);
+    log_message(std::string("Possible damage: ") + std::to_string(monst->attack()), y_offset++);
+    // Item** items = Player::getPlayer()->equipment();
+    // int def = 0;
+    // for (int i = 0; i < 12; i++){
+      // if (items[i]) def += items[i]->getDefenseBonus();
+      // if (items[i]) def += (items[i]->getDefenseBonus() * ((items[i]->getDodge() + 100.0)/100.0));
+    // }
+    // log_message(std::string("Defense: ") + std::to_string(def), y_offset++);
+    // log_message(std::string("Weight: ") + std::to_string(Player::getPlayer()->getWeight()) + "/" + std::to_string(Player::getPlayer()->getMaxWeight()), y_offset++);
+    // log_message(std::string("Pesos: ") + std::to_string(Player::getPlayer()->getPesos()), y_offset++);
+  }else display_stats();
+  refresh();
 }
 
 void log_message(std::string message, int row, bool left){

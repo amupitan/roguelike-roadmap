@@ -28,6 +28,7 @@ typedef struct Dungeon{
 enum chances {
   ITEM_SPAWN,
   ITEM_REVALUE,
+  PC_RAD,
   NOTHING
 };
 
@@ -55,6 +56,7 @@ int add_room(Dungeon* rlg, Room room);
 void render_dungeon(Cell map[][nCols], int chars[][nCols], Character* monsts[]);
 int getRoom(Dungeon d, int x, int y);
 Pair determine_position(Room room);
+bool in_room(const Room& room, const Pair& position);
 void create_dungeon(Dungeon* dungeon, Cell map[][nCols], Cell room_cells[]);
 void load_dungeon(FILE* dungeon_file, Dungeon* dungeon, Cell map[][nCols], char* dungeon_title, uint32_t* version, uint32_t* size_dungeon_file);
 
@@ -91,6 +93,8 @@ void pc_render_partial(Cell map[][nCols], int chars[][nCols], Character* monsts[
 void render(int chars[][nCols], Character* monsts[], int item_map[][nCols], Item** items, Pair start, Pair* newPos);
 void render_partial(Cell map[][nCols], int chars[][nCols], Character* monsts[], int item_map[][nCols], Item** items, Pair start, Pair* newPos);
 void generic_render(Cell map[][nCols], int chars[][nCols], Character* monsts[], int item_map[][nCols], Item** items, Pair start, Pair* newPos, bool complete);
+void custom_render(int chars[][nCols], Character* monsts[], int item_map[][nCols], std::vector<Item*>& items, Pair start, Pair* newPos, char value, const Pair& curr);
+Pair select_position(Pair curr_pos, const Room& boundary, int chars[][nCols], Character* characters[], int item_map[][nCols], std::vector<Item*>& items, Pair start, char value);
 // void endgame(Dungeon* dungeon, Queue* game_queue, const char* endmessage);
 unsigned int addItem(std::vector<Item*>& items, int item_map[][nCols], const Pair& position);
 // void clear_queue(std::priority_queue<Character*, std::vector<Character*>, CharacterComparator>* q); //TODO remove

@@ -36,7 +36,6 @@ Player::Player(Player const& player_copy){}//TODO why?
 
 int** Player::setSight(int height, int width){
   if (width < 1 || height < 1 || sight){
-    // fprintf(stderr, "Height %d < 1 Width %d < 1 or sight is not null", height, width);
     return sight; /*TODO: handle this in a better way, remove fprintf, consider merging both if blocks*/
   }
   if ((sight = (int **)malloc(sizeof(int*) * height))){

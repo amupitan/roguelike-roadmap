@@ -26,7 +26,7 @@ class Character{
     char symbol;
     int color;
     int hp;
-  	object_parser::private_wrapper::dice damage;
+    object_parser::private_wrapper::dice damage;
     
   public:
     Character(uint8_t id, int x, int y);
@@ -72,7 +72,6 @@ extern "C" {
   void csetType(Character* p, uint8_t type);
   // char** csetSight(Character* p, int height, int width);
   // void cupdateSight(Character* p, int height, int width, char map[][width]);
-  void cfreeSight(Character* p, int height);
   void cprintCharacter(Character* p);
   int cgetX(Character* p);
   int cgetY(Character* p);

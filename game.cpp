@@ -182,7 +182,7 @@ int main(int argc, char *argv[]){
   queue_init(&evt, char_equals, print_Character);
   
   /*Initialize all Characters (PC and monster)*/
-  int chances[5] = {10/*item spawn*/, 80/*item revalue*/, 0, 0, 0};
+  int chances[5] = {10/*item spawn*/, 80/*item revalue*/, 5/*PC radius*/, 0, 0};
   if (nummon_flag == 0) nummon = rand_gen(dungeon.num_rooms, dungeon.num_rooms*2);
   int l_monsters = nummon;
   Character* characters[nummon + 1];
@@ -390,8 +390,6 @@ int main(int argc, char *argv[]){
             items.size(),
             object_parser::getCompleteItemStub(rand_gen(0, object_parser::getNumItemstubs() - 1))
             ));
-          
-          // bool describing = true;
           int response = 0;
           do{
             int item_choice = generic_prompt(wShop, "bought", 48, wShop.size(), print_store);
@@ -423,7 +421,58 @@ int main(int argc, char *argv[]){
           log_message("Welcome back to the dungeon!");
           generic_render(map, chars, characters, item_map, items, start, 0, fullscreen);
         }
-        else if (map[target.y][target.x].hardness == 0) break;
+        else if (target.x == -18 && target.y == -18){
+          target = pcp->getPos();
+          do{
+            Room boundary = {0, 0, nCols - 1, nRows - 1};
+            target = select_position(target, boundary, chars, characters, item_map, items, start, 0);
+            if (target.x >= 0 && target.y >= 0){
+              int** sight = pcp->setSight(nRows, nCols);
+              if (sight[target.y][target.x] != 0){
+                bool in_range = (target.x <= pcp->getX() + chances[PC_RAD]) && (target.x >= pcp->getX() - chances[PC_RAD]) && (target.y <= pcp->getY() + chances[PC_RAD]) && (target.y >= pcp->getY() - chances[PC_RAD]);
+                if (chars[target.y][target.x] != -1 && in_range){
+                  character_info(characters[chars[target.y][target.x]]);
+                  getch();
+                }
+                else if (sight[target.y][target.x] < 0)
+                  item_info(items[sight[target.y][target.x] * -1], "Press any key to go back");
+                else{
+                  std::string cell_type = "Cell type: ";
+                  switch(sight[target.y][target.x]){
+                    case '.':
+                      cell_type += "room cell. Hardness: 0";
+                      break;
+                    case '#':
+                      cell_type += "corridor cell. Hardness: 0";
+                      break;
+                    case '<':
+                      cell_type += "lower-level stair cell type. Hardness: 0";
+                      break;
+                    case '>':
+                      cell_type += "upper-level stair cell type. Hardness: 0";
+                      break;
+                    case '$':
+                      cell_type += "Shop cell. Hardness: 0";
+                      break;
+                    case ' ':
+                      cell_type += "Wall cell. Hardness: " + std::to_string(map[target.y][target.x].value); //TODO: hardness is gotten from map not sight. i.e PC is getting info that it can't really see
+                      break;
+                    default:
+                      cell_type += "??? I wonder what this is";
+                  }
+                  log_message(cell_type + " hit any key to continue",0);
+                  getch();
+                }
+              }else{
+                log_message("??? Hmm I can't see that. I wonder what's there, I should go check it out! Hit any key to continue");
+                getch();
+              }
+            }else break;
+          }while(true);
+          log_message("Welcome back to the dungeon");
+          generic_render(map, chars, characters, item_map, items, start, 0, fullscreen);
+          target = pcp->getPos();
+        }else if (map[target.y][target.x].hardness == 0) break;
         target.x = cgetX(curr);
         target.y = cgetY(curr);
       }while(1);
@@ -678,7 +727,6 @@ bool probability(int chance){
   return rand_gen(1, 100) <= chance;
 }
 
-
 //1490045401 --nummon=10
 //1490063401 visible monster
 //new stairs 1490647963, 1491369464, 1492046428
@@ -691,3 +739,4 @@ bool probability(int chance){
 //1492046620 fast
 //1492365593 pc doesn't initially show up
 //1492375222 close shop
+//1492395756 shop/vorpal blade

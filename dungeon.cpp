@@ -15,6 +15,7 @@
 #include "game.h"
 #include "Player.h"
 #include "object_parser.h"
+#include "display.h"
 
 int connect_rooms(Cell map[][nCols], Cell p, Cell q){
 	while (p.x != q.x){
@@ -124,6 +125,28 @@ int getRoom(Dungeon d, int x, int y){
       return i;
   }
   return -1;
+}
+
+bool in_room(const Room& room, const Pair& position){
+  if (position.x >= room.x && position.x < (room.x + room.width) && position.y >= room.y && position.y < (room.y + room.height))
+    return true;
+  return false;
+}
+
+Pair select_position(Pair curr_pos, const Room& boundary, int chars[][nCols], Character* characters[], int item_map[][nCols], std::vector<Item*>& items, Pair start, char value){
+  value = value ? value : '^';
+  do{
+    Pair prev = curr_pos;
+    log_message("Select target");
+    custom_render(chars, characters, item_map, items, start, 0, value, curr_pos);
+    curr_pos = getInputS(&curr_pos);
+    if (curr_pos.x == -10 && curr_pos.y == -10){
+      curr_pos = prev;
+      break;
+    }else if(curr_pos.x == -11 && curr_pos.y == -11) break;
+    else if (!in_room(boundary, curr_pos)) curr_pos = prev;
+  }while(true);
+  return curr_pos;
 }
 
 Pair determine_position(Room room){
@@ -471,11 +494,62 @@ void render(int chars[][nCols], Character* monsts[], int item_map[][nCols], std:
   		  if ((temp != -1) && (in_range)) printmon(monsts[chars[i][j]]); /*There is a monster on the terrain and the monster is within range*/
   		  else {
   		    //TODO: check for item
+  		    if (sight[i][j] < 0){
+  		      int fog_item = sight[i][j] * -1;
+  		      printmon(items[fog_item]);
+  		    }else{
+    		    if (sight[i][j] == '$'){
+    		      attron(COLOR_PAIR(COLOR_GREEN));
+              addch(sight[i][j]);
+              attroff(COLOR_PAIR(COLOR_GREEN));
+    		    }else
+    		      addch(sight[i][j]);
+  		     }
+  		  }
+		  }else addch(' ');
+		}
+		addch('\n');
+	}
+	if(newPos) *newPos = start;
+	refresh();
+}
+
+void custom_render(int chars[][nCols], Character* monsts[], int item_map[][nCols], std::vector<Item*>& items, Pair start, Pair* newPos, char value, const Pair& curr){
+  int** sight = csetSight(monsts[0], nRows, nCols); /*TODO: check value of sight*/
+  int i = 0, j = 0;
+  start.x = (start.x < 0) ? 0 : start.x;
+  start.y = (start.y < 0) ? 0 : start.y;
+  int endRow = start.y + 21, endCol = start.x + 80;
+  if (endCol > nCols - 1){
+    start.x = nCols - 1 - 80;
+    endCol = nCols - 1;
+  }
+  if (endRow > nRows - 1){
+    start.y = nRows - 1 - 21;
+    endRow = nRows - 1;
+  }
+  move(1, 0);
+  for (i = start.y; i < endRow; i++){
+		for (j = start.x; j < endCol; j++){
+		  if (i == 0 || j == 0 || i == (nRows - 1) || j == (nCols - 1)) addch(' ');
+		  else if (curr.x == j && curr.y == i) addch(value);
+		  else if (sight[i][j] != 0){ /*PC can see/has seen this spot*/
+  		  int temp = chars[i][j];
+  		  int in_range = (j <= cgetX(monsts[0]) + 5) && (j >= cgetX(monsts[0]) - 5) && (i <= cgetY(monsts[0]) + 5) && (i >= cgetY(monsts[0]) - 5);
+  		  if ((temp != -1) && (in_range)) printmon(monsts[chars[i][j]]); /*There is a monster on the terrain and the monster is within range*/
+  		  else {
+  		    //TODO: check for item
   		    if (sight[i][j] < 0){ //TODO: use a function that checks
   		    int fog_item = sight[i][j] * -1;
   		      printmon(items[fog_item]);
-  		    }else
-  		      addch(sight[i][j]);
+  		    }else{
+    		    if (sight[i][j] == '$'){
+    		      attron(COLOR_PAIR(COLOR_GREEN));
+              addch(sight[i][j]);
+              attroff(COLOR_PAIR(COLOR_GREEN));
+    		    }else
+    		      addch(sight[i][j]);
+  		     }
   		  }
 		  }else addch(' ');
 		}
