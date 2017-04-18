@@ -452,7 +452,7 @@ int main(int argc, char *argv[]){
                       cell_type += "Shop cell. Hardness: 0";
                       break;
                     case ' ':
-                      cell_type += "Wall cell. Hardness: " + std::to_string(map[target.y][target.x].value); //TODO: hardness is gotten from map not sight. i.e PC is getting info that it can't really see
+                      cell_type += "Wall cell. Hardness: " + std::to_string(map[target.y][target.x].hardness); //TODO: hardness is gotten from map not sight. i.e PC is getting info that it can't really see
                       break;
                     default:
                       cell_type += "??? I wonder what that is";
@@ -503,6 +503,11 @@ int main(int argc, char *argv[]){
               }
             }else{
               log_message("There was no character on that cell. Hit any key to continue", 0);
+              
+              if (map[target.y][target.x].hardness - (ranged_weapon->getSpecial()/1500) <= 0){
+                map[target.y][target.x].hardness = 0;
+                map[target.y][target.x].value = '#';
+              }else map[target.y][target.x].hardness -= (ranged_weapon->getSpecial()/1500);
               getch();
             }
           }else{
