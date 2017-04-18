@@ -177,7 +177,7 @@ Pair* getInputC(Pair* target){ /*TODO: make void?*/
       /*drop item from inventory*/
       target->x = target->y = -8;
       break;
-    case 'P':
+    case 'C':
       /*view PC stats*/
       target->x = target->y = -9;
       break;
@@ -209,13 +209,17 @@ Pair* getInputC(Pair* target){ /*TODO: make void?*/
       /*Go to merchant*/
       target->x = target->y = -17;
       break;
-    case '^':
+    case '?':
       /*Examine dungeon*/
       target->x = target->y = -18;
       break;
-    case 'A':
+    case '^':
       /*Shoot ranged weapon*/
       target->x = target->y = -19;
+      break;
+    case 'P':
+      /*use potions*/
+      target->x = target->y = -20;
       break;
     default:
       target->x = target->y = -10;
