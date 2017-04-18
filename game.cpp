@@ -489,23 +489,8 @@ int main(int argc, char *argv[]){
                   if (characters[chars[target.y][target.x]]->takeDamage(attack)){
                     log_message(std::string("You just killed ") + static_cast<Monster*>(characters[chars[target.y][target.x]])->getName(), 0);
                     chars[target.y][target.x] = -1;
-                    // curr->setPos(&target.x, &target.y);
-                    // chars[curr->getY()][curr->getX()] = curr->getId();
-                    /*Killed all monsters. Final render*/
-                    if(!(--l_monsters)) {
-                      Pair start = {cgetX(curr) - 40, cgetY(curr) - 10};
-                      generic_render(map, chars, characters, item_map, items, start, 0, fullscreen);
-                      break;
-                      //TODO: !!!End game
-                    }
                     /*Spawn item if you're lucky*/
-                    if (probability(chances[ITEM_SPAWN])){
-                      uint32_t spawn_id = addItem(items);
-                      if (item_map[target.y][target.x] != -1){
-                        items[spawn_id]->stack(items[item_map[target.y][target.x]]);
-                      }
-                      item_map[target.y][target.x] = spawn_id;
-                    }
+                    item_drop(items, chances[ITEM_SPAWN]*(1 + (ranged_weapon->getSpecial())/25000.0), item_map, target);
                   }
                 }else if (true /*item can affect PC*/){
                   log_message("PC affected", 0);
@@ -637,13 +622,7 @@ int main(int argc, char *argv[]){
                     break;
                   }
                   /*Spawn item if you're lucky*/
-                  if (probability(chances[ITEM_SPAWN])){
-                    uint32_t spawn_id = addItem(items);
-                    if (item_map[target.y][target.x] != -1){
-                      items[spawn_id]->stack(items[item_map[target.y][target.x]]);
-                    }
-                    item_map[target.y][target.x] = spawn_id;
-                  }
+                  item_drop(items, chances[ITEM_SPAWN], item_map, target);
                 }else {
                   log_message(std::string("You got killed by ") + static_cast<Monster*>(curr)->getName(), 23);
                   //TODO: just break?
@@ -756,7 +735,6 @@ void endgame(Dungeon* dungeon, Queue* game_queue, const char* endmessage){
   system("clear");
   /*Display some nice stats*/
   puts(endmessage);
-// 	exit(0);
 }
 
 void delete_Characters(Character* characters[], int num_characters){

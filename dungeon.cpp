@@ -137,7 +137,9 @@ Pair select_position(Pair curr_pos, const Room& boundary, int chars[][nCols], Ch
   value = value ? value : '^';
   do{
     Pair prev = curr_pos;
-    log_message("Choose target by moving the '^' and press SPACEBAR to select postion, or press ESC or q or Q to exit");
+    std::string char_value;
+    char_value.push_back(value);
+    log_message(std::string("Choose target by moving the '") + char_value + "' and press SPACEBAR to select postion, or press ESC or q or Q to exit", 0);
     custom_render(chars, characters, item_map, items, start, 0, value, curr_pos);
     curr_pos = getInputS(&curr_pos);
     if (curr_pos.x == -10 && curr_pos.y == -10){
@@ -842,4 +844,14 @@ void clearShop(std::vector<Item*>& wShop){
 
 bool isRanged(Item* item){
   return std::string(item->getType()) == "RANGED";
+}
+
+void item_drop(std::vector<Item*>& items, int chance, int item_map[][nCols], const Pair& target){
+  if (probability(chance)){
+    uint32_t spawn_id = addItem(items);
+    if (item_map[target.y][target.x] != -1){
+      items[spawn_id]->stack(items[item_map[target.y][target.x]]);
+    }
+    item_map[target.y][target.x] = spawn_id;
+  }
 }

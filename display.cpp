@@ -340,7 +340,7 @@ void display_equipment(Item ** items){
   item_printer(items, 12, "c", 97, "PC Equipment");
 }
 
-int item_info(Item* item, const char* exit_prompt){
+int item_info(const Item* item, const char* exit_prompt){
   clear();
   int x_offset = 10, x_initial = x_offset;
   int y_offset = 10;
@@ -436,13 +436,13 @@ void log_message(std::string message, int row, bool left){
 }
 
 /*Conversion*/
-void print_inventory(std::vector<Item*>& items){
+void print_inventory(const std::vector<Item*>& items){
   item_printer(items, 10, "d", 0, "PC Inventory");
 }
-void display_equipment(std::vector<Item*>& items){
+void display_equipment(const std::vector<Item*>& items){
   item_printer(items, 12, "c", 97, "PC Equipment");
 }
-int generic_prompt(std::vector<Item*>& items, const char* prompt, int offset, int max, void (*printer)(std::vector<Item*>& items)){
+int generic_prompt(const std::vector<Item*>& items, const char* prompt, int offset, int max, void (*printer)(const std::vector<Item*>& items)){
   printer(items);
   log_message(std::string("PC Inventory: type the index of the item to be ") + prompt + " or press ESC to go back", 0);
   do{
@@ -460,7 +460,7 @@ int generic_prompt(std::vector<Item*>& items, const char* prompt, int offset, in
   }while(1);
   return -1;
 }
-void item_printer(std::vector<Item*>& items, int size, const char* format, int ascii_offset, const char* message){ //legacy
+void item_printer(const std::vector<Item*>& items, int size, const char* format, int ascii_offset, const char* message){ //legacy
   clear();
   int i, itm_idx, col, num = (22 - 10)/2;
   log_message(message);
@@ -480,7 +480,7 @@ void item_printer(std::vector<Item*>& items, int size, const char* format, int a
   int generic_prompt(items, "bought", "d", 48, o, print_store);
 }*/
 
-void print_store(std::vector<Item*>& items){
+void print_store(const std::vector<Item*>& items){
   item_printer(items, items.size(), "c", 97, "Weapon shop");
 }
 
