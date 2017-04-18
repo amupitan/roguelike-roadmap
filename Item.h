@@ -41,6 +41,7 @@ class Item {
     int getWeight() const;
     int getDodge() const;
     int getHit() const;
+    int getSpecial() const;
     void revalue(double rate);
     void equip();
     void unequip();

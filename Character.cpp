@@ -107,12 +107,6 @@ void Character::updatePace(){
 	pace += 1000/speed;
 }
 
-// struct CharacterComparator{
-  // bool operator<(const Character& lhs, const Character& rhs){
-  // 	return lhs.pace < rhs.pace;
-  // }
-// }
-
 /*C Wrapper functions*/
 void csetPos(Character* p, void* x, void* y){
   p->setPos(x, y);

@@ -133,11 +133,11 @@ bool in_room(const Room& room, const Pair& position){
   return false;
 }
 
-Pair select_position(Pair curr_pos, const Room& boundary, int chars[][nCols], Character* characters[], int item_map[][nCols], std::vector<Item*>& items, Pair start, char value){
+Pair select_position(Pair curr_pos, const Room& boundary, int chars[][nCols], Character* characters[], int item_map[][nCols], std::vector<Item*>& items, Pair start, char value){ //TODO: handle -ve initial target
   value = value ? value : '^';
   do{
     Pair prev = curr_pos;
-    log_message("Select target");
+    log_message("Choose target by moving the '^' and press SPACEBAR to select postion, or press ESC or q or Q to exit");
     custom_render(chars, characters, item_map, items, start, 0, value, curr_pos);
     curr_pos = getInputS(&curr_pos);
     if (curr_pos.x == -10 && curr_pos.y == -10){
@@ -838,4 +838,8 @@ void clearShop(std::vector<Item*>& wShop){
   for (auto item_p : wShop)
     delete item_p;
   wShop.clear();
+}
+
+bool isRanged(Item* item){
+  return std::string(item->getType()) == "RANGED";
 }

@@ -298,7 +298,7 @@ int main(int argc, char *argv[]){
           sprintf(stat_msg, "PC is at %d, %d. Number of rooms: %d", cgetX(curr), cgetY(curr), dungeon.num_rooms);
           log_message(stat_msg);
           free(stat_msg);
-        }else if(target.x == -7 && target.y == -7){
+        }else if (target.x == -7 && target.y == -7){
           do{
             print_inventory(pcp->inventory());
           }while(getch() != 27); /*ESC*/
@@ -306,8 +306,8 @@ int main(int argc, char *argv[]){
           // render(chars, characters, item_map, items, start, 0);
           generic_render(map, chars, characters, item_map, items, start, 0, fullscreen);
           log_message((std::string("PC is at ") + std::to_string(pcp->getX()) + ", " + std::to_string(pcp->getY())).c_str()); //TODO: log some useful stats
-        }else if(target.x == -8 && target.y == -8){
-          int drop = generic_prompt(pcp->inventory(), "removed", 48, 10, print_inventory);;//drop_from_inventory(pcp->inventory());
+        }else if (target.x == -8 && target.y == -8){
+          int drop = generic_prompt(pcp->inventory(), "removed", 48, 10, "a valid number", print_inventory, 0);//drop_from_inventory(pcp->inventory());
           target = pcp->getPos();
           log_message("Your inventory is unchanged"); //TODO: change to you did not drop an item?
           if (drop >= 0){
@@ -321,7 +321,7 @@ int main(int argc, char *argv[]){
           updateSight(pcp, map, item_map);
           generic_render(map, chars, characters, item_map, items, start, 0, fullscreen);
           continue;
-        }else if(target.x == -9 && target.y == -9){
+        }else if (target.x == -9 && target.y == -9){
           target = pcp->getPos();
           display_stats();
           log_message("Press any key to continue", 0);
@@ -338,7 +338,7 @@ int main(int argc, char *argv[]){
           log_message((std::string("Switched to ") + (fullscreen ? "complete" : "partial") + " dungeon display").c_str());
           continue;
         }else if (target.x == -12 && target.y == -12){ /*Wear equipment*/
-          int wear = generic_prompt(pcp->inventory(), "worn", 48, 10, print_inventory);
+          int wear = generic_prompt(pcp->inventory(), "worn", 48, 10, "a valid number", print_inventory, 0);
           target = pcp->getPos();
           if (wear >= 0){
             pcp->wear(wear);
@@ -354,14 +354,14 @@ int main(int argc, char *argv[]){
           log_message((std::string("PC is at ") + std::to_string(pcp->getX()) + ", " + std::to_string(pcp->getY())).c_str()); //TODO: log some useful stats
         }else if (target.x == -14 && target.y == -14){
           target = pcp->getPos();
-          int takeoff = generic_prompt(pcp->equipment(), "taken off", 97, 12, display_equipment);
+          int takeoff = generic_prompt(pcp->equipment(), "taken off", 97, 12, "a valid letter", display_equipment, 0);
           if (takeoff >= 0){
             if(!pcp->take_off(takeoff)) log_message("The PC's inventory is full. Drop item(s) using 'd' or expunge item(s) using 'x' and try again" ,0);
           }else log_message("No equipment was removed"); //TODO: check all messages in this block
           generic_render(map, chars, characters, item_map, items, start, 0, fullscreen);
         }else if (target.x == -15 && target.y == -15){
           /*Expunge item*/
-          int expunge = generic_prompt(pcp->inventory(), "expunged", 48, 10, print_inventory);
+          int expunge = generic_prompt(pcp->inventory(), "expunged", 48, 10, "a valid number", print_inventory, 0);
           target = pcp->getPos();
           if (expunge >= 0){
             pcp->drop(expunge);
@@ -372,7 +372,7 @@ int main(int argc, char *argv[]){
           target = pcp->getPos();
           bool describing;
           do{
-            int display = generic_prompt(pcp->inventory(), "displayed", 48, 10, print_inventory);
+            int display = generic_prompt(pcp->inventory(), "displayed", 48, 10, "a valid number", print_inventory, 0);
             if (display >= 0){
               describing = (item_info(pcp->inventory()[display], "Press any key to go back or ESC to go back to the dungeon") != 27);
             }else break;
@@ -418,8 +418,7 @@ int main(int argc, char *argv[]){
           clearShop(wShop);
           log_message("Welcome back to the dungeon!");
           generic_render(map, chars, characters, item_map, items, start, 0, fullscreen);
-        }
-        else if (target.x == -18 && target.y == -18){
+        }else if (target.x == -18 && target.y == -18){
           target = pcp->getPos();
           do{
             Room boundary = {0, 0, nCols - 1, nRows - 1};
@@ -456,7 +455,7 @@ int main(int argc, char *argv[]){
                       cell_type += "Wall cell. Hardness: " + std::to_string(map[target.y][target.x].value); //TODO: hardness is gotten from map not sight. i.e PC is getting info that it can't really see
                       break;
                     default:
-                      cell_type += "??? I wonder what this is";
+                      cell_type += "??? I wonder what that is";
                   }
                   log_message(cell_type + " hit any key to continue",0);
                   getch();
@@ -470,7 +469,64 @@ int main(int argc, char *argv[]){
           log_message("Welcome back to the dungeon");
           generic_render(map, chars, characters, item_map, items, start, 0, fullscreen);
           target = pcp->getPos();
-        }else if (map[target.y][target.x].hardness == 0) break;
+        }else if (target.x == -19 && target.y == -19){
+          target = pcp->getPos();
+          //select ranged weapon
+          int item_idx = generic_prompt(pcp->equipment(), "used", 97, 12, "a ranged weapon", display_equipment, isRanged);
+          if (item_idx >= 0){
+            log_message(std::string("You selected ") + pcp->equipment()[item_idx]->getName() + ". Type: " + pcp->equipment()[item_idx]->getType(), 0);
+            //select spot
+            uint8_t rad = chances[PC_RAD];
+            Room boundary = {target.x - rad, target.y - rad, (uint8_t)(rad * 2), (uint8_t)(rad * 2)};
+            target = select_position(target, boundary, chars, characters, item_map, items, start, 0);
+            if (target.x != -11 && target.y != -11){
+              if (chars[target.y][target.x] != -1){
+                if (chars[target.y][target.x] != 0){
+                  log_message(std::string("attacked ") + static_cast<Monster*>(characters[chars[target.y][target.x]])->getName(), 0);
+                  Item* ranged_weapon = pcp->equipment()[item_idx];
+                  int attack = ranged_weapon->getDamageBonus() + ((100.0 + ranged_weapon->getHit())/100.0) * ranged_weapon->getSpecial();
+                  log_message(std::string("You dealt ") + std::to_string(attack) + " damage to " + static_cast<Monster*>(characters[chars[target.y][target.x]])->getName(), 22);
+                  if (characters[chars[target.y][target.x]]->takeDamage(attack)){
+                    log_message(std::string("You just killed ") + static_cast<Monster*>(characters[chars[target.y][target.x]])->getName(), 0);
+                    chars[target.y][target.x] = -1;
+                    // curr->setPos(&target.x, &target.y);
+                    // chars[curr->getY()][curr->getX()] = curr->getId();
+                    /*Killed all monsters. Final render*/
+                    if(!(--l_monsters)) {
+                      Pair start = {cgetX(curr) - 40, cgetY(curr) - 10};
+                      generic_render(map, chars, characters, item_map, items, start, 0, fullscreen);
+                      break;
+                      //TODO: !!!End game
+                    }
+                    /*Spawn item if you're lucky*/
+                    if (probability(chances[ITEM_SPAWN])){
+                      uint32_t spawn_id = addItem(items);
+                      if (item_map[target.y][target.x] != -1){
+                        items[spawn_id]->stack(items[item_map[target.y][target.x]]);
+                      }
+                      item_map[target.y][target.x] = spawn_id;
+                    }
+                  }
+                }else if (true /*item can affect PC*/){
+                  log_message("PC affected", 0);
+                }
+              }else{
+                log_message("Not a valid cell");
+              }
+            }else{
+              log_message("No position was selected", 0);
+            }
+          }else{
+            log_message("You didn't select a ranged weapon", 0);
+          }
+          
+          //attack 
+          //somehow continue
+          //TODO remove
+          target = pcp->getPos();
+          generic_render(map, chars, characters, item_map, items, start, 0, fullscreen);
+        }
+        else if (map[target.y][target.x].hardness == 0) break;
         target.x = cgetX(curr);
         target.y = cgetY(curr);
       }while(1);
@@ -738,3 +794,4 @@ bool probability(int chance){
 //1492365593 pc doesn't initially show up
 //1492375222 close shop
 //1492395756 shop/vorpal blade
+//1492485638 corner

@@ -210,8 +210,12 @@ Pair* getInputC(Pair* target){ /*TODO: make void?*/
       target->x = target->y = -17;
       break;
     case '^':
-      /*Shoot ranged weapon*/
+      /*Examine dungeon*/
       target->x = target->y = -18;
+      break;
+    case 'A':
+      /*Shoot ranged weapon*/
+      target->x = target->y = -19;
       break;
     default:
       target->x = target->y = -10;
@@ -220,7 +224,28 @@ Pair* getInputC(Pair* target){ /*TODO: make void?*/
   return target;
 }
 
-int generic_prompt(Item** items, const char* prompt, int offset, int max, void (*printer)(Item ** items)){
+int generic_prompt(Item** items, const char* prompt, int offset, int max, const char* error_msg_key, void (*printer)(Item ** items), bool (*criterion)(Item* item)){
+  printer(items);
+  log_message(std::string("PC Inventory: type the index of the item to be ") + prompt + " or press ESC to go back", 0);
+  do{
+    int select = getch();
+    if (select == 27) break; //ESC
+    select -= offset;
+    bool condition = (select >=0 && select < max && items[select]);
+    condition = criterion ? (condition && criterion(items[select])) : condition;
+    if (condition){
+      log_message((std::to_string(select) + std::string(") ") + std::string(items[select]->getName()) + std::string(" has been ") + prompt).c_str(), 0);
+      return select;
+    }else{
+      std::string pick;
+      pick.push_back(select + offset);
+      log_message(pick + std::string(" is invalid. Select ") + error_msg_key + " or press ESC to quit", 0);
+    }
+  }while(1);
+  return -1;
+}
+
+/*int generic_prompt(Item** items, const char* prompt, int offset, int max, void (*printer)(Item ** items)){
   printer(items);
   log_message(std::string("PC Inventory: type the index of the item to be ") + prompt + " or press ESC to go back", 0);
   do{
@@ -237,7 +262,7 @@ int generic_prompt(Item** items, const char* prompt, int offset, int max, void (
     }
   }while(1);
   return -1;
-}
+}*/
 
 Pair* look_mode(Pair *target, int* control_mode){ //TODO: uses hardcoded width/height
   switch(getch()){
@@ -344,6 +369,7 @@ int item_info(Item* item, const char* exit_prompt){
   mvprintw(y_offset++, x_offset, (std::string("SPEED: ") + std::to_string(item->getSpeedBonus())).c_str());
   mvprintw(y_offset++, x_offset, (std::string("HIT: ") + std::to_string(item->getHit())).c_str());
   mvprintw(y_offset++, x_offset, (std::string("DODGE: ") + std::to_string(item->getDodge())).c_str());
+  mvprintw(y_offset++, x_offset, (std::string("SPECIAL: ") + std::to_string(item->getSpecial())).c_str());
   mvprintw(y_offset++, x_offset, (std::string("WEIGHT: ") + std::to_string(item->getWeight())).c_str());
   int x = item->getValue();
   mvprintw(y_offset++, x_offset, (std::string("VALUE: $") + std::to_string(x)).c_str());

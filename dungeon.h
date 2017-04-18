@@ -33,6 +33,7 @@ enum chances {
   NOTHING
 };
 
+
 # ifdef __cplusplus
 template <class T> void printmon(T* object);//TODO: remove C Linkage so this function can join the rest of them
 void render_partial(Cell map[][nCols], int chars[][nCols], Character* monsts[], Pair start, Pair* newPos);
@@ -98,6 +99,7 @@ void custom_render(int chars[][nCols], Character* monsts[], int item_map[][nCols
 Pair select_position(Pair curr_pos, const Room& boundary, int chars[][nCols], Character* characters[], int item_map[][nCols], std::vector<Item*>& items, Pair start, char value);
 // void endgame(Dungeon* dungeon, Queue* game_queue, const char* endmessage);
 unsigned int addItem(std::vector<Item*>& items);
+bool isRanged(Item* item);
 // void clear_queue(std::priority_queue<Character*, std::vector<Character*>, CharacterComparator>* q); //TODO remove
 
 

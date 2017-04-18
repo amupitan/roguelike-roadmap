@@ -70,6 +70,10 @@ int Item::getHit() const{
   return hit;
 }
 
+int Item::getSpecial() const{
+  return special;
+}
+
 void Item::revalue(double rate){
   value *= rate/100.0;
 }
