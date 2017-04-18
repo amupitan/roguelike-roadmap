@@ -472,6 +472,50 @@ int main(int argc, char *argv[]){
         }else if (target.x == -19 && target.y == -19){
           target = pcp->getPos();
           //select ranged weapon
+          Item* ranged_weapon;
+          if (!(ranged_weapon = pcp->equipment()[2])){ //TODO: NOTE: ranged weapon slot is hardcoded
+            log_message("You have no ranged weapon equiped", 0);
+            continue;
+          } 
+          //select spot
+          uint8_t rad = chances[PC_RAD] + ranged_weapon->getSpecial()/1000;
+          Room boundary = {target.x - rad, target.y - rad, (uint8_t)(rad * 2), (uint8_t)(rad * 2)};
+          do{
+            target = select_position(target, boundary, chars, characters, item_map, items, start, 0); //get input from user
+          }while(target.x == -12 && target.y == -12);
+          if (target.x != -11 && target.y != -11){
+            if (chars[target.y][target.x] != -1){
+              if (chars[target.y][target.x] != 0){
+                //simulate attack
+                log_message(std::string("attacked ") + static_cast<Monster*>(characters[chars[target.y][target.x]])->getName(), 0);
+                int attack = ranged_weapon->getDamageBonus() + ((100.0 + ranged_weapon->getHit())/100.0) * ranged_weapon->getSpecial();
+                log_message(std::string("You dealt ") + std::to_string(attack) + " damage to " + static_cast<Monster*>(characters[chars[target.y][target.x]])->getName(), 22);
+                if (characters[chars[target.y][target.x]]->takeDamage(attack)){
+                  l_monsters--;
+                  log_message(std::string("You just killed ") + static_cast<Monster*>(characters[chars[target.y][target.x]])->getName(), 0);
+                  chars[target.y][target.x] = -1;
+                  //Spawn item if you're lucky
+                  item_drop(items, chances[ITEM_SPAWN]*(1 + (ranged_weapon->getSpecial())/25000.0), item_map, target);
+                }
+              }else{
+                log_message("The PC cannot shoot itself with ranged weapons. Hit any key to continue", 0);
+                getch();
+              }
+            }else{
+              log_message("There was no character on that cell. Hit any key to continue", 0);
+              getch();
+            }
+          }else{
+            target = pcp->getPos();
+            log_message("No position was selected", 0);
+            continue;
+          }
+          target = pcp->getPos();
+          generic_render(map, chars, characters, item_map, items, start, 0, fullscreen);
+          break;
+        }else if (target.x == -20 && target.y == -20){/*potion*/
+          target = pcp->getPos();
+          //select ranged weapon
           int item_idx = generic_prompt(pcp->equipment(), "used", 97, 12, "a ranged weapon", display_equipment, isRanged);
           if (item_idx >= 0){
             log_message(std::string("You selected ") + pcp->equipment()[item_idx]->getName() + ". Type: " + pcp->equipment()[item_idx]->getType(), 0);
@@ -621,7 +665,7 @@ int main(int argc, char *argv[]){
                     generic_render(map, chars, characters, item_map, items, start, 0, fullscreen);
                     break;
                   }
-                  /*Spawn item if you're lucky*/
+                  //Spawn item if you're lucky
                   item_drop(items, chances[ITEM_SPAWN], item_map, target);
                 }else {
                   log_message(std::string("You got killed by ") + static_cast<Monster*>(curr)->getName(), 23);
