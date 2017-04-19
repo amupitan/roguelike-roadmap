@@ -48,8 +48,9 @@ int main(int argc, char *argv[]){
   int option, load = 0, save = 0, seed = (unsigned) time(NULL), nummon = 0, solo = 0, numitem = 0;
   char load_file[100];
   
-  static char monster_file[100];
+  static char monster_file[100], item_file[100];
   strcat(strcpy(monster_file, getenv("HOME")), "/.rlg327/monster_desc.txt");
+  strcat(strcpy(item_file, getenv("HOME")), "/.rlg327/object_desc.txt");
   struct option longopts[] = {
     {"load", optional_argument, NULL, 'l'},
     {"save", no_argument, &save, 1},
@@ -58,6 +59,7 @@ int main(int argc, char *argv[]){
     {"nummon", optional_argument, NULL, 'm'},
     {"numitem", optional_argument, NULL, 'i'},
     {"npcload", optional_argument, NULL, 'n'},
+    {"itemload", optional_argument, NULL, 'o'},
     {"solo", no_argument, &solo, 1},
     {0,0,0,0}
   };
@@ -71,6 +73,9 @@ int main(int argc, char *argv[]){
         break;
       case 'n':
         if (optarg) strcpy(monster_file, optarg);
+        break;
+      case 'o':
+        if (optarg) strcpy(item_file, optarg);
         break;
       case 'e':
         if (optarg) seed = atoi(optarg);
@@ -190,7 +195,7 @@ int main(int argc, char *argv[]){
   memset(last_seen, - 1, sizeof(Pair)*nummon);
 
   /*Dungeon monsters setup*/
-  unsigned int pace[nummon+1];
+  unsigned int pace[nummon + 1];
   addCharcters(&dungeon, &evt, nummon, characters, chars, pace);
   /*Change PC position to user's choice if available*/
   if (pc_type){/*TODO: there might be a bug with this flag, try seed:1489964342 on --pc="30,30"*/
@@ -201,7 +206,7 @@ int main(int argc, char *argv[]){
   
   /*Items*/
   object_parser::parser_init("item");
-  object_parser::start_parser(strcat(strcpy(load_file, getenv("HOME")), "/.rlg327/object_desc.txt"));
+  object_parser::start_parser(item_file);
   object_parser::complete_parse();
   int item_map[nRows][nCols];
   std::vector<Item*> items;
@@ -210,7 +215,6 @@ int main(int argc, char *argv[]){
   add_stairs(&dungeon, map);
   add_shops(&dungeon, map);
   char recalculate = 1;
-  // Character* pcp = characters[0];
   Player* pcp = static_cast<Player*>(characters[0]);
   do{
     pcp = static_cast<Player*>(characters[0]);
@@ -230,6 +234,7 @@ int main(int argc, char *argv[]){
       // }
       updateSight(pcp, map, item_map);
       Pair start = {cgetX(curr) - 40, cgetY(curr) - 10};
+      
       generic_render(map, chars, characters, item_map, items, start, 0, fullscreen);
       do{/*handle input*/
         target = *(Pair *)getInputC(&target);
@@ -405,7 +410,7 @@ int main(int argc, char *argv[]){
                     getch();
                     break;
                   }else {
-                    log_message(std::string("You dont't have space resources to buy ") + wShop[item_choice]->getName() + " hit any key to continue or ESC to quit", 0);
+                    log_message(std::string("You dont't have enough space in your inventory to buy ") + wShop[item_choice]->getName() + " hit any key to continue or ESC to quit", 0);
                     if(getch() == 27) break;
                   } 
                 }else {
@@ -487,7 +492,6 @@ int main(int argc, char *argv[]){
             if (chars[target.y][target.x] != -1){
               if (chars[target.y][target.x] != 0){
                 //simulate attack
-                log_message(std::string("attacked ") + static_cast<Monster*>(characters[chars[target.y][target.x]])->getName(), 0);
                 int attack = ranged_weapon->getDamageBonus() + ((100.0 + ranged_weapon->getHit())/100.0) * ranged_weapon->getSpecial();
                 log_message(std::string("You dealt ") + std::to_string(attack) + " damage to " + static_cast<Monster*>(characters[chars[target.y][target.x]])->getName(), 22);
                 if (characters[chars[target.y][target.x]]->takeDamage(attack)){
@@ -503,11 +507,12 @@ int main(int argc, char *argv[]){
               }
             }else{
               log_message("There was no character on that cell. Hit any key to continue", 0);
-              
-              if (map[target.y][target.x].hardness - (ranged_weapon->getSpecial()/1500) <= 0){
-                map[target.y][target.x].hardness = 0;
-                map[target.y][target.x].value = '#';
-              }else map[target.y][target.x].hardness -= (ranged_weapon->getSpecial()/1500);
+              if (map[target.y][target.x].hardness != 0){
+                if (map[target.y][target.x].hardness - (ranged_weapon->getSpecial()/1500) <= 0){
+                  map[target.y][target.x].hardness = 0;
+                  map[target.y][target.x].value = '#';
+                }else map[target.y][target.x].hardness -= (ranged_weapon->getSpecial()/1500);
+              }
               getch();
             }
           }else{
@@ -822,3 +827,4 @@ bool probability(int chance){
 //1492375222 close shop
 //1492395756 shop/vorpal blade
 //1492485638 corner
+//1492605482 PC is invisible in turn 1 in fow mode
