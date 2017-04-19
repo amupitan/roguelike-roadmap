@@ -30,6 +30,7 @@ enum chances {
   ITEM_REVALUE,
   PC_RAD,
   SHOP_MAX,
+  PESOS_DROP,
   NOTHING
 };
 

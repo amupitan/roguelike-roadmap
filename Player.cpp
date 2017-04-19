@@ -10,7 +10,7 @@ Player* Player::getPlayer(){
   return player;
 }
 
-Player::Player() : sight(0), carry(), equip(), weight(0), max_weight(75), pesos(1000000) {
+Player::Player() : sight(0), carry(), equip(), weight(0), max_weight(75), pesos(100000) {
   damage = "0+1d4";
   hp = 500;
 }
@@ -170,6 +170,10 @@ void Player::clearSlots(bool inventory, bool equipment){
     speed = 10;
     memset(equip, 0, sizeof(equip));
   } 
+}
+
+void Player::earn(int amount){
+  pesos += amount;
 }
 
 void Player::unequip_all(){

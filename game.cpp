@@ -187,7 +187,7 @@ int main(int argc, char *argv[]){
   queue_init(&evt, char_equals, print_Character);
   
   /*Initialize all Characters (PC and monster)*/
-  int chances[5] = {10/*item spawn*/, 80/*item revalue*/, 5/*PC radius*/, 5/*shop max*/, 0};
+  int chances[6] = {10/*item spawn*/, 80/*item revalue*/, 5/*PC radius*/, 5/*shop max*/, 20/*pesos drop*/,0};
   if (nummon_flag == 0) nummon = rand_gen(dungeon.num_rooms, dungeon.num_rooms*2);
   int l_monsters = nummon;
   Character* characters[nummon + 1];
@@ -675,8 +675,9 @@ int main(int argc, char *argv[]){
                     generic_render(map, chars, characters, item_map, items, start, 0, fullscreen);
                     break;
                   }
-                  //Spawn item if you're lucky
+                  //Spawn item/earn money if you're lucky
                   item_drop(items, chances[ITEM_SPAWN], item_map, target);
+                  if (probability(chances[PESOS_DROP])) pcp->earn(characters[chars[target.y][target.x]]->attack()/2);
                 }else {
                   log_message(std::string("You got killed by ") + static_cast<Monster*>(curr)->getName(), 23);
                   //TODO: just break?

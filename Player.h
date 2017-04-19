@@ -38,6 +38,7 @@ class Player : public Character{
     void wear(int itm_idx);
     bool take_off(int index);
     virtual int attack() const;
+    void earn(int amount);
     virtual bool takeDamage(int damage);
     // void updateSight(int height, int width, char map[][width]);
     void freeSight(int height);
