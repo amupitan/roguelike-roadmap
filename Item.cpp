@@ -102,3 +102,9 @@ void Item::unstack(int& nextId){
 void Item::resetId(int new_id){
   id = new_id;
 }
+
+void Item::setSymbol(char symbol){
+  this->symbol = symbol;
+}
+
+Item::~Item(){}

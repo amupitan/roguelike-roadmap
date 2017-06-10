@@ -19,6 +19,7 @@ class Player : public Character{
     int** sight;
     Item* carry[10];
     Item* equip[12];
+    Item* potions[5];
     int weight;
     int max_weight;
     int pesos;
@@ -30,6 +31,7 @@ class Player : public Character{
     int getPesos() const;
     Item ** inventory();
     Item ** equipment();
+    Item ** purse();
     int** setSight(int height, int width);
     Item* buy(int index, Item* item);
     bool pick(Item* item);

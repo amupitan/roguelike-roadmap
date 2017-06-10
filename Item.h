@@ -23,6 +23,8 @@ class Item {
   	std::string desc;
   	Item* next;
   	bool equiped;
+  protected:
+    void setSymbol(char symbol);
   public:
     Item(int id, const object_parser::private_wrapper::item_stub* stub);
     Item(int id, const Item& item);
@@ -33,7 +35,7 @@ class Item {
     const char* getDesc() const;
     int getId() const;
     std::string getDamage() const;
-    const char* getType() const;
+    virtual const char* getType() const;
     int getDamageBonus() const;
     int getDefenseBonus() const;
     int getSpeedBonus() const;
@@ -48,5 +50,6 @@ class Item {
     void stack(Item* next);
     void resetId(int new_id);
     void unstack(int& nextId);/*gets picked up by a charcter, unstacks from other items if stacked*/
+    virtual ~Item();
 };
 #endif

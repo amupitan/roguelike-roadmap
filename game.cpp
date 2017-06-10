@@ -19,6 +19,7 @@
 #include "dungeon.h"
 #include "Item.h"
 #include "Player.h"
+#include "Potion.h"
 int main(int argc, char *argv[]){
   //regular
   Dungeon dungeon;
@@ -392,7 +393,7 @@ int main(int argc, char *argv[]){
           if (map[pcp->getY()][pcp->getX()].value != '$') continue;
           std::vector<Item*> wShop;
           int i = chances[SHOP_MAX];
-          while (i-->0) addItem(wShop);
+          while (i-->0) addItem(-1, wShop);
           int response = 0;
           do{
             int item_choice = generic_prompt(wShop, "bought", 97, wShop.size(), print_store);
@@ -524,46 +525,55 @@ int main(int argc, char *argv[]){
           generic_render(map, chars, characters, item_map, items, start, 0, fullscreen);
           break;
         }else if (target.x == -20 && target.y == -20){/*potion*/
+          Potion* potion = 0;
           target = pcp->getPos();
-          //select ranged weapon
-          int item_idx = generic_prompt(pcp->equipment(), "used", 97, 12, "a ranged weapon", display_equipment, isRanged);
+          //select potion
+          int item_idx = generic_prompt(pcp->purse(), "used", 97, 5, "a slot occupied by a potion", display_purse, 0);
           if (item_idx >= 0){
-            log_message(std::string("You selected ") + pcp->equipment()[item_idx]->getName() + ". Type: " + pcp->equipment()[item_idx]->getType(), 0);
+            potion = static_cast<Potion*>(pcp->purse()[item_idx]);
+            log_message(std::string("You selected ") + pcp->purse()[item_idx]->getName() + ". Type: " + pcp->purse()[item_idx]->getType(), 0);
             //select spot
-            uint8_t rad = chances[PC_RAD];
+            uint8_t rad = chances[PC_RAD] + potion->getRadius(); //TODO: create potion radius to replace PC_RAD
             Room boundary = {target.x - rad, target.y - rad, (uint8_t)(rad * 2), (uint8_t)(rad * 2)};
-            target = select_position(target, boundary, chars, characters, item_map, items, start, 0);
+            do{
+              target = select_position(target, boundary, chars, characters, item_map, items, start, 0); //get input from user
+            }while(target.x == -12 && target.y == -12);
             if (target.x != -11 && target.y != -11){
               if (chars[target.y][target.x] != -1){
                 if (chars[target.y][target.x] != 0){
-                  log_message(std::string("attacked ") + static_cast<Monster*>(characters[chars[target.y][target.x]])->getName(), 0);
-                  Item* ranged_weapon = pcp->equipment()[item_idx];
-                  int attack = ranged_weapon->getDamageBonus() + ((100.0 + ranged_weapon->getHit())/100.0) * ranged_weapon->getSpecial();
-                  log_message(std::string("You dealt ") + std::to_string(attack) + " damage to " + static_cast<Monster*>(characters[chars[target.y][target.x]])->getName(), 22);
-                  if (characters[chars[target.y][target.x]]->takeDamage(attack)){
-                    log_message(std::string("You just killed ") + static_cast<Monster*>(characters[chars[target.y][target.x]])->getName(), 0);
-                    chars[target.y][target.x] = -1;
-                    /*Spawn item if you're lucky*/
-                    item_drop(items, chances[ITEM_SPAWN]*(1 + (ranged_weapon->getSpecial())/25000.0), item_map, target);
-                  }
-                }else if (true /*item can affect PC*/){
-                  log_message("PC affected", 0);
+                  //simulate spell
+                  //int attack = ranged_weapon->getDamageBonus() + ((100.0 + ranged_weapon->getHit())/100.0) * ranged_weapon->getSpecial();
+                  log_message(std::string("You cast a spell on ") + static_cast<Monster*>(characters[chars[target.y][target.x]])->getName(), 22);
+                  // if (characters[chars[target.y][target.x]]->takeDamage(attack)){
+                  //   l_monsters--;
+                  //   log_message(std::string("You just killed ") + static_cast<Monster*>(characters[chars[target.y][target.x]])->getName(), 0);
+                  //   chars[target.y][target.x] = -1;
+                  //   //Spawn item if you're lucky
+                  //   item_drop(items, chances[ITEM_SPAWN]*(1 + (ranged_weapon->getSpecial())/25000.0), item_map, target);
+                  // }
+                }else{
+                  log_message("The PC cast a spell on itself. Hit any key to continue", 0);
+                  getch();
                 }
               }else{
-                log_message("Not a valid cell");
+                log_message("There was no character on that cell. Hit any key to continue", 0);
+                // if (map[target.y][target.x].hardness != 0){
+                //   if (map[target.y][target.x].hardness - (ranged_weapon->getSpecial()/1500) <= 0){
+                //     map[target.y][target.x].hardness = 0;
+                //     map[target.y][target.x].value = '#';
+                //   }else map[target.y][target.x].hardness -= (ranged_weapon->getSpecial()/1500);
+                // }
+                getch();
               }
             }else{
+              target = pcp->getPos();
               log_message("No position was selected", 0);
+              continue;
             }
-          }else{
-            log_message("You didn't select a ranged weapon", 0);
+            target = pcp->getPos();
+            generic_render(map, chars, characters, item_map, items, start, 0, fullscreen);
+            break;
           }
-          
-          //attack 
-          //somehow continue
-          //TODO remove
-          target = pcp->getPos();
-          generic_render(map, chars, characters, item_map, items, start, 0, fullscreen);
         }
         else if (map[target.y][target.x].hardness == 0) break;
         target.x = cgetX(curr);

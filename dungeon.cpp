@@ -16,6 +16,7 @@
 #include "Player.h"
 #include "object_parser.h"
 #include "display.h"
+#include "Potion.h"
 
 int connect_rooms(Cell map[][nCols], Cell p, Cell q){
 	while (p.x != q.x){
@@ -639,15 +640,15 @@ Item** addItems(Dungeon* dungeon, Item** items, int item_map[][nCols], int* num_
 void addItems(Dungeon* dungeon, std::vector<Item*>& items, int item_map[][nCols], int& num_items){
   memset(item_map, -1, sizeof(int)*nRows*nCols);
   num_items = (num_items < 0) ? num_items * -1 : rand_gen(20, dungeon->num_rooms * 2);
-  // items = (Item**)malloc(sizeof(Item*) * num_items);
   unsigned int prev_size = items.size();
   for (std::vector<int>::size_type i = prev_size; i < prev_size + (unsigned int)num_items; i++){
   // for (int i = 0; i < num_items; i++){
     Pair co_ords = determine_position(dungeon->rooms[rand_gen(0, dungeon->num_rooms - 1)]); /*get position from random room*/
-    items.push_back(new Item( //TODO emplace?
-      i,
-      object_parser::getCompleteItemStub(rand_gen(0, object_parser::getNumItemstubs() - 1))
-    ));
+    // items.push_back(new Item( //TODO emplace?
+    //   i,
+    //   object_parser::getCompleteItemStub(rand_gen(0, object_parser::getNumItemstubs() - 1))
+    // ));
+    addItem(i, items);
     if (item_map[co_ords.y][co_ords.x] != -1){
       items[i]->stack(items[item_map[co_ords.y][co_ords.x]]);
     }
@@ -655,13 +656,16 @@ void addItems(Dungeon* dungeon, std::vector<Item*>& items, int item_map[][nCols]
   }
 }
 
-unsigned int addItem(std::vector<Item*>& items){
-  unsigned int new_id = items.size();
-  items.push_back(new Item(
-    new_id,
-    object_parser::getCompleteItemStub(rand_gen(0, object_parser::getNumItemstubs() - 1))
-    ));
-    return new_id;
+unsigned int addItem(int id, std::vector<Item*>& items){
+  unsigned int new_id = (id >= 0) ? (unsigned int)id : items.size();
+  auto stub = object_parser::getCompleteItemStub(rand_gen(0, object_parser::getNumItemstubs() - 1));
+  Item* item = 0;
+  if (stub->isKind("potion"))
+    item = new Potion(id, stub);
+  else item = new Item(id, stub);
+  // Item* item = stub->isKind("potion") ? new Potion(id, stub) : new Item(id, stub);
+  items.push_back(item);
+  return new_id;
 }
 
 Character* pc_init(Character* pc, Room room){
@@ -848,7 +852,7 @@ bool isRanged(Item* item){
 
 void item_drop(std::vector<Item*>& items, int chance, int item_map[][nCols], const Pair& target){
   if (probability(chance)){
-    uint32_t spawn_id = addItem(items);
+    uint32_t spawn_id = addItem(-1, items);
     if (item_map[target.y][target.x] != -1){
       items[spawn_id]->stack(items[item_map[target.y][target.x]]);
     }

@@ -128,10 +128,16 @@ namespace object_parser{
       else if (private_wrapper::startsWith(line, "VAL") && value == ""){
         return assign_attrbute(value, line, strlen("VAL"));
       }
+      else if (private_wrapper::startsWith(line, "KIND") && kind == ""){
+        return assign_attrbute(kind, line, strlen("KIND"));
+      }
       return false;
     }
     bool item_stub::complete(){
       return (name != "") && (desc != "") && (color != "") && (speed != "") && (special != "") && (type != "") && (damage != "") && (dodge != "") && (defense != "") && (weight != "") && (value != "") && (hit != "");
+    }
+    bool item_stub::isKind(std::string supposed_kind){
+      return supposed_kind == kind;
     }
     dice::dice() : base(0), times(0), sides(1){}
     dice::dice(int base, int times, int sides) : base(base), times(times), sides(sides){}
@@ -174,7 +180,7 @@ namespace object_parser{
     const char* abilities[] = {"SMART", "TELE", "TUNNEL", "ERRATIC"}; //Todo: add other monster types (will need new equation)
     // char symbols[] = {'|', ')', '}', '[', ']', '(', '{', '\\', '=', '\"', '_', '~', '?', '!', '$', '/', ',', '-', '%'};
     const char* symbol_names[] = {"WEAPON", "OFFHAND", "RANGED", "ARMOR", "HELMET", "CLOAK", "GLOVES", "BOOTS", "RING", "AMULET",
-    "LIGHT", "SCROLL", "BOOK", "FLASK", "GOLD", "AMMUNITION", "FOOD", "WAND", "CONTAINER"};
+    "LIGHT", "SCROLL", "BOOK", "FLASK", "GOLD", "AMMUNITION", "FOOD", "WAND", "CONTAINER", "POTION"};
     std::unordered_map<std::string, char> item_symbols = {
       {"WEAPON", '|'},
       {"OFFHAND", ')'},
@@ -194,7 +200,8 @@ namespace object_parser{
       {"AMMUNITION", '/'},
       {"FOOD", ','},
       {"WAND", '-'},
-      {"CONTAINER", '%'}
+      {"CONTAINER", '%'},
+      {"POTION", '*'}
       // {"STACK", '&'}
     };
 
@@ -247,8 +254,9 @@ namespace object_parser{
     char symbolize(std::string name){
       auto search = item_symbols.find(name);
       if (search != item_symbols.end()) return search->second;
-      return '*'; //default symbol for not found
+      return '`'; //default symbol for not found
     }
+    
     stub* getMonsterStub(){
       return new monster_stub();
     }
@@ -300,6 +308,14 @@ namespace object_parser{
           return i;
       }
       return 7;
+    }
+    
+    item_stub* getItemStubs(item_stub* items){
+      /*TODO: return items not stubs*/
+      for (std::vector<int>::size_type i = 0; i < objects.size(); i++)
+        items[i] = *static_cast<item_stub*>(objects[i]);
+      delete_objects();
+      return items;
     }
     // std::vector<Monster*> getMonsterStubs(std::vector<Monster*>& monsters){
     //   //TODO: return monsters not stubs
@@ -386,14 +402,6 @@ namespace object_parser{
     private_wrapper::delete_objects();
     return monsters;
   }*/
-
-  private_wrapper::item_stub* private_wrapper::getItemStubs(private_wrapper::item_stub* items){
-    /*TODO: return items not stubs*/
-    for (std::vector<int>::size_type i = 0; i < private_wrapper::objects.size(); i++)
-      items[i] = *static_cast<item_stub*>(private_wrapper::objects[i]);
-    private_wrapper::delete_objects();
-    return items;
-  }
   
   void parser_init(const char* parser){
     if (strncmp(parser, "monster", 8) == 0){

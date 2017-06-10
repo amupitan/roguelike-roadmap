@@ -1,6 +1,7 @@
 #include "Player.h"
 #include <cstring>
 #include "display.h"
+#include "Potion.h"
 
 Player* Player::player = 0; /*TODO: not necessary since static objects are set to 0 by default*/
 
@@ -10,7 +11,7 @@ Player* Player::getPlayer(){
   return player;
 }
 
-Player::Player() : sight(0), carry(), equip(), weight(0), max_weight(75), pesos(100000) {
+Player::Player() : sight(0), carry(), equip(), potions(), weight(0), max_weight(75), pesos(100000) {
   damage = "0+1d4";
   hp = 500;
 }
@@ -46,7 +47,12 @@ int** Player::setSight(int height, int width){
 }
 
 Item* Player::buy(int idx, Item* item){
-  Item* new_item = new Item(idx, *item);
+  Item* new_item;// = new Item(idx, *item);
+  if (dynamic_cast<Potion*>(item)){
+    new_item = new Potion(idx, *static_cast<Potion*>(item));
+  }else{
+     new_item = new Item(idx, *item);
+  }
   if (pick(new_item)){
     pesos -= item->getValue();
     new_item->equip();
@@ -77,6 +83,10 @@ Item ** Player::inventory(){ //TODO: player drops inventory when using the stair
 
 Item ** Player::equipment(){
   return equip;
+}
+
+Item ** Player::purse(){
+  return potions;
 }
 
 bool Player::pick(Item* item){
@@ -120,6 +130,22 @@ void Player::wear(int itm_idx){
     Item* current = equip[slot];
     equip[slot] = add;
     speed += add->getSpeedBonus();
+    carry[itm_idx] = current;
+  }else if (slot >= 0){ //wear potion. TODO: wrong condition, just a quick workaround
+    Item* current = 0;//potions[0];
+    unsigned int i = 0;
+    for (i = 0; i < sizeof(potions)/sizeof(potions[0]); i++){
+      if (!potions[i]){
+        potions[i] = add;
+        i = 0;
+        break; //found empty slot
+      } 
+    }
+    if (i){ //no empty slot was found
+      current = potions[0];
+      potions[0] = add;
+    }
+    // speed += add->getSpeedBonus();
     carry[itm_idx] = current;
   }
 }
@@ -185,7 +211,18 @@ void Player::unequip_all(){
     if (item)
       item->unequip();
   }
+   for (auto item : potions){
+    if (item)
+      item->unequip();
+  }
 }
+
+// static void unequip(Item ** items){
+//   for (auto item : items){
+//     if (item)
+//       item->unequip();
+//   }
+// }
 
 void Player::deletePlayer(){ //TODO: is it standard to have such a member?
   delete player;

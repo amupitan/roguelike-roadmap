@@ -22,6 +22,7 @@ void log_message(const char* message);
 void print_inventory(Item **items);
 void display_equipment(Item ** items);
 int item_info(const Item* item, const char* exit_prompt);
+void display_purse(Item ** items);
 int generic_prompt(Item** items, const char* prompt, int offset, int max, const char* error_msg_key, void (*printer)(Item ** items), bool (*criterion)(Item* item));
 void display_stats();
 void character_info(Character* character);

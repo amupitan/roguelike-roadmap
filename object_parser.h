@@ -45,9 +45,11 @@ namespace object_parser{
       	std::string symb;
       	std::string special;
       	std::string value;
+      	std::string kind;
         item_stub(){}
         item_stub operator=(item_stub& copy);
         bool complete();
+        bool isKind(std::string supposed_kind);
         bool build(std::ifstream& file, const char* line);
         friend std::ostream& operator<< (std::ostream& stream, const item_stub& item);
   	};

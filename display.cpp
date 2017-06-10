@@ -344,6 +344,10 @@ void display_equipment(Item ** items){
   item_printer(items, 12, "c", 97, "PC Equipment");
 }
 
+void display_purse(Item ** items){
+  item_printer(items, 5, "d", 0, "PC Potion purse");
+}
+
 int item_info(const Item* item, const char* exit_prompt){
   clear();
   int x_offset = 10, x_initial = x_offset;
